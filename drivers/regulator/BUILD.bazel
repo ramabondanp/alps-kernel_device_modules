@@ -44,6 +44,7 @@ SIMPLE_MODULE_NAME = [
     "rt4803",
     "fan53870-ldo",
     "wl2868c-regulator",
+    "tran_ldo",
 ]
 
 [define_mgk_ddk_ko(
