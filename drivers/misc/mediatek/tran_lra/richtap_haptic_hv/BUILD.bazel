@@ -1,0 +1,40 @@
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+load("@mgk_info//:kernel_version.bzl", "kernel_version")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+filegroup(
+    name = "ddk_kconfigs",
+    srcs = glob([
+        "**/Kconfig",
+    ]),
+)
+
+filegroup(
+    name = "ddk_makefile",
+    srcs = glob([
+        "**/Makefile",
+        "**/Kbuild",
+        "**/*.c",
+        "**/*.h",
+    ]),
+)
+
+define_mgk_ddk_ko(
+    name = "tran_richtap_haptic_hv",
+    srcs = [
+        "aw8671x.c",
+        "aw8672x.c",
+        "aw8692x.c",
+        "aw8693x.c",
+        "aw869x.c",
+        "aw869xx.c",
+        "haptic_hv.c",
+    ],
+    hdrs = glob(["*.h"]),
+    includes = ["."],
+)

@@ -1,0 +1,47 @@
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+load("@mgk_info//:kernel_version.bzl", "kernel_version")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+filegroup(
+    name = "ddk_kconfigs",
+    srcs = glob([
+        "**/Kconfig",
+    ]),
+)
+
+filegroup(
+    name = "ddk_makefile",
+    srcs = glob([
+        "**/Makefile",
+        "**/Kbuild",
+        "**/*.c",
+        "**/*.h",
+    ]),
+)
+
+define_mgk_ddk_ko(
+    name = "snd-soc-fs1599",
+    srcs = [
+        "fs1599.c",
+        "fsm_algo_bsg.c",
+        "fsm_core.c",
+        "fsm_i2c.c",
+    ],
+    hdrs = glob([
+        "*.h",
+        "fsm_codec.c",
+        "fsm_firmware.c",
+        "fsm_misc.c",
+        "fsm_sysfs.c",
+    ]),
+    includes = ["."],
+    ko_deps = [
+        "//kernel_device_modules-{}/sound/soc/mediatek/common:mtk-sp-spk-amp".format(kernel_version),
+    ],
+    copts = ["-DCONFIG_SND_SOC_FS1599=1"],
+)
