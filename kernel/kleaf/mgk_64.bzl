@@ -1361,6 +1361,7 @@ mgk_64_kleaf_platform_modules = {
     "//kernel_device_modules-{}/drivers/misc/mediatek/tran_lra/richtap_haptic_hv:tran_richtap_haptic_hv".format(kernel_version): "mt6895",
     "//kernel_device_modules-{}/drivers/input/touchscreen/transsion/core:adaptive-ts".format(kernel_version): "mt6895",
     "//kernel_device_modules-{}/drivers/input/touchscreen/transsion/vendor/goodix/gt9916_common:gt9916_common".format(kernel_version): "mt6895",
+    "//kernel_device_modules-{}/drivers/misc/mediatek/lens/vcm/v4l2/aw8601af:aw8601af".format(kernel_version): "mt6895",
     "//kernel_device_modules-{}/sound/soc/transsion/fs1599:snd-soc-fs1599".format(kernel_version): "mt6895",
     "//kernel_device_modules-{}/drivers/misc/mediatek/hwccf:hwccf".format(kernel_version) : "mt6991 mt6993",
     "//kernel_device_modules-{}/drivers/misc/mediatek/imgsensor/src:imgsensor_isp4_t".format(kernel_version): "mt6768",
