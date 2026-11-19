@@ -799,6 +799,48 @@ define_mgk_ddk_ko(
     ],
 )
 
+# Compound module: the donor Makefile says
+#   tc_pep50-y := tc_pe5_pps_intf.o tc_pe5_hal.o tc_pe5.o
+# DT compatible is "tc,pe5". See PLAN.md 6.1b.
+define_mgk_ddk_ko(
+    name = "tc_pep50",
+    srcs = [
+        "transsion/tc_pe5.c",
+        "transsion/tc_pe5_hal.c",
+        "transsion/tc_pe5_pps_intf.c",
+    ],
+    hdrs = [
+        "transsion/tc_adapter_class.h",
+        "transsion/tc_algorithm_class.h",
+        "transsion/tc_charger.h",
+        "transsion/tc_charger_class.h",
+        "transsion/tc_common_class.h",
+        "transsion/tc_gauge.h",
+        "transsion/tc_misc_intf.h",
+        "transsion/tc_pe5.h",
+        "transsion/tc_tcpc.h",
+        "transsion/tc_voter.h",
+    ],
+    includes = [
+        ".",
+        "transsion",
+    ],
+    ko_deps = [
+        ":tc_adapter_class",
+        ":tc_algorithm_class",
+        ":tc_charger_class",
+        ":tc_charger_framework",
+        ":tc_common_class",
+        ":tc_misc_intf",
+        ":tc_tcpc",
+        "//kernel_device_modules-{}/drivers/misc/mediatek/typec/tcpc:tcpc_class".format(kernel_version),
+    ],
+    copts = [
+        "-DCONFIG_TC_CLASS_SUPPORT=1",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/typec/tcpc/inc",
+    ],
+)
+
 define_mgk_ddk_ko(
     name = "tc_lcd_notify",
     srcs = [
