@@ -1070,6 +1070,7 @@ mgk_64_kleaf_device_modules = [
     "//kernel_device_modules-{}/drivers/power/supply:tc_pep50".format(kernel_version),
     "//kernel_device_modules-{}/drivers/power/supply:tc_tfcp_ta".format(kernel_version),
     "//kernel_device_modules-{}/drivers/power/supply:pca_tfcp_ta".format(kernel_version),
+    "//kernel_device_modules-{}/drivers/nfc/pn560:nfc_i2c".format(kernel_version),
     "//kernel_device_modules-{}/drivers/power/supply:tc_chg_type_det".format(kernel_version),
     "//kernel_device_modules-{}/drivers/power/supply:tran_charge_transfer".format(kernel_version),
     "//kernel_device_modules-{}/drivers/power/supply:tran_usb_ctrl".format(kernel_version),
