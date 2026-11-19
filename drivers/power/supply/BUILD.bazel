@@ -169,6 +169,20 @@ define_mgk_ddk_ko(
 )
 
 define_mgk_ddk_ko(
+    name = "tc_ta_class",
+    srcs = [
+        "transsion/tc_ta_class.c",
+    ],
+    hdrs = [
+        "transsion/tc_ta_class.h",
+    ],
+    includes = [
+        ".",
+        "transsion",
+    ],
+)
+
+define_mgk_ddk_ko(
     name = "tc_common_class",
     srcs = [
         "transsion/tc_common_class.c",

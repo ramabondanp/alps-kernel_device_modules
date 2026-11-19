@@ -1055,6 +1055,7 @@ mgk_64_kleaf_device_modules = [
     "//kernel_device_modules-{}/drivers/power/supply:bq2589x_charger".format(kernel_version),
     "//kernel_device_modules-{}/drivers/power/supply:charger_class".format(kernel_version),
     "//kernel_device_modules-{}/drivers/power/supply:tc_common_class".format(kernel_version),
+    "//kernel_device_modules-{}/drivers/power/supply:tc_ta_class".format(kernel_version),
     "//kernel_device_modules-{}/drivers/power/supply:tc_algorithm_class".format(kernel_version),
     "//kernel_device_modules-{}/drivers/power/supply:tc_adapter_class".format(kernel_version),
     "//kernel_device_modules-{}/drivers/power/supply:tc_charger_class".format(kernel_version),
