@@ -519,7 +519,6 @@ static void dump_subsys_reg(unsigned int id)
 unsigned int pd_list[] = {
 	MT6895_POWER_DOMAIN_MD,
 	MT6895_POWER_DOMAIN_CONN,
-	MT6895_POWER_DOMAIN_UFS0_SHUTDOWN,
 	MT6895_POWER_DOMAIN_AUDIO,
 	MT6895_POWER_DOMAIN_ADSP_TOP_DORMANT,
 	MT6895_POWER_DOMAIN_ADSP_INFRA,
@@ -655,7 +654,6 @@ static void trace_power_event(unsigned int id, unsigned int pwr_sta)
 
 
 static int off_mtcmos_id[] = {
-	MT6895_POWER_DOMAIN_UFS0_SHUTDOWN,
 	MT6895_POWER_DOMAIN_ISP_MAIN,
 	MT6895_POWER_DOMAIN_ISP_DIP1,
 	MT6895_POWER_DOMAIN_ISP_IPE,
@@ -721,7 +719,6 @@ static bool is_mtcmos_chk_bug_on(void)
 }
 
 static int suspend_allow_id[] = {
-	MT6895_POWER_DOMAIN_UFS0_SHUTDOWN,
 	PD_NULL,
 };
 

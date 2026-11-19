@@ -172,22 +172,6 @@ static const struct scp_domain_data scp_domain_data_mt6895[] = {
 		},
 		.caps = MTK_SCPD_BYPASS_INIT_ON | MTK_SCPD_IS_PWR_CON_ON,
 	},
-	[MT6895_POWER_DOMAIN_UFS0_SHUTDOWN] = {
-		.name = "ufs0_shutdown",
-		.sta_mask = GENMASK(31, 30),
-		.ctl_offs = 0xE10,
-		.sram_pdn_bits = GENMASK(8, 8),
-		.sram_pdn_ack_bits = GENMASK(12, 12),
-		.bp_table = {
-			BUS_PROT_IGN(VLP_TYPE, 0x0214, 0x0218, 0x0210, 0x0220,
-				MT6895_VLP_AXI_PROT_EN_UFS0),
-			BUS_PROT_IGN(IFR_TYPE, 0x0C84, 0x0C88, 0x0C80, 0x0C8C,
-				MT6895_TOP_AXI_PROT_EN_PERISYS0_UFS0),
-			BUS_PROT_IGN(VLP_TYPE, 0x0214, 0x0218, 0x0210, 0x0220,
-				MT6895_VLP_AXI_PROT_EN_UFS0_2ND),
-		},
-		.caps = MTK_SCPD_SRAM_ISO | MTK_SCPD_IS_PWR_CON_ON,
-	},
 	[MT6895_POWER_DOMAIN_AUDIO] = {
 		.name = "audio",
 		.sta_mask = GENMASK(31, 30),
