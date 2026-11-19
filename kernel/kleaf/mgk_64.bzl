@@ -1061,6 +1061,8 @@ mgk_64_kleaf_device_modules = [
     "//kernel_device_modules-{}/drivers/power/supply:tc_tcpc".format(kernel_version),
     "//kernel_device_modules-{}/drivers/power/supply:tc_water_detect".format(kernel_version),
     "//kernel_device_modules-{}/drivers/power/supply:tc_pd_adapter".format(kernel_version),
+    "//kernel_device_modules-{}/drivers/power/supply:tc_temp_forecast".format(kernel_version),
+    "//kernel_device_modules-{}/drivers/power/supply:tc_otg_ctrl".format(kernel_version),
     "//kernel_device_modules-{}/drivers/power/supply:tc_port_corrosion_prevention".format(kernel_version),
     "//kernel_device_modules-{}/drivers/power/supply:tc_pmic".format(kernel_version),
     "//kernel_device_modules-{}/drivers/power/supply:tc_audio".format(kernel_version),
