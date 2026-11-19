@@ -169,6 +169,34 @@ define_mgk_ddk_ko(
 )
 
 define_mgk_ddk_ko(
+    name = "tc_hl7139a",
+    srcs = [
+        "transsion/tc_hl7139a.c",
+    ],
+    hdrs = [
+        "transsion/tc_hl7139a.h",
+        "transsion/tc_adapter_class.h",
+        "transsion/tc_algorithm_class.h",
+        "transsion/tc_charger.h",
+        "transsion/tc_charger_class.h",
+        "transsion/tc_common_class.h",
+        "transsion/tc_gauge.h",
+        "transsion/tc_misc_intf.h",
+        "transsion/tc_tcpc.h",
+        "transsion/tc_voter.h",
+    ],
+    includes = [
+        ".",
+        "transsion",
+    ],
+    ko_deps = [
+        ":tc_charger_class",
+        ":tc_misc_intf",
+    ],
+    copts = ["-DCONFIG_TC_CLASS_SUPPORT=1"],
+)
+
+define_mgk_ddk_ko(
     name = "tc_ta_class",
     srcs = [
         "transsion/tc_ta_class.c",
