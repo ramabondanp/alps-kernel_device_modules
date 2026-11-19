@@ -39,14 +39,7 @@ mgk_64_kleaf_modules = [
     "//vendor/mediatek/kernel_modules/connectivity/wlan/adaptor/build/connac2x:wmt_chrdev_wifi_connac2",
     "//vendor/mediatek/kernel_modules/connectivity/wlan/adaptor/build/connac3x:wmt_chrdev_wifi_connac3",
     "//vendor/mediatek/kernel_modules/connectivity/wlan/adaptor/wlan_page_pool:wlan_page_pool",
-    "//vendor/mediatek/kernel_modules/cpufreq_cus:cpufreq_cus",
-    "//vendor/mediatek/kernel_modules/cpufreq_int:cpufreq_int",
-    "//vendor/mediatek/kernel_modules/fpsgo_cus:fpsgo_cus",
-    "//vendor/mediatek/kernel_modules/fpsgo_int:fpsgo_int",
     "//vendor/mediatek/kernel_modules/afs_common_utils:jank_detection_common_utils",
-    "//vendor/mediatek/kernel_modules/afs_core_int:jank_detection_core_int",
-    "//vendor/mediatek/kernel_modules/afs_core_cus:jank_detection_core_cus",
-    "//vendor/mediatek/kernel_modules/met_drv_secure_v3:met_drv_secure_v3",
     "//vendor/mediatek/kernel_modules/met_drv_v3/met_api/met_backlight_api:met_backlight_api_int",
     "//vendor/mediatek/kernel_modules/met_drv_v3/met_api/met_emi_api:met_emi_api_int",
     "//vendor/mediatek/kernel_modules/met_drv_v3/met_api/met_gpu_adv_api:met_gpu_adv_api_int",
@@ -68,18 +61,6 @@ mgk_64_kleaf_modules = [
     "//vendor/mediatek/kernel_modules/met_drv_v3/met_api/met_sspm_api:met_sspm_api_cus",
     "//vendor/mediatek/kernel_modules/met_drv_v3/met_api/met_vcore_api:met_vcore_api_cus",
     "//vendor/mediatek/kernel_modules/met_drv_v3:met_drv_v3",
-    #"//vendor/mediatek/kernel_modules/msync2_frd_cus/build:msync2_frd_cus",
-    #"//vendor/mediatek/kernel_modules/msync2_frd_int:msync2_frd_int",
-    "//vendor/mediatek/kernel_modules/mtk_input/FT3518:ft3518",
-    "//vendor/mediatek/kernel_modules/mtk_input/FT3518U:ft3518u",
-    #"//vendor/mediatek/kernel_modules/mtk_input/GT9886:gt9886",
-    "//vendor/mediatek/kernel_modules/mtk_input/GT9916:gt9916",
-    "//vendor/mediatek/kernel_modules/mtk_input/NT36672C:nt36672c",
-    "//vendor/mediatek/kernel_modules/mtk_input/nt36xxx_no_flash_spi:nt36xxx_no_flash_spi",
-    #"//vendor/mediatek/kernel_modules/mtk_input/TD4320:td4320",
-    "//vendor/mediatek/kernel_modules/mtk_input/ST61Y:st61y",
-    "//vendor/mediatek/kernel_modules/mtk_input/fingerprint/goodix/5.10:gf_spi",
-    "//vendor/mediatek/kernel_modules/mtk_input/synaptics_tcm:synaptics_tcm",
     "//vendor/mediatek/kernel_modules/mtkcam/camsys:ccd_rpmsg",
     "//vendor/mediatek/kernel_modules/mtkcam/camsys:mtk_ccd_remoteproc",
     "//vendor/mediatek/kernel_modules/mtkcam/camsys:mtk-cam-isp7s",
@@ -104,22 +85,7 @@ mgk_64_kleaf_modules = [
     "//vendor/mediatek/kernel_modules/sched_cus:eas_ext_cus",
     "//vendor/mediatek/kernel_modules/sched_cus:cpuqos_ext_cus",
     "//vendor/mediatek/kernel_modules/sched_cus:mtk_em_cus",
-    #"//vendor/mediatek/kernel_modules/sched_int:sched_int",
-    "//vendor/mediatek/kernel_modules/sched_int:cpuqos_dbg_int",
-    "//vendor/mediatek/kernel_modules/sched_int:eas_ext_int",
-    "//vendor/mediatek/kernel_modules/sched_int:cci_dbg_int",
-    "//vendor/mediatek/kernel_modules/sched_int:cci_dbg_cus_int",
-    "//vendor/mediatek/kernel_modules/sched_int:cpuqos_ext_int",
-    "//vendor/mediatek/kernel_modules/sched_int:eas_dbg_int",
-    "//vendor/mediatek/kernel_modules/sched_int:mtk_sched_test_int",
-    "//vendor/mediatek/kernel_modules/sched_int:mtk_em_int",
     "//vendor/mediatek/kernel_modules/mtkcam/img_frm_sync:mtk-img-frm-sync",
-    "//vendor/mediatek/kernel_modules/task_turbo_cus:task_turbo_cus",
-    "//vendor/mediatek/kernel_modules/task_turbo_int:task_turbo_int",
-    "//vendor/mediatek/kernel_modules/perf_common_cus:perf_common_cus",
-    "//vendor/mediatek/kernel_modules/perf_common_int:perf_common_int",
-    "//vendor/mediatek/kernel_modules/game_cus:game_cus",
-    "//vendor/mediatek/kernel_modules/game_int:game_int",
 ]
 
 mgk_64_kleaf_eng_modules = [
@@ -1086,9 +1052,13 @@ mgk_64_kleaf_device_modules = [
     "//kernel_device_modules-{}/drivers/pinctrl/mediatek:pinctrl-mt6661".format(kernel_version),
     "//kernel_device_modules-{}/drivers/pinctrl/mediatek:pinctrl-mt6667".format(kernel_version),
     "//kernel_device_modules-{}/drivers/power/supply:adapter_class".format(kernel_version),
-    "//kernel_device_modules-{}/drivers/power/supply:tc_common_class".format(kernel_version),
     "//kernel_device_modules-{}/drivers/power/supply:bq2589x_charger".format(kernel_version),
     "//kernel_device_modules-{}/drivers/power/supply:charger_class".format(kernel_version),
+    "//kernel_device_modules-{}/drivers/power/supply:tc_common_class".format(kernel_version),
+    "//kernel_device_modules-{}/drivers/power/supply:tc_algorithm_class".format(kernel_version),
+    "//kernel_device_modules-{}/drivers/power/supply:tc_adapter_class".format(kernel_version),
+    "//kernel_device_modules-{}/drivers/power/supply:tc_charger_class".format(kernel_version),
+    "//kernel_device_modules-{}/drivers/power/supply:tc_misc_intf".format(kernel_version),
     "//kernel_device_modules-{}/drivers/power/supply:mm8013".format(kernel_version),
     "//kernel_device_modules-{}/drivers/power/supply:mt6357_battery".format(kernel_version),
     "//kernel_device_modules-{}/drivers/power/supply:mt6358_battery".format(kernel_version),
@@ -1113,10 +1083,6 @@ mgk_64_kleaf_device_modules = [
     "//kernel_device_modules-{}/drivers/power/supply:rt9759".format(kernel_version),
     "//kernel_device_modules-{}/drivers/regulator:mt6315-regulator".format(kernel_version),
     "//kernel_device_modules-{}/drivers/regulator:tran_ldo".format(kernel_version),
-    # Transsion audio + hiber (donor mt6897, GPL-2.0). PLAN.md 5.2.
-    "//kernel_device_modules-{}/sound/soc/transsion/tran_audio_control:tran_audio_control".format(kernel_version): "mt6895",
-    "//kernel_device_modules-{}/sound/soc/transsion/splitswitch:splitswitch-gpio".format(kernel_version): "mt6895",
-    "//kernel_device_modules-{}/drivers/misc/hiber:hiber".format(kernel_version): "mt6895",
     "//kernel_device_modules-{}/drivers/regulator:mt6316-regulator".format(kernel_version),
     "//kernel_device_modules-{}/drivers/regulator:mt6359p-regulator".format(kernel_version),
     "//kernel_device_modules-{}/drivers/regulator:mt6358-regulator".format(kernel_version),
@@ -1586,7 +1552,6 @@ mgk_64_kleaf_platform_modules = {
     "//vendor/mediatek/kernel_modules/mtkcam/mtk-hcp/legacy:mtk-hcp":"mt6858",
     "//vendor/mediatek/kernel_modules/mtkcam/mtk-hcp/isp71:mtk-hcp-isp71":"mt6895 mt6879",
 
-    "//vendor/mediatek/kernel_modules/mtk_input/FTS_TOUCH_SPI:fts_touch_spi":"mt6895",
 
     "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/a16w/drivers/gpu/arm/midgard:mali_kbase_mt6993_a16w":"mt6993",
     "//vendor/mediatek/kernel_modules/gpu/gpu_mali/mali_avalon/a16w/drivers/base/arm:mali_mgm_mt6993_a16w":"mt6993",
@@ -1664,6 +1629,11 @@ mgk_64_kleaf_platform_modules = {
     "//kernel_device_modules-{}/sound/soc/mediatek/mt6789:mt6789-mt6366".format(kernel_version): "mt6789",
     "//kernel_device_modules-{}/sound/soc/mediatek/mt6895:snd-soc-mt6895-afe".format(kernel_version): "mt6895",
     "//kernel_device_modules-{}/sound/soc/mediatek/mt6895:mt6895-mt6368".format(kernel_version): "mt6895",
+
+    # Transsion audio + hiber (dari donor mt6897, GPL-2.0). PLAN.md 5.2.
+    "//kernel_device_modules-{}/sound/soc/transsion/tran_audio_control:tran_audio_control".format(kernel_version): "mt6895",
+    "//kernel_device_modules-{}/sound/soc/transsion/splitswitch:splitswitch-gpio".format(kernel_version): "mt6895",
+    "//kernel_device_modules-{}/drivers/misc/hiber:hiber".format(kernel_version): "mt6895",
 
     "//kernel_device_modules-{}/sound/soc/codecs:snd-soc-mt6366".format(kernel_version): "mt6789",
     "//kernel_device_modules-{}/sound/soc/codecs:snd-soc-mt6369".format(kernel_version): "mt6855 mt6858",
@@ -2105,9 +2075,6 @@ def get_overlay_modules_list():
         mgk_64_kleaf_device_modules.remove("//kernel_device_modules-{}/sound/soc/mediatek/vow:mtk-scp-vow".format(kernel_version))
 
     if "fpga.config" in DEFCONFIG_OVERLAYS:
-        mgk_64_kleaf_modules.remove("//vendor/mediatek/kernel_modules/fpsgo_cus:fpsgo_cus")
-        mgk_64_kleaf_modules.remove("//vendor/mediatek/kernel_modules/fpsgo_int:fpsgo_int")
-        mgk_64_kleaf_modules.remove("//vendor/mediatek/kernel_modules/met_drv_secure_v3:met_drv_secure_v3")
         mgk_64_kleaf_modules.remove("//vendor/mediatek/kernel_modules/met_drv_v3/met_api/backlight_api_headers:backlight_api_headers_int")
         mgk_64_kleaf_modules.remove("//vendor/mediatek/kernel_modules/met_drv_v3/met_api/met_emi_api:met_emi_api_int")
         mgk_64_kleaf_modules.remove("//vendor/mediatek/kernel_modules/met_drv_v3/met_api/met_gpu_adv_api:met_gpu_adv_api_int")
@@ -2129,14 +2096,11 @@ def get_overlay_modules_list():
         mgk_64_kleaf_modules.remove("//vendor/mediatek/kernel_modules/met_drv_v3/met_api/met_sspm_api:met_sspm_api_cus")
         mgk_64_kleaf_modules.remove("//vendor/mediatek/kernel_modules/met_drv_v3/met_api/met_vcore_api:met_vcore_api_cus")
         mgk_64_kleaf_modules.remove("//vendor/mediatek/kernel_modules/met_drv_v3:met_drv_v3")
-        mgk_64_kleaf_modules.remove("//vendor/mediatek/kernel_modules/msync2_frd_cus/build:msync2_frd_cus")
-        mgk_64_kleaf_modules.remove("//vendor/mediatek/kernel_modules/msync2_frd_int:msync2_frd_int")
         mgk_64_kleaf_eng_modules.remove("//vendor/mediatek/tests/kernel/ktf_testcase:ktf_testcase")
         mgk_64_kleaf_userdebug_modules.remove("//vendor/mediatek/tests/kernel/ktf_testcase:ktf_testcase")
         mgk_64_device_modules.remove("drivers/misc/mediatek/performance/fpsgo_v8/mtk_fpsgo_v8.ko")
         mgk_64_device_modules.remove("drivers/misc/mediatek/performance/frs/frs.ko")
 
-        mgk_64_kleaf_modules.append("//vendor/mediatek/kernel_modules/met_drv_secure_v3:met_drv_secure_v3_default")
         mgk_64_kleaf_modules.append("//vendor/mediatek/kernel_modules/met_drv_v3:met_drv_v3_default")
         mgk_64_kleaf_eng_modules.append("//vendor/mediatek/tests/kernel/ktf_testcase:ktf_testcase_fpga")
         mgk_64_kleaf_userdebug_modules.append("//vendor/mediatek/tests/kernel/ktf_testcase:ktf_testcase_fpga")
@@ -2160,12 +2124,8 @@ def get_overlay_modules_list():
         mgk_64_kleaf_device_modules.append("//kernel_device_modules-{}/drivers/misc/mediatek/pmic_tia:pmic_tia".format(kernel_version))
 
     if "thinmodem.config" in DEFCONFIG_OVERLAYS:
-        mgk_64_kleaf_modules.append("//vendor/mediatek/kernel_modules/wwan/tmi3:tmi3")
-        mgk_64_kleaf_modules.append("//vendor/mediatek/kernel_modules/gpio_sap_ctrl:gpio_sap_ctrl")
-        mgk_64_kleaf_modules.append("//vendor/mediatek/kernel_modules/wwan/pwrctl/common:wwan_gpio_pwrctl")
         mgk_64_kleaf_modules.remove("//vendor/mediatek/kernel_modules/connectivity/conninfra:conninfra")
         mgk_64_kleaf_modules.append("//vendor/mediatek/kernel_modules/connectivity/conninfra/build/thinmd:conninfra")
-        mgk_64_kleaf_modules.append("//vendor/mediatek/kernel_modules/thinmd_exception:thinmd_exception")
         mgk_64_kleaf_device_modules.remove("//kernel_device_modules-{}/drivers/misc/mediatek/ccci_util:ccci_util_lib")
         mgk_64_kleaf_device_modules.remove("//kernel_device_modules-{}/drivers/misc/mediatek/ccmni:ccmni")
         mgk_64_kleaf_device_modules.remove("//kernel_device_modules-{}/drivers/misc/mediatek/eccci:ccci_auxadc")
@@ -3279,8 +3239,6 @@ def get_overlay_modules_list():
         mgk_64_kleaf_device_modules.remove("//kernel_device_modules-{}/drivers/media/platform/mtk-vcodec:mtk-vcodec-trace".format(kernel_version))
         mgk_64_kleaf_platform_modules.pop("//kernel_device_modules-{}/drivers/soc/mediatek:mtk-mmdvfs-v3".format(kernel_version))
         mgk_64_device_modules.remove("drivers/misc/mediatek/qos/mtk_qos.ko")
-        mgk_64_kleaf_modules.remove("//vendor/mediatek/kernel_modules/cpufreq_cus:cpufreq_cus")
-        mgk_64_kleaf_modules.remove("//vendor/mediatek/kernel_modules/cpufreq_int:cpufreq_int")
         mgk_64_kleaf_modules.remove("//vendor/mediatek/kernel_modules/mtkcam/scpsys/mtk-aov:mtk_aov")
         mgk_64_platform_device_modules.pop("drivers/clk/mediatek/clk-chk-mt6989.ko")
         mgk_64_platform_device_modules.pop("drivers/clk/mediatek/pd-chk-mt6989.ko")
@@ -4000,8 +3958,6 @@ def get_overlay_modules_list():
 
         mgk_64_kleaf_platform_modules.pop("//kernel_device_modules-{}/drivers/misc/mediatek/mcupm/v3:mcupm".format(kernel_version))
         mgk_64_kleaf_platform_modules.pop("//kernel_device_modules-{}/drivers/misc/mediatek/mcupm/v2:mcupm".format(kernel_version))
-        mgk_64_kleaf_modules.remove("//vendor/mediatek/kernel_modules/cpufreq_cus:cpufreq_cus")
-        mgk_64_kleaf_modules.remove("//vendor/mediatek/kernel_modules/cpufreq_int:cpufreq_int")
         mgk_64_kleaf_device_modules.append("//kernel_device_modules-{}/drivers/misc/mediatek/dcm:mt6765_dcm".format(kernel_version))
         mgk_64_kleaf_modules.append("//vendor/mediatek/kernel_modules/gpu:gpu_mt6765")
 

@@ -95,6 +95,80 @@ define_mgk_ddk_ko(
 )
 
 define_mgk_ddk_ko(
+    name = "tc_algorithm_class",
+    srcs = [
+        "transsion/tc_algorithm_class.c",
+    ],
+    hdrs = [
+        "transsion/tc_algorithm_class.h",
+    ],
+    includes = [
+        ".",
+        "transsion",
+    ],
+    copts = ["-DCONFIG_TC_CLASS_SUPPORT=1"],
+)
+
+define_mgk_ddk_ko(
+    name = "tc_adapter_class",
+    srcs = [
+        "transsion/tc_adapter_class.c",
+    ],
+    hdrs = [
+        "transsion/tc_adapter_class.h",
+    ],
+    includes = [
+        ".",
+        "transsion",
+    ],
+    copts = ["-DCONFIG_TC_CLASS_SUPPORT=1"],
+)
+
+define_mgk_ddk_ko(
+    name = "tc_charger_class",
+    srcs = [
+        "transsion/tc_charger_class.c",
+    ],
+    hdrs = [
+        "transsion/tc_charger_class.h",
+    ],
+    includes = [
+        ".",
+        "transsion",
+    ],
+    copts = ["-DCONFIG_TC_CLASS_SUPPORT=1"],
+)
+
+define_mgk_ddk_ko(
+    name = "tc_misc_intf",
+    srcs = [
+        "transsion/tc_misc_intf.c",
+    ],
+    hdrs = [
+        "transsion/tc_misc_intf.h",
+        "transsion/tc_charger.h",
+        "transsion/tc_voter.h",
+        "transsion/tc_tcpc.h",
+        "transsion/tc_gauge.h",
+        "transsion/tc_charger_class.h",
+        "transsion/tc_adapter_class.h",
+        "transsion/tc_algorithm_class.h",
+        "transsion/tc_common_class.h",
+    ],
+    includes = [
+        ".",
+        "transsion",
+    ],
+    ko_deps = [
+        ":tc_algorithm_class",
+        ":tc_adapter_class",
+        ":tc_charger_class",
+        ":tc_common_class",
+        "//kernel_device_modules-{}/drivers/misc/mediatek/mtprof:bootprof".format(kernel_version),
+    ],
+)
+
+define_mgk_ddk_ko(
     name = "tc_common_class",
     srcs = [
         "transsion/tc_common_class.c",
