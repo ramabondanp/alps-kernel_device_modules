@@ -4,6 +4,7 @@
  * This file is used to implement the extended functions(such as power enabling/disabling, spi clk enabling/disabling, etc.) for fingerprint device driver
  */
 #include <linux/init.h>
+#include <linux/string.h>
 #include <linux/uaccess.h>
 #include <linux/module.h>
 #include <linux/ioctl.h>
@@ -152,6 +153,23 @@ static int tran_fp_power_init(struct tran_fp_data *tran_fp_dev, bool on)
 						return rc;
 					}
 					TRAN_FP_INFO("regulator-min-microvolt = %d uv, regulator-max-microvolt = %d uv", tran_fp_dev->min_uV, tran_fp_dev->max_uV);
+					/*
+					 * X6871 uses mt6368_vfp, a fixed 3.3 V
+					 * supply (min == max).  The vendor
+					 * code sets the maximum voltage, which
+					 * would overvoltage a variable
+					 * regulator.  Refuse anything that is
+					 * not a fixed, sane fingerprint
+					 * supply instead of trusting DT max.
+					 */
+					if (tran_fp_dev->min_uV != tran_fp_dev->max_uV ||
+					    tran_fp_dev->max_uV < 1500000 ||
+					    tran_fp_dev->max_uV > 3600000) {
+						TRAN_FP_ERROR("unsafe regulator range %d..%d uV, refusing to set voltage",
+							      tran_fp_dev->min_uV, tran_fp_dev->max_uV);
+						rc = -EINVAL;
+						goto reg_vdd_put;
+					}
 					if (of_property_read_string(tran_fp_dev->vdd->rdev->dev.of_node, "regulator-always-on", &(tran_fp_dev->always_on)) == 0)
 						TRAN_FP_INFO("regulator-always-on = %s", tran_fp_dev->always_on);
 					else
@@ -348,7 +366,7 @@ int tran_fp_get_power_val(struct tran_fp_data *tran_fp_dev,PWR_VAL_U * cur_val)
 int tran_fp_parse_dts_file(struct tran_fp_data * tran_fp_dev)
 {
 #ifdef CONFIG_OF
-	int value, ret;
+	int value = 0, ret;
 	unsigned char tran_tee_afinity_tmp = 0 , i = 0;
 	struct device_node *node = NULL, *np = NULL, *child = NULL;
 	const char *str = NULL;
@@ -372,10 +390,10 @@ int tran_fp_parse_dts_file(struct tran_fp_data * tran_fp_dev)
 	}
     //prase dts for optical fingerprint calibrate spot coordinates
 	if(of_property_read_string(node,"fod_location_xy",&str)) {
-		strcpy(tran_fp_dev->fod_location_xy,"null");
+		strscpy(tran_fp_dev->fod_location_xy, "null", sizeof(tran_fp_dev->fod_location_xy));
 		TRAN_FP_ERROR("fod_location_xy is null\n");
 	} else {
-		strcpy(tran_fp_dev->fod_location_xy,str);
+		strscpy(tran_fp_dev->fod_location_xy, str, sizeof(tran_fp_dev->fod_location_xy));
 		TRAN_FP_INFO("fod_location_xy = %s\n",tran_fp_dev->fod_location_xy);
 	}
     if(of_property_read_bool(node, "history-support")) {
@@ -888,6 +906,7 @@ void tran_netlink_recv(struct sk_buff *__skb)
 	struct sk_buff *skb = NULL;
 	struct nlmsghdr *nlh = NULL;
 	char str[128];
+	size_t payload;
 
 	skb = skb_get(__skb);
 	if (!skb ) {
@@ -895,13 +914,21 @@ void tran_netlink_recv(struct sk_buff *__skb)
 		return;
 	}
 
-	/* presume there is 5byte payload at leaset */
-	if (skb->len >= NLMSG_SPACE(0)) {
+	if (skb->len >= NLMSG_HDRLEN) {
 		nlh = nlmsg_hdr(skb);
-		memcpy(str, NLMSG_DATA(nlh), sizeof(str));
+		if (nlh->nlmsg_len < NLMSG_HDRLEN ||
+		    nlh->nlmsg_len > skb->len)
+			goto out;
+
+		payload = nlh->nlmsg_len - NLMSG_HDRLEN;
+		if (payload >= sizeof(str))
+			payload = sizeof(str) - 1;
+		memcpy(str, NLMSG_DATA(nlh), payload);
+		str[payload] = '\0';
 		pid = nlh->nlmsg_pid;
 		TRAN_FP_DEBUG("[%s]nlh->nlmsg_pid = %d,  pid = %d, msg = %s\n", __func__, nlh->nlmsg_pid, pid, str);
 	}
+out:
 	kfree_skb(skb);
 }
 
@@ -1052,16 +1079,16 @@ void setVendorName(void) {
         strcmp(g_tran_fp_datap->ic_name, "GW9598") == 0 ||
         strcmp(g_tran_fp_datap->ic_name, "GF3976") == 0 ||
         strcmp(g_tran_fp_datap->ic_name, "GF3656") == 0 ) {
-        strcpy(g_tran_fp_datap->vendor_name, "common_goodix");
+        strscpy(g_tran_fp_datap->vendor_name, "common_goodix", sizeof(g_tran_fp_datap->vendor_name));
     } else if (strcmp(g_tran_fp_datap->ic_name, "GSL7002") == 0) {
-        strcpy(g_tran_fp_datap->vendor_name, "common_silead");
+        strscpy(g_tran_fp_datap->vendor_name, "common_silead", sizeof(g_tran_fp_datap->vendor_name));
     } else if (strcmp(g_tran_fp_datap->ic_name, "JV0307") == 0) {
-        strcpy(g_tran_fp_datap->vendor_name, "common_JOOIV");
+        strscpy(g_tran_fp_datap->vendor_name, "common_JOOIV", sizeof(g_tran_fp_datap->vendor_name));
     } else if (strcmp(g_tran_fp_datap->ic_name, "FT9399") == 0 ||
                strcmp(g_tran_fp_datap->ic_name, "FT9391") == 0 ) {
-        strcpy(g_tran_fp_datap->vendor_name, "common_FocalTech");
+        strscpy(g_tran_fp_datap->vendor_name, "common_FocalTech", sizeof(g_tran_fp_datap->vendor_name));
     } else {
-        strcpy(g_tran_fp_datap->vendor_name, "null");
+        strscpy(g_tran_fp_datap->vendor_name, "null", sizeof(g_tran_fp_datap->vendor_name));
     }
 
     TRAN_FP_INFO("This IC vendor_name=%s ",g_tran_fp_datap->vendor_name);

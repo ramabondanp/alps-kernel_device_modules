@@ -21,8 +21,6 @@ static int tnek_api_list_len;
 
 DECLARE_WAIT_QUEUE_HEAD(tne_pollwait);
 DECLARE_WAIT_QUEUE_HEAD(tne_readwait);
-EXPORT_SYMBOL(tne_pollwait);
-EXPORT_SYMBOL(tne_readwait);
 
 /*
  * 6.12 removed strlcpy; the vendor module carries and exports its own copy,
@@ -41,7 +39,6 @@ size_t strlcpy(char *dest, const char *src, size_t size)
 
 	return ret;
 }
-EXPORT_SYMBOL(strlcpy);
 
 struct tnek_api_list_node *tnek_create_node(const char *tag, u64 api,
 					    int type, const char *name,
@@ -74,7 +71,6 @@ struct tnek_api_list_node *tnek_create_node(const char *tag, u64 api,
 
 	return node;
 }
-EXPORT_SYMBOL(tnek_create_node);
 
 void tnek_free_node(struct tnek_api_list_node *node)
 {
@@ -153,7 +149,6 @@ void tnek_wake_up_poll_and_read(void)
 	wake_up_interruptible(&tne_pollwait);
 	wake_up_interruptible(&tne_readwait);
 }
-EXPORT_SYMBOL(tnek_wake_up_poll_and_read);
 
 void tnek_caller_api(const char *tag, u64 api, int type, const char *data)
 {

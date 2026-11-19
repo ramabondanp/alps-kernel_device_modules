@@ -98,6 +98,11 @@ static ssize_t tnek_write(struct file *file, const char __user *buf,
 		return -EFAULT;
 	}
 
+	/* The user buffer is not guaranteed to be NUL terminated. */
+	msg->tag[sizeof(msg->tag) - 1] = '\0';
+	msg->name[sizeof(msg->name) - 1] = '\0';
+	msg->data[255] = '\0';	/* tnek_create_node copies at most 256 */
+
 	pr_info("tnek:tnek_write:tag=%s,api->pid=%d\n", msg->tag, msg->pid);
 
 	tnek_caller_api(msg->tag, msg->api, msg->pid, msg->data);
@@ -110,10 +115,10 @@ static ssize_t tnek_write(struct file *file, const char __user *buf,
 
 static __poll_t tnek_poll(struct file *file, poll_table *wait)
 {
+	poll_wait(file, &tne_pollwait, wait);
+
 	if (tnek_get_tne_queue_len() > 0)
 		return EPOLLIN | EPOLLRDNORM;
-
-	poll_wait(file, &tne_pollwait, wait);
 
 	return 0;
 }

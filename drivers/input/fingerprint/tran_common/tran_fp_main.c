@@ -4,6 +4,7 @@
  */
 
 #include <linux/init.h>
+#include <linux/string.h>
 #include <linux/uaccess.h>
 #include <linux/module.h>
 #include <linux/ioctl.h>
@@ -188,7 +189,9 @@ static long tran_fp_ioctl(struct file *filp, unsigned int cmd, unsigned long arg
 				break;
 			}
 			g_fp_vendor_id = info.vendor_id;
-			strcpy(g_tran_fp_datap->ic_name,info.icname);
+			info.icname[sizeof(info.icname) - 1] = '\0';
+			strscpy(g_tran_fp_datap->ic_name, info.icname,
+				sizeof(g_tran_fp_datap->ic_name));
 			setVendorName();
 			TRAN_FP_INFO(" vendor_id 0x%x\n", g_fp_vendor_id);
 			TRAN_FP_INFO(" mode 0x%x\n", info.mode);

@@ -15,8 +15,10 @@
 #include <linux/io.h>
 #include <linux/kernel.h>
 #include <linux/kstrtox.h>
+#include <linux/mm.h>
 #include <linux/module.h>
 #include <linux/of.h>
+#include <linux/pfn.h>
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
 #include <linux/string.h>
@@ -33,10 +35,6 @@ unsigned long g_tkv_base;
 char tkv_value[TKV_REGION_SIZE];
 static char __tkv_cmdline[TKV_CMDLINE_SIZE];
 
-EXPORT_SYMBOL(g_tkv);
-EXPORT_SYMBOL(tkv_base);
-EXPORT_SYMBOL(g_tkv_base);
-EXPORT_SYMBOL(tkv_value);
 
 char *tkv_get_cmd(void)
 {
@@ -67,7 +65,6 @@ char *tkv_get_cmd(void)
 
 	return __tkv_cmdline;
 }
-EXPORT_SYMBOL(tkv_get_cmd);
 
 int get_tkv_base(void)
 {
@@ -82,7 +79,30 @@ int get_tkv_base(void)
 
 	return 0;
 }
-EXPORT_SYMBOL(get_tkv_base);
+
+/*
+ * The firmware trusts the bootloader address and ioremaps it blindly.  A
+ * wrong or malicious tkv= value would then read 32 KiB from an arbitrary
+ * physical address, which can hit device registers with read side effects.
+ * Only map the region when every page is System RAM.  This is deliberately
+ * stricter than the stock module; if the check fails we skip /proc/tkv
+ * instead of risking a bus hang.
+ */
+static bool tkv_region_is_ram(unsigned long base, size_t size)
+{
+	unsigned long pfn = PHYS_PFN(base);
+	unsigned long pages = DIV_ROUND_UP(size, PAGE_SIZE);
+	unsigned long i;
+
+	if (!base || !IS_ALIGNED(base, PAGE_SIZE))
+		return false;
+
+	for (i = 0; i < pages; i++)
+		if (!page_is_ram(pfn + i))
+			return false;
+
+	return true;
+}
 
 static bool tkv_is_hidden_key(const char *key, size_t len)
 {
@@ -113,7 +133,7 @@ static int tkv_proc_show(struct seq_file *s, void *unused)
 		if (p + len >= end)
 			break;
 
-		eq = strchr(p, '=');
+		eq = memchr(p, '=', len);
 		if (!eq) {
 			p += len + 1;
 			continue;
@@ -186,6 +206,12 @@ static int __init tkv_init(void)
 
 	if (get_tkv_base() < 0) {
 		pr_info("get_tkv_base fail\n");
+		return 0;
+	}
+
+	if (!tkv_region_is_ram(g_tkv_base, TKV_REGION_SIZE)) {
+		pr_err("tkv: 0x%lx..0x%lx is not System RAM, refusing to map\n",
+		       g_tkv_base, g_tkv_base + TKV_REGION_SIZE - 1);
 		return 0;
 	}
 
