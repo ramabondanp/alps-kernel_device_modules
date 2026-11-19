@@ -1,0 +1,42 @@
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# Transsion LED core (tran-led-core).
+#
+# Transsion never released this tree. It is reconstructed from the X6871
+# firmware tran-led-core.ko, which still carries the original build paths:
+#
+#   ../kernel_device_modules-6.12/drivers/leds/tran_led/core/tran_led_core.c
+#   ../kernel_device_modules-6.12/drivers/leds/tran_led/core/tran_led_class.c
+#
+# That is what proves the firmware was built from a 6.12 tree, not from the
+# 6.1 tarball -- and it is why the struct layouts below come from the .ko
+# rather than from the 6.1 donor (see PLAN.md 6.1b and 6.2q).
+#
+# The module is compound: Makefile-of-record is
+#   tran_led_core-objs := tran_led_core.o tran_led_class.o
+# so there is no tran_led_core.c alone, the same trap as tc_charger_framework,
+# tc_pd_algo, tc_pep50 and nfc_i2c.
+
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+load("@mgk_info//:kernel_version.bzl", "kernel_version",)
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+define_mgk_ddk_ko(
+    name = "tran-led-core",
+    srcs = [
+        "tran_led_class.c",
+        "tran_led_core.c",
+    ],
+    hdrs = [
+        "tran_led_class.h",
+    ],
+    includes = ["."],
+    copts = [
+        "-DCONFIG_TC_LEDS_CLASS=1",
+    ],
+)
