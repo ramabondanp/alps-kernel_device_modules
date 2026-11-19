@@ -84,6 +84,27 @@ int tcpm_shutdown(struct tcpc_device *tcpc)
 }
 EXPORT_SYMBOL(tcpm_shutdown);
 
+/*
+ * 6.12-only. Wraps the driver's tran_get_cc_status op with the typec lock.
+ * Returns 0 on success, -EPERM when the op is absent (measured: the firmware
+ * returns -1 from the early exit at 0xd888).
+ */
+int tcpm_tran_inquire_remote_cc(struct tcpc_device *tcpc, int *cc1, int *cc2)
+{
+	int rv = 0;
+
+	tcpci_lock_typec(tcpc);
+
+	if (tcpc->ops->tran_get_cc_status)
+		tcpc->ops->tran_get_cc_status(tcpc, cc1, cc2);
+	else
+		rv = -EPERM;
+
+	tcpci_unlock_typec(tcpc);
+	return rv;
+}
+EXPORT_SYMBOL(tcpm_tran_inquire_remote_cc);
+
 int tcpm_check_suspend_pending(struct tcpc_device *tcpc)
 {
 	if (atomic_read(&tcpc->suspend_pending) > 0)

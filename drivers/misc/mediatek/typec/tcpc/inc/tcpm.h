@@ -873,6 +873,9 @@ extern int unregister_tcp_dev_notifier(struct tcpc_device *tcpc,
 				struct notifier_block *nb, uint8_t flags);
 
 extern int tcpm_shutdown(struct tcpc_device *tcpc);
+/* 6.12-only, see tcpm.c and PLAN.md 6.2g */
+extern int tcpm_tran_inquire_remote_cc(struct tcpc_device *tcpc,
+	int *cc1, int *cc2);
 extern int tcpm_check_suspend_pending(struct tcpc_device *tcpc);
 extern int tcpm_suspend(struct tcpc_device *tcpc);
 extern void tcpm_resume(struct tcpc_device *tcpc);

@@ -753,6 +753,45 @@ int tcpci_source_vbus(
 }
 EXPORT_SYMBOL(tcpci_source_vbus);
 
+/*
+ * 6.12-only ops, recovered from the firmware tcpc_class.ko.
+ * tcpci_get_pdphy_vid/pid/did are three identical guards that dispatch to the
+ * driver's ops table and return -ENOTSUPP (0xfffffdf4 = -524) when the driver
+ * does not implement the op.
+ * tcpci_enable_io_boost masks the bool and returns -EOPNOTSUPP (-95).
+ */
+int tcpci_get_pdphy_vid(struct tcpc_device *tcpc, u16 *vid)
+{
+	if (tcpc->ops->get_pdphy_vid)
+		return tcpc->ops->get_pdphy_vid(tcpc, vid);
+	return -ENOTSUPP;
+}
+EXPORT_SYMBOL(tcpci_get_pdphy_vid);
+
+int tcpci_get_pdphy_pid(struct tcpc_device *tcpc, u16 *pid)
+{
+	if (tcpc->ops->get_pdphy_pid)
+		return tcpc->ops->get_pdphy_pid(tcpc, pid);
+	return -ENOTSUPP;
+}
+EXPORT_SYMBOL(tcpci_get_pdphy_pid);
+
+int tcpci_get_pdphy_did(struct tcpc_device *tcpc, u16 *did)
+{
+	if (tcpc->ops->get_pdphy_did)
+		return tcpc->ops->get_pdphy_did(tcpc, did);
+	return -ENOTSUPP;
+}
+EXPORT_SYMBOL(tcpci_get_pdphy_did);
+
+int tcpci_enable_io_boost(struct tcpc_device *tcpc, bool en)
+{
+	if (tcpc->ops->enable_io_boost)
+		return tcpc->ops->enable_io_boost(tcpc, en);
+	return -EOPNOTSUPP;
+}
+EXPORT_SYMBOL(tcpci_enable_io_boost);
+
 int tcpci_sink_vbus(
 	struct tcpc_device *tcpc, uint8_t type, int mv, int ma)
 {

@@ -183,6 +183,25 @@ struct tcpc_ops {
 	int (*set_auto_dischg_discnt)(struct tcpc_device *tcpc, bool en);
 	int (*get_vbus_voltage)(struct tcpc_device *tcpc, u32 *vbus);
 
+	/*
+	 * 6.12-only slots, recovered from the firmware's tcpc_mt6375.ko by
+	 * reading the .rela.data relocation offsets of its ops table (base
+	 * calibrated from mt6375_tcpc_init at field 0).  These four sit
+	 * between get_vbus_voltage and set_water_protection, so everything
+	 * from set_water_protection onwards shifts by four slots.
+	 *
+	 * The names come from the tcpc_class.ko functions that read each
+	 * offset, not from a guess:
+	 *   ops+136 (idx 17) @0x?    tran_get_cc_status  (tcpc, int *cc1, int *cc2)
+	 *   ops+144 (idx 18) @0x4b44 tcpci_get_pdphy_vid(tcpc, u16 *vid)
+	 *   ops+152 (idx 19) @0x4b90 tcpci_get_pdphy_pid(tcpc, u16 *pid)
+	 *   ops+160 (idx 20) @0x4bdc tcpci_get_pdphy_did(tcpc, u16 *did)
+	 */
+	int (*tran_get_cc_status)(struct tcpc_device *tcpc, int *cc1, int *cc2);
+	int (*get_pdphy_vid)(struct tcpc_device *tcpc, u16 *vid);
+	int (*get_pdphy_pid)(struct tcpc_device *tcpc, u16 *pid);
+	int (*get_pdphy_did)(struct tcpc_device *tcpc, u16 *did);
+
 #if CONFIG_WATER_DETECTION
 	int (*set_water_protection)(struct tcpc_device *tcpc, bool en);
 #endif /* CONFIG_WATER_DETECTION */
@@ -201,7 +220,18 @@ struct tcpc_ops {
 	int (*reset_ctd)(struct tcpc_device *tcpc);
 #endif /* CONFIG_CABLE_TYPE_DETECTION */
 
+	/*
+	 * 6.12 moves set_command here (it sits at idx 24 in the 6.1 layout,
+	 * before set_msg_header) and adds enable_io_boost after it.
+	 *
+	 * Proof that idx 28 is still set_command and not a new op: both
+	 * tcpci_source_vbus (@0x5f64) and tcpci_sink_vbus (@0x60c8) read
+	 * ops+224 and pass a command constant in w1 -- 119/102 for source
+	 * (TCPM_CMD_ENABLE/DISABLE_SOURCE_VBUS) and 85/68 for sink.  That is
+	 * exactly the 6.1 tcpci_set_command(tcpc, cmd) contract.
+	 */
 	void (*set_command)(struct tcpc_device *tcpc, u8 cmd);
+	int (*enable_io_boost)(struct tcpc_device *tcpc, bool en);
 
 #if IS_ENABLED(CONFIG_USB_POWER_DELIVERY)
 	int (*set_msg_header)(struct tcpc_device *tcpc,

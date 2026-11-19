@@ -134,6 +134,11 @@ int tcpci_notify_pd_mode(struct tcpc_device *tcpc);
 int tcpci_notify_pd_state(struct tcpc_device *tcpc, uint8_t connect);
 
 int tcpci_source_vbus(struct tcpc_device *tcpc, uint8_t type, int mv, int ma);
+/* 6.12-only, see tcpci.c and PLAN.md 6.2g */
+int tcpci_get_pdphy_vid(struct tcpc_device *tcpc, u16 *vid);
+int tcpci_get_pdphy_pid(struct tcpc_device *tcpc, u16 *pid);
+int tcpci_get_pdphy_did(struct tcpc_device *tcpc, u16 *did);
+int tcpci_enable_io_boost(struct tcpc_device *tcpc, bool en);
 int tcpci_sink_vbus(struct tcpc_device *tcpc, uint8_t type, int mv, int ma);
 int tcpci_disable_vbus_control(struct tcpc_device *tcpc);
 int tcpci_notify_attachwait_state(struct tcpc_device *tcpc, bool as_sink);
