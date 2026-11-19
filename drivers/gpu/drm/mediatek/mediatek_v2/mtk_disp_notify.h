@@ -20,6 +20,11 @@ enum {
 	MTK_DISP_BLANK_UNBLANK,
 	/* disp power off */
 	MTK_DISP_BLANK_POWERDOWN,
+	/* Transsion display event extensions */
+	TRAN_DISP_BLANK_AOD_NOTIFY,
+	TRAN_DISP_BLANK_ENTER_LCD_AOD_NOTIFY,
+	TRAN_DISP_BLANK_ENTER_DIMMING_ON_NOTIFY,
+	TRAN_DISP_BLANK_ENTER_DIMMING_OFF_NOTIFY,
 };
 
 int mtk_disp_notifier_register(const char *source, struct notifier_block *nb);
