@@ -40,3 +40,24 @@ define_mgk_ddk_ko(
         "-DCONFIG_TC_LEDS_CLASS=1",
     ],
 )
+
+# AW22XXX RGB LED driver.  The 6.1 donor is 53 KB but is ten functions behind
+# the X6871 firmware (no cover_gain/get_chip_type/get/set_cmd, no
+# multicolor handling, 4-slot ops table).  The extra paths were recovered
+# from the firmware .ko; see PLAN.md 6.2q for the ops slot evidence.
+define_mgk_ddk_ko(
+    name = "leds-aw22xxx",
+    srcs = [
+        "leds-aw22xxx.c",
+    ],
+    hdrs = [
+        "leds-aw22xxx-cfg.h",
+        "leds-aw22xxx-reg.h",
+        "leds-aw22xxx.h",
+        "tran_led_class.h",
+    ],
+    includes = ["."],
+    ko_deps = [
+        ":tran-led-core",
+    ],
+)
