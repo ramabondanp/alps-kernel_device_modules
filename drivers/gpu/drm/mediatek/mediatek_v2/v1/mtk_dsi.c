@@ -16349,3 +16349,22 @@ done:
 }
 
 /* ******************* end PanelMaster ***************** */
+
+#if defined(CONFIG_PXLW_IRIS)
+/* iris_lightup.c memanggil ini sebagai API publik, tapi di tree MTK murni
+ * mtk_dsi_pre_cmd/post_cmd static. Sumber: OnePlusOSS mt6895 mtk_dsi.c.
+ */
+void iris_dsi_pre_cmd(struct mtk_ddp_comp *comp, struct drm_crtc *crtc)
+{
+	struct mtk_dsi *dsi = container_of(comp, struct mtk_dsi, ddp_comp);
+
+	mtk_dsi_pre_cmd(dsi, crtc);
+}
+
+void iris_dsi_pos_cmd(struct mtk_ddp_comp *comp, struct drm_crtc *crtc)
+{
+	struct mtk_dsi *dsi = container_of(comp, struct mtk_dsi, ddp_comp);
+
+	mtk_dsi_post_cmd(dsi, crtc);
+}
+#endif
