@@ -1,3 +1,4 @@
+#include <linux/delay.h>
 #include <linux/mutex.h>
 #include <linux/module.h>
 #include <linux/device.h>
@@ -258,24 +259,41 @@ static void controller_uninit_finish(void)
 static void controller_match_work(struct work_struct *work)
 {
 	int ret;
+	int retry;
 
 	if (g_tran_ts.controller) {
 		TRAN_INFO("Not allow to match controller");
 		return;
 	}
 
-	if (match_tp_controller(&g_tran_ts)) {
-		ret = wait_for_completion_timeout(&g_tran_ts.comp, msecs_to_jiffies(8000));
-		if (ret == 0) {
-			TRAN_ERROR("init controller timeout!");
-			g_tran_ts.controller = NULL;
-			return;
-		}
-		TRAN_INFO("load controller success!");
-		if (g_tran_ts.platform_data && g_tran_ts.platform_data->ops &&
-		    g_tran_ts.platform_data->ops->plat_init)
-			g_tran_ts.platform_data->ops->plat_init(&g_tran_ts);
+	/*
+	 * adaptive-ts is loaded before the vendor touch driver, and the vendor
+	 * only calls register_ts_controller() from its module_init. Retry so a
+	 * match is not lost when this work runs before that registration, which
+	 * is what happens on a recovery boot.
+	 */
+	for (retry = 0; retry < 10; retry++) {
+		if (match_tp_controller(&g_tran_ts))
+			break;
+		TRAN_INFO("no controller yet, retry %d", retry);
+		msleep(200);
 	}
+
+	if (!g_tran_ts.controller) {
+		TRAN_ERROR("no controller match after retries");
+		return;
+	}
+
+	ret = wait_for_completion_timeout(&g_tran_ts.comp, msecs_to_jiffies(8000));
+	if (ret == 0) {
+		TRAN_ERROR("init controller timeout!");
+		g_tran_ts.controller = NULL;
+		return;
+	}
+	TRAN_INFO("load controller success!");
+	if (g_tran_ts.platform_data && g_tran_ts.platform_data->ops &&
+	    g_tran_ts.platform_data->ops->plat_init)
+		g_tran_ts.platform_data->ops->plat_init(&g_tran_ts);
 }
 
 static int tpd_probe(struct platform_device *pdev)
@@ -298,6 +316,8 @@ static int tpd_probe(struct platform_device *pdev)
 	g_tran_ts.pdev = pdev;
 	g_tran_ts.ts_core_mode = TRAN_ACTIVE_MODE;
 	g_tran_ts.tpd_workqueue = create_singlethread_workqueue("tpd_work_queue");
+
+	queue_work(g_tran_ts.tpd_init_workqueue, &g_tran_ts.tpd_match_work);
 
 	TRAN_FUNC_EXIT();
 	return 0;
