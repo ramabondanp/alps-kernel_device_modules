@@ -1110,6 +1110,10 @@ mgk_64_kleaf_device_modules = [
     "//kernel_device_modules-{}/drivers/power/supply:rt9758-charger".format(kernel_version),
     "//kernel_device_modules-{}/drivers/power/supply:rt9759".format(kernel_version),
     "//kernel_device_modules-{}/drivers/regulator:mt6315-regulator".format(kernel_version),
+    # Transsion audio + hiber (donor mt6897, GPL-2.0). PLAN.md 5.2.
+    "//kernel_device_modules-{}/sound/soc/transsion/tran_audio_control:tran_audio_control".format(kernel_version): "mt6895",
+    "//kernel_device_modules-{}/sound/soc/transsion/splitswitch:splitswitch-gpio".format(kernel_version): "mt6895",
+    "//kernel_device_modules-{}/drivers/misc/hiber:hiber".format(kernel_version): "mt6895",
     "//kernel_device_modules-{}/drivers/regulator:mt6316-regulator".format(kernel_version),
     "//kernel_device_modules-{}/drivers/regulator:mt6359p-regulator".format(kernel_version),
     "//kernel_device_modules-{}/drivers/regulator:mt6358-regulator".format(kernel_version),

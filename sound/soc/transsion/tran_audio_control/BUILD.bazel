@@ -1,0 +1,31 @@
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+load("//build/kernel/kleaf:kernel.bzl", "ddk_headers")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+ddk_headers(
+    name = "ddk_public_headers",
+    includes = ["."],
+    hdrs = glob(["**/*.h"]),
+)
+
+filegroup(
+    name = "ddk_src",
+    srcs = glob([
+        "**/*.c",
+        "**/*.h",
+    ]),
+)
+
+define_mgk_ddk_ko(
+    name = "tran_audio_control",
+    srcs = [
+        "tran_audio_control.c",
+        "tran_audio_control.h",
+    ],
+    includes = ["."],
+)

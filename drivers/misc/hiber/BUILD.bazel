@@ -1,0 +1,27 @@
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+filegroup(
+    name = "ddk_src",
+    srcs = glob([
+        "**/*.c",
+        "**/*.h",
+    ]),
+)
+
+# Compound: hiber.ko = tran_hiber.o + tran_netfilter.o + hiber_help.o
+define_mgk_ddk_ko(
+    name = "hiber",
+    srcs = [
+        "tran_hiber.c",
+        "tran_hiber.h",
+        "tran_netfilter.c",
+        "hiber_help.c",
+    ],
+    includes = ["."],
+)
