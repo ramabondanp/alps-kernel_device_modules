@@ -109,6 +109,17 @@ module_param(tran_fp_detect_chip, uint, 0644);
 MODULE_PARM_DESC(tran_fp_detect_chip,
 		 "read the sensor chip id over SPI during probe (0 = skip)");
 
+/*
+ * The stock X6871 module implements no REE transfer ioctl at all; the HAL
+ * moves fingerprint images through the TEE.  Commands 15/16 can write
+ * arbitrary sensor registers, so they are opt-in: with the default of 0 they
+ * return -EOPNOTSUPP instead of touching the sensor.
+ */
+static unsigned int tran_fp_allow_ree_transfer;
+module_param(tran_fp_allow_ree_transfer, uint, 0644);
+MODULE_PARM_DESC(tran_fp_allow_ree_transfer,
+		 "allow TRAN_IOC_TRANSFER_CMD/RAW to write sensor registers (0 = disabled)");
+
 extern u32 tran_fp_spi_speed;
 
 #define TRAN_FP_XFER_MAX	4096
@@ -397,12 +408,22 @@ static long tran_fp_ioctl(struct file *filp, unsigned int cmd, unsigned long arg
 
 		case TRAN_IOC_TRANSFER_CMD:
 			TRAN_FP_INFO(" TRAN_IOC_TRANSFER_CMD ======\n");
+			if (!tran_fp_allow_ree_transfer) {
+				TRAN_FP_ERROR("REE transfer disabled (tran_fp_allow_ree_transfer=0)");
+				retval = -EOPNOTSUPP;
+				break;
+			}
 			retval = tran_fp_ioctl_transfer(tran_fp_datap,
 							(void __user *)arg);
 			break;
 
 		case TRAN_IOC_TRANSFER_RAW_CMD:
 			TRAN_FP_INFO(" TRAN_IOC_TRANSFER_RAW_CMD ======\n");
+			if (!tran_fp_allow_ree_transfer) {
+				TRAN_FP_ERROR("REE transfer disabled (tran_fp_allow_ree_transfer=0)");
+				retval = -EOPNOTSUPP;
+				break;
+			}
 			retval = tran_fp_ioctl_transfer_raw(tran_fp_datap,
 							    (void __user *)arg);
 			break;
