@@ -1638,13 +1638,13 @@ static int mtk_panel_ext_param_get(struct drm_panel *panel,
 	return ret;
 }
 
-enum RES_SWITCH_TYPE mtk_get_res_switch_type(void)
+static enum RES_SWITCH_TYPE mtk_get_res_switch_type(void)
 {
 	pr_info("res_switch_type: %d\n", res_switch_type);
 	return res_switch_type;
 }
 
-int mtk_scaling_mode_mapping(int mode_idx)
+static int mtk_scaling_mode_mapping(int mode_idx)
 {
 	return (mode_idx % REAL_MODE_NUM);
 }
