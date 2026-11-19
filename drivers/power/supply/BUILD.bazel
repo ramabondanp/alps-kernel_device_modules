@@ -169,6 +169,132 @@ define_mgk_ddk_ko(
 )
 
 define_mgk_ddk_ko(
+    name = "tc_lcd_notify",
+    srcs = [
+        "transsion/tc_lcd_notify.c",
+    ],
+    hdrs = [
+        "transsion/tc_adapter_class.h",
+        "transsion/tc_algorithm_class.h",
+        "transsion/tc_charger.h",
+        "transsion/tc_charger_class.h",
+        "transsion/tc_common_class.h",
+        "transsion/tc_gauge.h",
+        "transsion/tc_misc_intf.h",
+        "transsion/tc_tcpc.h",
+        "transsion/tc_voter.h",
+    ],
+    includes = [
+        ".",
+        "transsion",
+    ],
+    ko_deps = [
+        ":tc_charger_class",
+        ":tc_common_class",
+        ":tc_misc_intf",
+        "//kernel_device_modules-{}/drivers/gpu/drm/mediatek/mediatek_v2:mtk_disp_notify".format(kernel_version),
+    ],
+    copts = [
+        "-DCONFIG_TC_CLASS_SUPPORT=1",
+        "-I$(DEVICE_MODULES_PATH)/drivers/gpu/drm/mediatek/mediatek_v2",
+    ],
+)
+
+define_mgk_ddk_ko(
+    name = "tc_pmic",
+    srcs = [
+        "transsion/tc_pmic.c",
+    ],
+    hdrs = [
+        "transsion/tc_adapter_class.h",
+        "transsion/tc_algorithm_class.h",
+        "transsion/tc_charger.h",
+        "transsion/tc_charger_class.h",
+        "transsion/tc_common_class.h",
+        "transsion/tc_gauge.h",
+        "transsion/tc_misc_intf.h",
+        "transsion/tc_tcpc.h",
+        "transsion/tc_voter.h",
+    ],
+    includes = [
+        ".",
+        "transsion",
+    ],
+    ko_deps = [
+        ":tc_charger_class",
+        ":tc_common_class",
+        ":tc_misc_intf",
+    ],
+    copts = [
+        "-DCONFIG_TC_CLASS_SUPPORT=1",
+        "-I$(DEVICE_MODULES_PATH)/drivers/gpu/drm/mediatek/mediatek_v2",
+    ],
+)
+
+define_mgk_ddk_ko(
+    name = "tc_audio",
+    srcs = [
+        "transsion/tc_audio.c",
+    ],
+    hdrs = [
+        "transsion/tc_adapter_class.h",
+        "transsion/tc_algorithm_class.h",
+        "transsion/tc_charger.h",
+        "transsion/tc_charger_class.h",
+        "transsion/tc_common_class.h",
+        "transsion/tc_gauge.h",
+        "transsion/tc_misc_intf.h",
+        "transsion/tc_tcpc.h",
+        "transsion/tc_water_detect.h",
+        "transsion/tc_voter.h",
+    ],
+    includes = [
+        ".",
+        "transsion",
+    ],
+    ko_deps = [
+        ":tc_charger_class",
+        ":tc_common_class",
+        ":tc_misc_intf",
+    ],
+    copts = [
+        "-DCONFIG_TC_CLASS_SUPPORT=1",
+        "-I$(DEVICE_MODULES_PATH)/drivers/gpu/drm/mediatek/mediatek_v2",
+    ],
+)
+
+define_mgk_ddk_ko(
+    name = "tc_phy_insert_det",
+    srcs = [
+        "transsion/tc_phy_insert_det.c",
+    ],
+    hdrs = [
+        "transsion/tc_adapter_class.h",
+        "transsion/tc_algorithm_class.h",
+        "transsion/tc_charger.h",
+        "transsion/tc_charger_class.h",
+        "transsion/tc_common_class.h",
+        "transsion/tc_gauge.h",
+        "transsion/tc_misc_intf.h",
+        "transsion/tc_tcpc.h",
+        "transsion/tc_voter.h",
+    ],
+    includes = [
+        ".",
+        "transsion",
+    ],
+    ko_deps = [
+        ":tc_charger_class",
+        ":tc_common_class",
+        ":tc_misc_intf",
+    ],
+    copts = [
+        "-DCONFIG_TC_CLASS_SUPPORT=1",
+        "-I$(DEVICE_MODULES_PATH)/drivers/gpu/drm/mediatek/mediatek_v2",
+    ],
+)
+
+define_mgk_ddk_ko(
     name = "tc_hl7139a",
     srcs = [
         "transsion/tc_hl7139a.c",
