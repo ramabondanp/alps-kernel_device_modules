@@ -67,6 +67,12 @@ int tran_init_eint(struct tran_fp_data*tran_fp_dev);
 void tran_enable_irq(struct tran_fp_data *tran_fp_dev);
 void tran_disable_irq(struct tran_fp_data *tran_fp_dev);
 int tran_register_base_ops(struct tran_fp_data *tran_fp_datap);
+int tran_fp_spi_transfer(struct tran_fp_data *tran_fp_datap,
+			 const void *tx_buf, void *rx_buf, u32 len,
+			 const void *tx_buf2, void *rx_buf2, u32 len2,
+			 u32 speed_hz);
+int tran_read_fp_chip_id(struct tran_fp_data *tran_fp_datap);
+int tran_get_fp_sensor_chip_id(struct tran_fp_data *tran_fp_datap);
 int tran_fp_report_key_nav_event(struct input_dev *input, tran_key_nav_t *kevent);
 int gf_key_nav_adjust_type_value(tran_key_nav_event_t *key_nav_p, unsigned int cmd);
 int sf_key_nav_adjust_type_value(tran_key_nav_event_t *key_nav_p, unsigned int cmd);

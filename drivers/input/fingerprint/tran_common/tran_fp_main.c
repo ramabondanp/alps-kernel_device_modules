@@ -104,6 +104,116 @@ static struct kobject *fp_sys_kobj;
 module_param(bufsiz, uint, S_IRUGO);
 MODULE_PARM_DESC(bufsiz, "data bytes in biggest supported SPI message");
 
+static unsigned int tran_fp_detect_chip = 1;
+module_param(tran_fp_detect_chip, uint, 0644);
+MODULE_PARM_DESC(tran_fp_detect_chip,
+		 "read the sensor chip id over SPI during probe (0 = skip)");
+
+extern u32 tran_fp_spi_speed;
+
+#define TRAN_FP_XFER_MAX	4096
+#define TRAN_FP_XFER_ADDR_LEN	2	/* 16 bit register address, big endian */
+
+/*
+ * TRAN_IOC_TRANSFER_CMD: SPI read/write of xfer.len payload bytes at the 16 bit
+ * register address xfer.addr.  The payload is bounced through kernel memory
+ * because the SPI controller may map it for DMA.
+ */
+static int tran_fp_ioctl_transfer(struct tran_fp_data *tran_fp_datap,
+				  void __user *arg)
+{
+	struct tran_ioc_transfer xfer;
+	u8 *kbuf;
+	u32 total;
+	int ret;
+
+	if (copy_from_user(&xfer, arg, sizeof(xfer)))
+		return -EFAULT;
+
+	if (!xfer.len || xfer.len > TRAN_FP_XFER_MAX || !xfer.buf)
+		return -EINVAL;
+
+	total = xfer.len + TRAN_FP_XFER_ADDR_LEN;
+	kbuf = kmalloc(total, GFP_KERNEL);
+	if (!kbuf)
+		return -ENOMEM;
+
+	kbuf[0] = (xfer.addr >> 8) & 0xff;
+	kbuf[1] = xfer.addr & 0xff;
+
+	if (xfer.cmd) {
+		/* write */
+		if (copy_from_user(kbuf + TRAN_FP_XFER_ADDR_LEN,
+				   (void __user *)xfer.buf, xfer.len)) {
+			ret = -EFAULT;
+			goto out;
+		}
+		ret = tran_fp_spi_transfer(tran_fp_datap, kbuf, NULL, total,
+					   NULL, NULL, 0, 0);
+	} else {
+		/* read */
+		memset(kbuf + TRAN_FP_XFER_ADDR_LEN, 0, xfer.len);
+		ret = tran_fp_spi_transfer(tran_fp_datap, kbuf, kbuf, total,
+					   NULL, NULL, 0, 0);
+		if (!ret && copy_to_user((void __user *)xfer.buf,
+					 kbuf + TRAN_FP_XFER_ADDR_LEN, xfer.len))
+			ret = -EFAULT;
+	}
+out:
+	kfree(kbuf);
+	return ret;
+}
+
+/* TRAN_IOC_TRANSFER_RAW_CMD: full duplex transfer, no address framing. */
+static int tran_fp_ioctl_transfer_raw(struct tran_fp_data *tran_fp_datap,
+				      void __user *arg)
+{
+	struct tran_ioc_transfer_raw xfer;
+	u8 *kbuf;
+	int ret;
+
+	if (copy_from_user(&xfer, arg, sizeof(xfer)))
+		return -EFAULT;
+
+	if (!xfer.len || xfer.len > TRAN_FP_XFER_MAX || !xfer.buf)
+		return -EINVAL;
+
+	kbuf = kmalloc(xfer.len, GFP_KERNEL);
+	if (!kbuf)
+		return -ENOMEM;
+
+	if (copy_from_user(kbuf, (void __user *)xfer.buf, xfer.len)) {
+		ret = -EFAULT;
+		goto out;
+	}
+
+	ret = tran_fp_spi_transfer(tran_fp_datap, kbuf, kbuf, xfer.len,
+				   NULL, NULL, 0, 0);
+	if (!ret && copy_to_user((void __user *)xfer.buf, kbuf, xfer.len))
+		ret = -EFAULT;
+out:
+	kfree(kbuf);
+	return ret;
+}
+
+/* TRAN_IOC_SPI_INIT_CFG_CMD: set the default SPI clock. */
+static int tran_fp_ioctl_spi_cfg(void __user *arg)
+{
+	tran_spi_cfg_t cfg;
+
+	if (copy_from_user(&cfg, arg, sizeof(cfg)))
+		return -EFAULT;
+
+	if (cfg.speed_hz && (cfg.speed_hz < TRAN_SPI_SPEED_MIN_HZ ||
+			     cfg.speed_hz > TRAN_SPI_SPEED_MAX_HZ))
+		return -EINVAL;
+
+	tran_fp_spi_speed = cfg.speed_hz;
+	TRAN_FP_INFO("SPI clock set to %u Hz", tran_fp_spi_speed);
+
+	return 0;
+}
+
 static long tran_fp_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
 	int	err = 0;
@@ -285,10 +395,26 @@ static long tran_fp_ioctl(struct file *filp, unsigned int cmd, unsigned long arg
 			tran_fp_report_key_nav_event(tran_fp_datap->input, &tran_key_nav);
 			break;
 
+		case TRAN_IOC_TRANSFER_CMD:
+			TRAN_FP_INFO(" TRAN_IOC_TRANSFER_CMD ======\n");
+			retval = tran_fp_ioctl_transfer(tran_fp_datap,
+							(void __user *)arg);
+			break;
+
+		case TRAN_IOC_TRANSFER_RAW_CMD:
+			TRAN_FP_INFO(" TRAN_IOC_TRANSFER_RAW_CMD ======\n");
+			retval = tran_fp_ioctl_transfer_raw(tran_fp_datap,
+							    (void __user *)arg);
+			break;
+
+		case TRAN_IOC_SPI_INIT_CFG_CMD:
+			TRAN_FP_INFO(" TRAN_IOC_SPI_INIT_CFG_CMD ======\n");
+			retval = tran_fp_ioctl_spi_cfg((void __user *)arg);
+			break;
+
 		case TRAN_IOC_ENTER_SLEEP_MODE:
 			TRAN_FP_INFO(" TRAN_IOC_ENTER_SLEEP_MODE ======\n");
 			break;
-
 		case TRAN_IOC_GET_FW_INFO:
 			TRAN_FP_INFO(" TRAN_IOC_GET_FW_INFO ======\n");
 			need_update = tran_fp_datap->need_update;
@@ -330,6 +456,29 @@ static long tran_fp_ioctl(struct file *filp, unsigned int cmd, unsigned long arg
 			TRAN_FP_INFO(" TRAN_IOC_REMOVE leave======\n");
 			break;
 
+
+		case TRAN_FP_READ_FP_ID:
+			/*
+			 * Userspace asks the kernel to identify the sensor.  The
+			 * answer is reported over netlink, like the stock module:
+			 * FP_ID_PASS on success, FP_ID_FAILED otherwise.  When the
+			 * HAL already declared that it knows the chip
+			 * (TRAN_FP_OPT_SUPPORT) detection is skipped.
+			 */
+			TRAN_FP_INFO(" TRAN_FP_READ_FP_ID ======\n");
+			if (tran_fp_datap->tran_opt_fp_support)
+				break;
+			retval = tran_get_fp_sensor_chip_id(tran_fp_datap);
+			if (retval < 0) {
+				TRAN_FP_ERROR("the finger chip type has error!");
+				tran_netlink_send(tran_fp_datap,
+						  TRAN_NETLINK_FP_ID_FAILED);
+				retval = 0;
+			} else {
+				tran_netlink_send(tran_fp_datap,
+						  TRAN_NETLINK_FP_ID_PASS);
+			}
+			break;
 
 		case TRAN_FP_TEE_AFINITY:
 //			if (copy_from_user(&val, (int __user *)arg, sizeof(val)))
@@ -641,6 +790,19 @@ static int  tran_fp_probe(struct spi_device *tran_fp_dev)
 			TRAN_FP_INFO("[tran] set spi default state success!");
 	}
 	tran_fp_datap->spi_clk_on(tran_fp_datap);
+
+	/*
+	 * Identify the sensor over SPI, like the stock module does.  A failure
+	 * here is not fatal: the HAL can still ask later through
+	 * TRAN_FP_READ_FP_ID, and userspace falls back to TRAN_IOC_CHIP_INFO.
+	 */
+	if (tran_fp_detect_chip) {
+		status = tran_get_fp_sensor_chip_id(tran_fp_datap);
+		if (status < 0)
+			TRAN_FP_ERROR("fingerprint chip not detected (%d), continuing",
+				      status);
+		status = 0;
+	}
 
 	//tran_fp_datap->reset(tran_fp_datap, TRAN_INIT_INTER_CHIP_RESET_DELAY, TRAN_INIT_POST_CHIP_RESET_DELAY);
 	fp_sys_kobj = kobject_create_and_add("tran_fp", kernel_kobj);

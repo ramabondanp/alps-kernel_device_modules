@@ -54,6 +54,36 @@
 
 #define TRAN_IOC_NAV_EVENT	_IOW(TRAN_IOC_MAGIC, 14, tran_key_nav_event_t)
 
+/*
+ * Commands 15..17 are the "SPI REE transfer" set.
+ *
+ * 15 (TRAN_IOC_TRANSFER_CMD) uses struct tran_ioc_transfer, which is declared
+ *    in tran_fp_main.h:
+ *        cmd == 0 -> read, cmd == 1 -> write
+ *        addr     -> 16 bit register address (sent big endian, 2 bytes)
+ *        len      -> payload length in bytes
+ *        buf      -> user pointer to the payload
+ *
+ * 16 and 17 are referenced by the Transsion headers but are implemented by
+ * neither the stock X6871 6.12 module nor the 6.1 common layer, so their
+ * layout is defined here.  They are provided so that the common layer is
+ * self contained; nothing in the shipped X6871 userspace calls them.
+ */
+struct tran_ioc_transfer_raw {
+	u32 reserved;
+	u32 len;
+	u8 *buf;
+};
+
+typedef struct tran_spi_cfg {
+	u32 speed_hz;
+	u8 bits_per_word;
+	u8 reserved[3];
+} tran_spi_cfg_t;
+
+#define TRAN_SPI_SPEED_MIN_HZ	100000
+#define TRAN_SPI_SPEED_MAX_HZ	50000000
+
 /* for SPI REE transfer */
 #define TRAN_IOC_TRANSFER_CMD		_IOWR(TRAN_IOC_MAGIC, 15, struct tran_ioc_transfer)
 #define TRAN_IOC_TRANSFER_RAW_CMD	_IOWR(TRAN_IOC_MAGIC, 16, struct tran_ioc_transfer_raw)

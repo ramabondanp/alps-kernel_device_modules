@@ -111,6 +111,210 @@ struct mt_chip_conf tran_chip_config = {
 	.tckdly = 0,
 };
 
+/*
+ * SPI REE transfer support.
+ *
+ * The stock 6.12 module reads the sensor chip id over SPI during probe and
+ * reports it through TRAN_FP_READ_FP_ID / netlink, so the common layer needs a
+ * real spi_sync path.  Fingerprint image transfer itself happens in the TEE on
+ * X6871, which is why the stock module implements no transfer ioctl.
+ *
+ * spi->controller_data is deliberately left untouched: the MTK SPI driver owns
+ * that pointer (struct mtk_chip_config), BUG_ON()s in spi_dump_config() when
+ * the legacy cs timing fields are set, and kfree()s it in mtk_spi_cleanup().
+ * The stock module points it at the static tran_chip_config, which cannot work
+ * with this controller driver, so the timing comes from DT instead.
+ */
+#define TRAN_FP_SPI_RETRY	5
+#define TRAN_FP_SPI_XFER_MAX	4096
+
+u32 tran_fp_spi_speed = 1000000;	/* Hz, matches the stock tran_spi_speed */
+module_param(tran_fp_spi_speed, uint, 0644);
+MODULE_PARM_DESC(tran_fp_spi_speed, "SPI clock in Hz (0 = spi-max-frequency)");
+
+int tran_fp_spi_transfer(struct tran_fp_data *tran_fp_datap,
+			 const void *tx_buf, void *rx_buf, u32 len,
+			 const void *tx_buf2, void *rx_buf2, u32 len2,
+			 u32 speed_hz)
+{
+	struct spi_transfer xfer[2];
+	struct spi_message msg;
+	struct spi_device *spi;
+	u32 speed;
+	int ret;
+	int retry;
+
+	if (!tran_fp_datap || !tran_fp_datap->tran_fp_dev)
+		return -ENODEV;
+	spi = tran_fp_datap->tran_fp_dev;
+
+	if (!len || len > TRAN_FP_SPI_XFER_MAX)
+		return -EINVAL;
+	if (len2 > TRAN_FP_SPI_XFER_MAX)
+		return -EINVAL;
+	if (!tx_buf && !rx_buf)
+		return -EINVAL;
+
+	speed = speed_hz ? speed_hz : tran_fp_spi_speed;
+	if (!speed || (spi->max_speed_hz && speed > spi->max_speed_hz))
+		speed = spi->max_speed_hz;
+
+	for (retry = 0; retry < TRAN_FP_SPI_RETRY; retry++) {
+		memset(xfer, 0, sizeof(xfer));
+		spi_message_init(&msg);
+
+		xfer[0].tx_buf = tx_buf;
+		xfer[0].rx_buf = rx_buf;
+		xfer[0].len = len;
+		xfer[0].bits_per_word = 8;
+		xfer[0].speed_hz = speed;
+		spi_message_add_tail(&xfer[0], &msg);
+
+		if (tx_buf2 || rx_buf2) {
+			xfer[1].tx_buf = tx_buf2;
+			xfer[1].rx_buf = rx_buf2;
+			xfer[1].len = len2;
+			xfer[1].bits_per_word = 8;
+			xfer[1].speed_hz = speed;
+			spi_message_add_tail(&xfer[1], &msg);
+		}
+
+		ret = spi_sync(spi, &msg);
+		if (!ret)
+			return 0;
+
+		TRAN_FP_ERROR("SPI transfer failed, ret=%d, retry=%d", ret, retry);
+	}
+
+	return ret;
+}
+
+/*
+ * Goodix chip id probe, reconstructed from the stock module
+ * (gf_spi_read_bytes_ree): issue register 0xf0 with 2 dummy bytes, then read
+ * 5 bytes from register 0xf1.  The id sits in the last four bytes of the
+ * second response.
+ */
+#define TRAN_GOODIX_REG_CHIP_ID_PRE	0xf0
+#define TRAN_GOODIX_REG_CHIP_ID		0xf1
+
+static int tran_goodix_read_chip_id(struct tran_fp_data *tran_fp_datap,
+				    u32 *chip_id)
+{
+	u8 *buf;
+	int ret;
+
+	buf = kzalloc(16, GFP_KERNEL);
+	if (!buf)
+		return -ENOMEM;
+
+	buf[0] = TRAN_GOODIX_REG_CHIP_ID_PRE;
+	buf[4] = TRAN_GOODIX_REG_CHIP_ID;
+
+	ret = tran_fp_spi_transfer(tran_fp_datap, buf, buf, 3, NULL, NULL, 0, 0);
+	if (ret)
+		goto out;
+
+	ret = tran_fp_spi_transfer(tran_fp_datap, buf + 4, buf + 4, 5,
+				   NULL, NULL, 0, 0);
+	if (ret)
+		goto out;
+
+	*chip_id = buf[5] | (buf[6] << 8) | (buf[7] << 16) | ((u32)buf[8] << 24);
+out:
+	kfree(buf);
+	return ret;
+}
+
+static const char *tran_goodix_chip_name(u32 id)
+{
+	u8 b0 = id & 0xff;
+	u8 b1 = (id >> 8) & 0xff;
+	u8 b2 = (id >> 16) & 0xff;
+	u8 b3 = (id >> 24) & 0xff;
+
+	if (b0 == 0x12 && b1 == 0x31)
+		return "GOODIX_GW9578";
+	if (b0 == 0x12 && b1 == 0x61)
+		return "GOODIX_GW9598";
+	if (b0 == 0x05 && b1 == 0x02 && b2 == 0x02 && b3 == 0x01)
+		return "GOODIX_GF3956";
+	if (b0 == 0x05 && b1 == 0x03 && b2 == 0x02 && b3 == 0x01)
+		return "GOODIX_GF3976";
+	if (b0 == 0x12 && b1 == 0x01 && b2 == 0x02 && b3 == 0x01)
+		return "GOODIX_GF3986";
+
+	return NULL;
+}
+
+/*
+ * Single detection attempt.  Only Goodix is wired up: X6871 is the only target
+ * and its DT node carries the "goodix" property.  Other vendors would need
+ * their own probe sequence from the stock module.
+ */
+int tran_read_fp_chip_id(struct tran_fp_data *tran_fp_datap)
+{
+	struct device_node *np;
+	const char *name;
+	u32 id = 0;
+	int ret;
+
+	if (!tran_fp_datap || !tran_fp_datap->tran_fp_dev)
+		return -ENODEV;
+
+	np = tran_fp_datap->tran_fp_dev->dev.of_node;
+	if (!np || !of_find_property(np, "goodix", NULL)) {
+		TRAN_FP_ERROR("no supported fingerprint vendor in DT");
+		return -ENODEV;
+	}
+
+	ret = tran_goodix_read_chip_id(tran_fp_datap, &id);
+	if (ret) {
+		TRAN_FP_ERROR("goodix chip id read failed, ret=%d", ret);
+		return ret;
+	}
+
+	TRAN_FP_INFO("goodix chip id 0x%08x", id);
+
+	name = tran_goodix_chip_name(id);
+	if (!name) {
+		TRAN_FP_ERROR("unsupported goodix chip id 0x%08x", id);
+		return -ENODEV;
+	}
+
+	strscpy(tran_fp_datap->ic_name, name, sizeof(tran_fp_datap->ic_name));
+	setVendorName();
+	TRAN_FP_INFO("fingerprint ic_name=%s", tran_fp_datap->ic_name);
+
+	return 0;
+}
+
+/* Probe helper: reset the sensor and retry, like the stock module does. */
+int tran_get_fp_sensor_chip_id(struct tran_fp_data *tran_fp_datap)
+{
+	int ret = -ENODEV;
+	int retry;
+
+	if (!tran_fp_datap)
+		return -ENODEV;
+
+	for (retry = 0; retry < 3; retry++) {
+		if (tran_fp_datap->reset)
+			tran_fp_datap->reset(tran_fp_datap,
+					     tran_fp_datap->inter_delay,
+					     tran_fp_datap->post_delay);
+		msleep(10);
+
+		ret = tran_read_fp_chip_id(tran_fp_datap);
+		if (!ret)
+			return 0;
+
+		msleep(10);
+	}
+
+	return ret;
+}
+
 /**
  * fingerprint pwoer supply have three ways now.
  *
@@ -1074,11 +1278,25 @@ int tran_proc_deinit(struct tran_fp_data *tran_fp_dev)
 }
 
 //manlin.zhang start.
+static bool tran_ic_name_is(const char *ic_name, const char *short_name)
+{
+	if (!strcmp(ic_name, short_name))
+		return true;
+
+	/* the chip id table stores names such as "GOODIX_GW9578" */
+	if (!strncmp(ic_name, "GOODIX_", 7) && !strcmp(ic_name + 7, short_name))
+		return true;
+
+	return false;
+}
+
 void setVendorName(void) {
-    if (strcmp(g_tran_fp_datap->ic_name, "GW9578") == 0 ||
-        strcmp(g_tran_fp_datap->ic_name, "GW9598") == 0 ||
-        strcmp(g_tran_fp_datap->ic_name, "GF3976") == 0 ||
-        strcmp(g_tran_fp_datap->ic_name, "GF3656") == 0 ) {
+    if (tran_ic_name_is(g_tran_fp_datap->ic_name, "GW9578") ||
+        tran_ic_name_is(g_tran_fp_datap->ic_name, "GW9598") ||
+        tran_ic_name_is(g_tran_fp_datap->ic_name, "GF3976") ||
+        tran_ic_name_is(g_tran_fp_datap->ic_name, "GF3656") ||
+        tran_ic_name_is(g_tran_fp_datap->ic_name, "GF3956") ||
+        tran_ic_name_is(g_tran_fp_datap->ic_name, "GF3986")) {
         strscpy(g_tran_fp_datap->vendor_name, "common_goodix", sizeof(g_tran_fp_datap->vendor_name));
     } else if (strcmp(g_tran_fp_datap->ic_name, "GSL7002") == 0) {
         strscpy(g_tran_fp_datap->vendor_name, "common_silead", sizeof(g_tran_fp_datap->vendor_name));
