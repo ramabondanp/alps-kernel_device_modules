@@ -682,6 +682,123 @@ define_mgk_ddk_ko(
     ],
 )
 
+# tc_pe20_algo is the base. The X6871 firmware also ships tc_tc30_algo and
+# tc_hvdcp20_algo, which RE shows to be the same skeleton with the module
+# prefix swapped (PLAN.md 6.2m). They are generated from this source rather
+# than written twice.
+define_mgk_ddk_ko(
+    name = "tc_pe20_algo",
+    srcs = [
+        "transsion/tc_pe20.c",
+        "transsion/tc_pe20_hal.c",
+    ],
+    hdrs = [
+        "transsion/tc_adapter_class.h",
+        "transsion/tc_algorithm_class.h",
+        "transsion/tc_charger.h",
+        "transsion/tc_charger_class.h",
+        "transsion/tc_common_class.h",
+        "transsion/tc_gauge.h",
+        "transsion/tc_misc_intf.h",
+        "transsion/tc_pe20.h",
+        "transsion/tc_tcpc.h",
+        "transsion/tc_voter.h",
+    ],
+    includes = [
+        ".",
+        "transsion",
+    ],
+    ko_deps = [
+        ":tc_adapter_class",
+        ":tc_algorithm_class",
+        ":tc_charger_class",
+        ":tc_charger_framework",
+        ":tc_common_class",
+        ":tc_misc_intf",
+        "//kernel_device_modules-{}/drivers/misc/mediatek/typec/tcpc:tcpc_class".format(kernel_version),
+    ],
+    copts = [
+        "-DCONFIG_TC_CLASS_SUPPORT=1",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/typec/tcpc/inc",
+    ],
+)
+
+define_mgk_ddk_ko(
+    name = "tc_tc30_algo",
+    srcs = [
+        "transsion/tc_tc30.c",
+        "transsion/tc_tc30_hal.c",
+    ],
+    hdrs = [
+        "transsion/tc_adapter_class.h",
+        "transsion/tc_algorithm_class.h",
+        "transsion/tc_charger.h",
+        "transsion/tc_charger_class.h",
+        "transsion/tc_common_class.h",
+        "transsion/tc_gauge.h",
+        "transsion/tc_misc_intf.h",
+        "transsion/tc_pe20.h",
+        "transsion/tc_tc30.h",
+        "transsion/tc_tcpc.h",
+        "transsion/tc_voter.h",
+    ],
+    includes = [
+        ".",
+        "transsion",
+    ],
+    ko_deps = [
+        ":tc_adapter_class",
+        ":tc_algorithm_class",
+        ":tc_charger_class",
+        ":tc_charger_framework",
+        ":tc_common_class",
+        ":tc_misc_intf",
+        "//kernel_device_modules-{}/drivers/misc/mediatek/typec/tcpc:tcpc_class".format(kernel_version),
+    ],
+    copts = [
+        "-DCONFIG_TC_CLASS_SUPPORT=1",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/typec/tcpc/inc",
+    ],
+)
+
+define_mgk_ddk_ko(
+    name = "tc_hvdcp20_algo",
+    srcs = [
+        "transsion/tc_hvdcp20.c",
+        "transsion/tc_hvdcp20_hal.c",
+    ],
+    hdrs = [
+        "transsion/tc_adapter_class.h",
+        "transsion/tc_algorithm_class.h",
+        "transsion/tc_charger.h",
+        "transsion/tc_charger_class.h",
+        "transsion/tc_common_class.h",
+        "transsion/tc_gauge.h",
+        "transsion/tc_hvdcp20.h",
+        "transsion/tc_misc_intf.h",
+        "transsion/tc_pe20.h",
+        "transsion/tc_tcpc.h",
+        "transsion/tc_voter.h",
+    ],
+    includes = [
+        ".",
+        "transsion",
+    ],
+    ko_deps = [
+        ":tc_adapter_class",
+        ":tc_algorithm_class",
+        ":tc_charger_class",
+        ":tc_charger_framework",
+        ":tc_common_class",
+        ":tc_misc_intf",
+        "//kernel_device_modules-{}/drivers/misc/mediatek/typec/tcpc:tcpc_class".format(kernel_version),
+    ],
+    copts = [
+        "-DCONFIG_TC_CLASS_SUPPORT=1",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/typec/tcpc/inc",
+    ],
+)
+
 define_mgk_ddk_ko(
     name = "tc_lcd_notify",
     srcs = [
