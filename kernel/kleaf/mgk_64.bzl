@@ -1071,6 +1071,8 @@ mgk_64_kleaf_device_modules = [
     "//kernel_device_modules-{}/drivers/power/supply:tc_adapter_class".format(kernel_version),
     "//kernel_device_modules-{}/drivers/power/supply:tc_charger_class".format(kernel_version),
     "//kernel_device_modules-{}/drivers/power/supply:tc_charger_framework".format(kernel_version),
+    "//kernel_device_modules-{}/drivers/power/supply:tc_ambient_temp_det".format(kernel_version),
+    "//kernel_device_modules-{}/drivers/power/supply:tc_pid_chg_algo".format(kernel_version),
     "//kernel_device_modules-{}/drivers/power/supply:tc_misc_intf".format(kernel_version),
     "//kernel_device_modules-{}/drivers/power/supply:mm8013".format(kernel_version),
     "//kernel_device_modules-{}/drivers/power/supply:mt6357_battery".format(kernel_version),
