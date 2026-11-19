@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# Transsion TNE kernel queue (tnek).
+#
+# Reconstructed from the X6871 tnek.ko.  The stock firmware's mcDrvModule
+# imports tnek_caller_api; this module keeps that exported API and the
+# /dev/tnek misc device.
+
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+load("@mgk_info//:kernel_version.bzl", "kernel_version",)
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+define_mgk_ddk_ko(
+    name = "tnek",
+    srcs = [
+        "tnek_api.c",
+        "tnek_main.c",
+    ],
+    hdrs = [
+        "tnek.h",
+    ],
+    includes = ["."],
+)
