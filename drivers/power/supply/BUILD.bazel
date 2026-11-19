@@ -40,7 +40,7 @@ SIMPLE_CHG_MODULES = [
     "mt6360_charger",
     "mt6362-chg",
     "mt6370-charger",
-    "mt6375-charger",
+    # mt6375-charger has its own rule below (Transsion source).
     "mtk_2p_charger",
     "rt9465",
     "rt9490-charger",
@@ -650,6 +650,47 @@ define_mgk_ddk_ko(
         "-I$(DEVICE_MODULES_PATH)/drivers/power/supply/ufcs",
     ],
 ) for chg in SIMPLE_CHG_MODULES]
+
+# mt6375-charger is built from the Transsion copy in transsion/, not the MTK
+# copy in this directory.  The two are different drivers, not two versions of
+# one: the Transsion one includes tc_charger_class.h and registers its
+# charger_ops against the 138-field struct, while the MTK one uses the 89-field
+# charger_class.h.  The X6871 firmware ships the Transsion variant (it has
+# mt6375_tran_is_water_detected and mt6375_set_dp_data, which only exist there,
+# and its ops table lands on the TC slots).  Building the MTK copy here would
+# register function pointers in the wrong slots once tc_charger_class.ko is
+# loaded.  See PLAN.md 6.2e.
+define_mgk_ddk_ko(
+    name = "mt6375-charger",
+    srcs = [
+        "transsion/mt6375-charger.c",
+    ],
+    hdrs = [
+        "transsion/tc_adapter_class.h",
+        "transsion/tc_algorithm_class.h",
+        "transsion/tc_charger.h",
+        "transsion/tc_charger_class.h",
+        "transsion/tc_common_class.h",
+        "transsion/tc_gauge.h",
+        "transsion/tc_misc_intf.h",
+        "transsion/tc_tcpc.h",
+        "transsion/tc_voter.h",
+    ],
+    includes = [
+        ".",
+        "transsion",
+    ],
+    ko_deps = [
+        ":tc_charger_class",
+    ],
+    copts = [
+        "-DCONFIG_TC_CLASS_SUPPORT=1",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/power_throttling",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/typec/tcpc/inc",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/usb/usb20/",
+    ],
+)
 
 [define_mgk_ddk_ko(
     name = "{}-chg".format(chg),

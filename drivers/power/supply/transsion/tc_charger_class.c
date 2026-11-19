@@ -631,6 +631,64 @@ int charger_dev_get_vbus_gd(struct charger_device *chg_dev, bool *vbus_gd)
 }
 EXPORT_SYMBOL(charger_dev_get_vbus_gd);
 
+/*
+ * 6.12-only exports, recovered from the firmware tc_charger_class.ko.
+ * All five follow the same guard-then-dispatch pattern as every other
+ * wrapper in this file; the bodies below are the decompiled behaviour of
+ * the firmware functions (offset 0x2ac/0x2310/0x2368/0x2514/0x25c0), which
+ * each check chg_dev, chg_dev->ops and the op pointer before calling it and
+ * return -EOPNOTSUPP otherwise.
+ */
+int charger_dev_get_mivr_gap(struct charger_device *chg_dev)
+{
+	if (chg_dev != NULL && chg_dev->ops != NULL &&
+	    chg_dev->ops->get_mivr_gap)
+		return chg_dev->ops->get_mivr_gap(chg_dev);
+
+	return -EOPNOTSUPP;
+}
+EXPORT_SYMBOL(charger_dev_get_mivr_gap);
+
+int charger_dev_set_boot_volt_times(struct charger_device *chg_dev, u32 val)
+{
+	if (chg_dev != NULL && chg_dev->ops != NULL &&
+	    chg_dev->ops->set_boot_volt_times)
+		return chg_dev->ops->set_boot_volt_times(chg_dev, val);
+
+	return -EOPNOTSUPP;
+}
+EXPORT_SYMBOL(charger_dev_set_boot_volt_times);
+
+int charger_dev_pd_set_hiz_flag(struct charger_device *chg_dev, bool en)
+{
+	if (chg_dev != NULL && chg_dev->ops != NULL &&
+	    chg_dev->ops->pd_set_hiz_flag)
+		return chg_dev->ops->pd_set_hiz_flag(chg_dev, en);
+
+	return -EOPNOTSUPP;
+}
+EXPORT_SYMBOL(charger_dev_pd_set_hiz_flag);
+
+int charger_dev_pd_set_charge_flag(struct charger_device *chg_dev, bool en)
+{
+	if (chg_dev != NULL && chg_dev->ops != NULL &&
+	    chg_dev->ops->pd_set_charge_flag)
+		return chg_dev->ops->pd_set_charge_flag(chg_dev, en);
+
+	return -EOPNOTSUPP;
+}
+EXPORT_SYMBOL(charger_dev_pd_set_charge_flag);
+
+int charger_dev_need_hz_ctrl(struct charger_device *chg_dev)
+{
+	if (chg_dev != NULL && chg_dev->ops != NULL &&
+	    chg_dev->ops->need_hz_ctrl)
+		return chg_dev->ops->need_hz_ctrl(chg_dev);
+
+	return -EOPNOTSUPP;
+}
+EXPORT_SYMBOL(charger_dev_need_hz_ctrl);
+
 int charger_dev_enable_otg(struct charger_device *chg_dev, bool en)
 {
 	if (chg_dev != NULL && chg_dev->ops != NULL && chg_dev->ops->enable_otg)

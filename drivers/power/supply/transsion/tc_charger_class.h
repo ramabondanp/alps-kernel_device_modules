@@ -271,6 +271,19 @@ struct charger_ops {
 	int (*enable_chg_type_det)(struct charger_device *dev, bool en);
 	int (*get_vbus_gd)(struct charger_device *dev, bool *vbus_gd);
 
+	/*
+	 * 6.12-only slots, recovered from the firmware .ko.  These two fields
+	 * sit between get_vbus_gd and run_aicl; every following field shifts
+	 * by 2 as a result.  Proof: in tc_charger_class.ko the wrapper
+	 * charger_dev_run_aicl reads ops+464 (slot 58) while this header
+	 * without these fields would place it at 448 (slot 56).
+	 * signatures: get_mivr_gap takes no second argument (its caller in
+	 * tc_charger_framework.ko sets up x0 only), set_boot_volt_times
+	 * matches the MTK charger_class.c definition.
+	 */
+	int (*get_mivr_gap)(struct charger_device *dev);
+	int (*set_boot_volt_times)(struct charger_device *dev, u32 val);
+
 	/* run AICL */
 	int (*run_aicl)(struct charger_device *dev, u32 *uA);
 
@@ -292,6 +305,13 @@ struct charger_ops {
 	int (*get_ibat_adc)(struct charger_device *dev, u32 *ibat);
 	int (*get_tchg_adc)(struct charger_device *dev, int *tchg_min,int *tchg_max);
 	int (*get_zcv)(struct charger_device *dev, u32 *uV);
+	/*
+	 * 6.12-only slot 71.  The firmware has one extra field here that no
+	 * exported wrapper touches (tc_charger_class.ko has zero instructions
+	 * reading ops+568), so its name and signature are unknown.  Reserved so
+	 * that enable_usbid and everything after it lands on the right slot.
+	 */
+	int (*reserved_slot_71)(struct charger_device *dev);
 
 	/* TypeC */
 	int (*enable_usbid)(struct charger_device *dev, bool en);
@@ -303,6 +323,12 @@ struct charger_ops {
 	int (*get_ctd_dischg_status)(struct charger_device *dev, u8 *status);
 	int (*enable_hz)(struct charger_device *dev, bool en);
 	int (*is_hz)(struct charger_device *dev, bool *is_hiz);
+	/*
+	 * 6.12-only slots 81/82.  Both wrappers in the firmware mask the second
+	 * argument with `and w1, w1, #1`, so the parameter is bool.
+	 */
+	int (*pd_set_hiz_flag)(struct charger_device *dev, bool en);
+	int (*pd_set_charge_flag)(struct charger_device *dev, bool en);
 	int (*get_ilim_state)(struct charger_device *dev, bool *is_ilim);
 
 	int (*set_property)(struct charger_device *dev,
@@ -338,6 +364,11 @@ struct charger_ops {
 	int (*set_run_spec)(struct charger_device *chg_dev, u32 run_sepc);
 	int (*get_run_spec)(struct charger_device *chg_dev, u32 run_sepc);
 	int (*enable_special_function)(struct charger_device *dev,  int function);
+	/*
+	 * 6.12-only slot 111.  Wrapper charger_dev_need_hz_ctrl takes a single
+	 * argument and returns int: tran_usb_ctrl.ko calls it with x0 only.
+	 */
+	int (*need_hz_ctrl)(struct charger_device *dev);
 
 	/* wireless */
 	int (*get_wireless_authenticate)(struct charger_device *dev, bool *en);
@@ -422,6 +453,12 @@ extern int charger_dev_enable_powerpath(struct charger_device *dev, bool en);
 extern int charger_dev_enable_safety_timer(struct charger_device *dev, bool en);
 extern int charger_dev_enable_chg_type_det(struct charger_device *dev, bool en);
 extern int charger_dev_get_vbus_gd(struct charger_device *dev, bool *vbus_gd);
+/* 6.12-only exports, recovered from the firmware .ko (see struct above) */
+extern int charger_dev_get_mivr_gap(struct charger_device *dev);
+extern int charger_dev_set_boot_volt_times(struct charger_device *dev, u32 val);
+extern int charger_dev_pd_set_hiz_flag(struct charger_device *dev, bool en);
+extern int charger_dev_pd_set_charge_flag(struct charger_device *dev, bool en);
+extern int charger_dev_need_hz_ctrl(struct charger_device *dev);
 extern int charger_dev_enable_otg(struct charger_device *dev, bool en);
 extern int charger_dev_disable_otg_step(struct charger_device *chg_dev, bool en);
 extern int charger_dev_set_boost_voltage(struct charger_device *dev, u32 uV);
