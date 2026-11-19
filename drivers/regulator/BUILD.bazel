@@ -79,6 +79,7 @@ define_mgk_ddk_ko(
     ],
     includes = ["."],
     copts = [
+        "-DCONFIG_TC_CLASS_SUPPORT=1",
         "-I$(srctree)/drivers/regulator",
     ],
 )
