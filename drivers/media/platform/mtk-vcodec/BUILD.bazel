@@ -29,6 +29,7 @@ ddk_headers(
     name = "headers",
     hdrs = [
         "mtk_vcodec_util.h",
+        "mtk_vcodec_sys_api.h",
         "mtk-v4l2-controls.h",
         "vcodec_ipi_msg.h",
     ],
@@ -50,6 +51,7 @@ define_mgk_ddk_ko(
     },
     hdrs = [
         "mtk_vcodec_util.h",
+        "mtk_vcodec_sys_api.h",
         "mtk-v4l2-controls.h",
         "vcodec_ipi_msg.h",
     ] + [
@@ -227,7 +229,6 @@ define_mgk_ddk_ko(
         "//kernel_device_modules-{}/drivers/misc/mediatek/smi:mtk-smi-dbg".format(kernel_version),
         "//kernel_device_modules-{}/drivers/misc/mediatek/vcp/rv_v2:vcp_status_v2".format(kernel_version),
         "//kernel_device_modules-{}/drivers/soc/mediatek:mtk_tinysys_ipi".format(kernel_version),
-        "//kernel_device_modules-{}/drivers/misc/mediatek/task_turbo:vip_engine".format(kernel_version),
         "//kernel_device_modules-{}/drivers/thermal/mediatek:thermal_interface".format(kernel_version),
     ] + ([
         "//kernel_device_modules-{}/drivers/soc/mediatek:mtk-mmdvfs-v3".format(kernel_version),
@@ -239,4 +240,22 @@ define_mgk_ddk_ko(
         "-I$(DEVICE_MODULES_PATH)/include/soc/mediatek",
         "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/mt-plat",
     ],
+)
+
+define_mgk_ddk_ko(
+    name = "mtk-vcodec-sys-api",
+    srcs = [
+        "mtk_vcodec_sys_api.c",
+    ],
+    hdrs = [
+        "mtk_vcodec_sys_api.h",
+    ],
+    includes = [
+        ".",
+    ],
+    ko_deps = [
+        "//kernel_device_modules-{}/drivers/media/platform/mtk-vcodec:mtk-vcodec-common".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/misc/mediatek/task_turbo:vip_engine".format(kernel_version),
+    ],
+    out = "mtk-vcodec-sys-api.ko",
 )

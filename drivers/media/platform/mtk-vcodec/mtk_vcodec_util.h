@@ -20,6 +20,7 @@
 
 #include <linux/mtk_vcu_controls.h>
 #include "vcodec_ipi_msg.h"
+#include "mtk_vcodec_sys_api.h"
 #if IS_ENABLED(CONFIG_VIDEO_MEDIATEK_VCU)
 #include "mtk_vcu.h"
 #endif
@@ -482,7 +483,7 @@ extern void set_grp_awr_min_opp_margin(int gear_id, int group_id, int val);
 extern void set_grp_awr_thr(int gear_id, int group_id, int opp);
 #endif
 #ifdef MTK_VIP_SUPPORT
-extern int set_task_priority(struct task_struct *task, int prio);
+extern int mtk_vcodec_set_task_priority(struct task_struct *task, int prio);
 #endif
 
 static inline u64 bitmap_to_u64(unsigned long *bitmap, unsigned int nbits)

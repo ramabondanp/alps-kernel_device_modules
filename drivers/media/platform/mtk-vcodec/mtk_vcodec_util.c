@@ -1810,5 +1810,39 @@ vgo_set_instance_data:
 }
 EXPORT_SYMBOL_GPL(mtk_vcodec_send_info_to_vgo);
 
+static struct mtk_vcodec_sys_api_funcs *sys_api_funcs;
+
+void mtk_vcodec_set_sys_api_funcs(struct mtk_vcodec_sys_api_funcs *funcs)
+{
+	sys_api_funcs = funcs;
+}
+EXPORT_SYMBOL(mtk_vcodec_set_sys_api_funcs);
+
+int mtk_vcodec_set_task_priority(struct task_struct *task, int prio)
+{
+	struct sched_param param = { .sched_priority = prio };
+	int ret;
+
+	if (sys_api_funcs && sys_api_funcs->set_task_priority)
+		return sys_api_funcs->set_task_priority(task, prio);
+
+	if (prio > 139)
+		return -EINVAL;
+
+	if (!task)
+		return -ESRCH;
+
+	if (prio <= 99) {
+		ret = sched_setscheduler_nocheck(task, SCHED_FIFO, &param);
+	} else {
+		ret = sched_setscheduler_nocheck(task, SCHED_NORMAL, &param);
+		if (!ret)
+			set_user_nice(task, prio - 120);
+	}
+
+	return ret ? -EINVAL : 0;
+}
+EXPORT_SYMBOL(mtk_vcodec_set_task_priority);
+
 MODULE_IMPORT_NS(DMA_BUF);
 MODULE_LICENSE("GPL v2");
