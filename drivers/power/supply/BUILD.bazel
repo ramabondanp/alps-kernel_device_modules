@@ -461,6 +461,122 @@ define_mgk_ddk_ko(
     ],
 )
 
+# Compound module: the donor Makefile says
+#   tc_pd_algo-objs := tc_pd.o tc_pd_hal.o
+# There is no tc_pd_algo.c, which is why the earlier "no source" sweep missed
+# it. See PLAN.md 6.1b.
+define_mgk_ddk_ko(
+    name = "tc_pd_algo",
+    srcs = [
+        "transsion/tc_pd.c",
+        "transsion/tc_pd_hal.c",
+    ],
+    hdrs = [
+        "transsion/tc_adapter_class.h",
+        "transsion/tc_algorithm_class.h",
+        "transsion/tc_charger.h",
+        "transsion/tc_charger_class.h",
+        "transsion/tc_common_class.h",
+        "transsion/tc_gauge.h",
+        "transsion/tc_misc_intf.h",
+        "transsion/tc_pd.h",
+        "transsion/tc_tcpc.h",
+        "transsion/tc_voter.h",
+    ],
+    includes = [
+        ".",
+        "transsion",
+    ],
+    ko_deps = [
+        ":tc_adapter_class",
+        ":tc_algorithm_class",
+        ":tc_charger_class",
+        ":tc_charger_framework",
+        ":tc_common_class",
+        ":tc_misc_intf",
+        "//kernel_device_modules-{}/drivers/misc/mediatek/typec/tcpc:tcpc_class".format(kernel_version),
+    ],
+    copts = [
+        "-DCONFIG_TC_CLASS_SUPPORT=1",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/typec/tcpc/inc",
+    ],
+)
+
+define_mgk_ddk_ko(
+    name = "tc_auto_test",
+    srcs = [
+        "transsion/tc_auto_test.c",
+    ],
+    hdrs = [
+        "transsion/tc_adapter_class.h",
+        "transsion/tc_algorithm_class.h",
+        "transsion/tc_auto_test.h",
+        "transsion/tc_battery.h",
+        "transsion/tc_charger.h",
+        "transsion/tc_charger_class.h",
+        "transsion/tc_common_class.h",
+        "transsion/tc_gauge.h",
+        "transsion/tc_misc_intf.h",
+        "transsion/tc_pd.h",
+        "transsion/tc_pe5.h",
+        "transsion/tc_tcpc.h",
+        "transsion/tc_voter.h",
+    ],
+    includes = [
+        ".",
+        "transsion",
+    ],
+    ko_deps = [
+        ":tc_algorithm_class",
+        ":tc_charger_class",
+        ":tc_charger_framework",
+        ":tc_common_class",
+        ":tc_misc_intf",
+        "//kernel_device_modules-{}/drivers/misc/mediatek/typec/tcpc:tcpc_class".format(kernel_version),
+    ],
+    copts = [
+        "-DCONFIG_TC_CLASS_SUPPORT=1",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/typec/tcpc/inc",
+    ],
+)
+
+define_mgk_ddk_ko(
+    name = "tc_gauge",
+    srcs = [
+        "transsion/tc_gauge.c",
+    ],
+    hdrs = [
+        "transsion/tc_adapter_class.h",
+        "transsion/tc_algorithm_class.h",
+        "transsion/tc_auto_test.h",
+        "transsion/tc_battery.h",
+        "transsion/tc_charger.h",
+        "transsion/tc_charger_class.h",
+        "transsion/tc_common_class.h",
+        "transsion/tc_gauge.h",
+        "transsion/tc_misc_intf.h",
+        "transsion/tc_pd.h",
+        "transsion/tc_pe5.h",
+        "transsion/tc_tcpc.h",
+        "transsion/tc_voter.h",
+    ],
+    includes = [
+        ".",
+        "transsion",
+    ],
+    ko_deps = [
+        ":tc_charger_class",
+        ":tc_common_class",
+        ":tc_misc_intf",
+        ":tc_auto_test",
+        "//kernel_device_modules-{}/drivers/misc/mediatek/typec/tcpc:tcpc_class".format(kernel_version),
+    ],
+    copts = [
+        "-DCONFIG_TC_CLASS_SUPPORT=1",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/typec/tcpc/inc",
+    ],
+)
+
 define_mgk_ddk_ko(
     name = "tc_lcd_notify",
     srcs = [
