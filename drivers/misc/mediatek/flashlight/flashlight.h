@@ -73,6 +73,8 @@ struct flashlight_user_arg {
 
 /* ioctl protocol version 1. */
 #define FLASH_IOC_SET_TIME_OUT_TIME_MS     _IOR(FLASHLIGHT_MAGIC, 100, int)
+/* in-kernel only: used by the v4l2 flash drivers */
+#define FLASH_IOC_SET_CURRENT              21
 #define FLASH_IOC_SET_STEP                 _IOR(FLASHLIGHT_MAGIC, 105, int)
 #define FLASH_IOC_SET_DUTY                 _IOR(FLASHLIGHT_MAGIC, 110, int)
 #define FLASH_IOC_SET_ONOFF                _IOR(FLASHLIGHT_MAGIC, 115, int)

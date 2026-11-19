@@ -45,6 +45,16 @@
 static DEFINE_MUTEX(fl_mutex);
 LIST_HEAD(flashlight_list);
 
+/* Shared with the v4l2 flash drivers (aw36515/ocp81375/sgm37864). */
+unsigned int g_sysfs_strobe_level[2] = {0, 0};
+unsigned int g_sysfs_inited[2] = {0, 0};
+unsigned int g_flashCurrNow;
+int debug_mask;
+EXPORT_SYMBOL(g_sysfs_strobe_level);
+EXPORT_SYMBOL(g_sysfs_inited);
+EXPORT_SYMBOL(debug_mask);
+EXPORT_SYMBOL(g_flashCurrNow);
+
 /* duty current */
 static struct flashlight_arg duty_current_arg;
 

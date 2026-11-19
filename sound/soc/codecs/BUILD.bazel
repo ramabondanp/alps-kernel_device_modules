@@ -60,6 +60,7 @@ define_mgk_ddk_ko(
     ],
     hdrs = glob(["**/*.h"]),
     includes = ["."],
+    copts = ["-DCONFIG_USB_SWITCH_ET7480=1"],
 )
 
 define_mgk_ddk_ko(
