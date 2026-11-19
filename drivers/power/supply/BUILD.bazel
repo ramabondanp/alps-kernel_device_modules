@@ -877,6 +877,40 @@ define_mgk_ddk_ko(
     ],
 )
 
+# Transsion never released pca_tfcp_ta. Reconstructed from the X6871
+# pca_tfcp_ta.ko: 18 pca_tfcp_* functions, all LOCAL, forwarding to
+# tc_ta_device_* one call at a time. See PLAN.md 6.2n.
+define_mgk_ddk_ko(
+    name = "pca_tfcp_ta",
+    srcs = [
+        "transsion/pca_tfcp_ta.c",
+    ],
+    hdrs = [
+        "transsion/tc_adapter_class.h",
+        "transsion/tc_algorithm_class.h",
+        "transsion/tc_charger.h",
+        "transsion/tc_charger_class.h",
+        "transsion/tc_common_class.h",
+        "transsion/tc_misc_intf.h",
+        "transsion/tc_ta_class.h",
+        "transsion/tc_tcpc.h",
+    ],
+    includes = [
+        ".",
+        "transsion",
+    ],
+    ko_deps = [
+        ":tc_adapter_class",
+        ":tc_common_class",
+        ":tc_misc_intf",
+        ":tc_ta_class",
+    ],
+    copts = [
+        "-DCONFIG_TC_CLASS_SUPPORT=1",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/typec/tcpc/inc",
+    ],
+)
+
 define_mgk_ddk_ko(
     name = "tc_lcd_notify",
     srcs = [
