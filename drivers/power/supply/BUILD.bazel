@@ -169,6 +169,63 @@ define_mgk_ddk_ko(
 )
 
 define_mgk_ddk_ko(
+    name = "tc_tcpc",
+    srcs = [
+        "transsion/tc_tcpc.c",
+    ],
+    hdrs = [
+        "transsion/tc_tcpc.h",
+        "transsion/tc_charger.h",
+        "transsion/tc_charger_class.h",
+        "transsion/tc_common_class.h",
+        "transsion/tc_misc_intf.h",
+        "transsion/tc_adapter_class.h",
+        "transsion/tc_algorithm_class.h",
+        "transsion/tc_voter.h",
+        "transsion/tc_gauge.h",
+    ],
+    includes = [
+        ".",
+        "transsion",
+    ],
+    ko_deps = [
+        ":tc_charger_class",
+        ":tc_common_class",
+        "//kernel_device_modules-{}/drivers/misc/mediatek/typec/tcpc:tcpc_class".format(kernel_version),
+    ],
+    copts = [
+        "-DCONFIG_TC_CLASS_SUPPORT=1",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/typec/tcpc/inc",
+    ],
+)
+
+define_mgk_ddk_ko(
+    name = "tc_port_corrosion_prevention",
+    srcs = [
+        "transsion/tc_port_corrosion_prevention.c",
+    ],
+    hdrs = [
+        "transsion/tc_charger.h",
+        "transsion/tc_charger_class.h",
+        "transsion/tc_common_class.h",
+        "transsion/tc_tcpc.h",
+    ],
+    includes = [
+        ".",
+        "transsion",
+    ],
+    ko_deps = [
+        ":tc_charger_class",
+        ":tc_common_class",
+        ":tc_tcpc",
+    ],
+    copts = [
+        "-DCONFIG_TC_CLASS_SUPPORT=1",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/typec/tcpc/inc",
+    ],
+)
+
+define_mgk_ddk_ko(
     name = "tc_lcd_notify",
     srcs = [
         "transsion/tc_lcd_notify.c",
