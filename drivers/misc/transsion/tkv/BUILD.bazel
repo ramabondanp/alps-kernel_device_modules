@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# Transsion bootloader key/value region driver (tkv).
+# Reconstructed from the X6871 tkv.ko.
+
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+load("@mgk_info//:kernel_version.bzl", "kernel_version",)
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+define_mgk_ddk_ko(
+    name = "tkv",
+    srcs = [
+        "tkv.c",
+    ],
+    includes = ["."],
+)

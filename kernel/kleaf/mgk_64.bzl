@@ -900,6 +900,7 @@ mgk_64_kleaf_device_modules = [
     "//kernel_device_modules-{}/drivers/misc/mediatek/extcon:extcon-mtk-usb".format(kernel_version),
     "//kernel_device_modules-{}/drivers/misc/mediatek/extcon:tran_extcon_usb".format(kernel_version),
     "//kernel_device_modules-{}/drivers/misc/transsion/tnek:tnek".format(kernel_version),
+    "//kernel_device_modules-{}/drivers/misc/transsion/tkv:tkv".format(kernel_version),
     "//kernel_device_modules-{}/drivers/misc/mediatek/flashlight:mtk-composite".format(kernel_version),
     "//kernel_device_modules-{}/drivers/misc/mediatek/flashlight:flashlight".format(kernel_version),
     "//kernel_device_modules-{}/drivers/misc/mediatek/geniezone:gz_main".format(kernel_version),
