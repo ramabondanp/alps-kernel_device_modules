@@ -1067,7 +1067,10 @@ define_mgk_ddk_ko(
         ":tc_charger_class",
         ":tc_misc_intf",
     ],
-    copts = ["-DCONFIG_TC_CLASS_SUPPORT=1"],
+    copts = [
+        "-DCONFIG_TC_CLASS_SUPPORT=1",
+        "-DCONFIG_TC_CHARGER=1",
+    ],
 )
 
 define_mgk_ddk_ko(
@@ -1603,6 +1606,7 @@ define_mgk_ddk_ko(
     ],
     copts = [
         "-DCONFIG_TC_CLASS_SUPPORT=1",
+        "-DCONFIG_TC_CHARGER=1",
         "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include",
         "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/power_throttling",
         "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/typec/tcpc/inc",
