@@ -829,6 +829,7 @@ mgk_64_kleaf_device_modules = [
     "//kernel_device_modules-{}/drivers/iio/adc:rt9490-adc".format(kernel_version),
     "//kernel_device_modules-{}/drivers/iio/adc:mt6681-auxadc".format(kernel_version),
     "//kernel_device_modules-{}/drivers/input/keyboard:mtk-kpd".format(kernel_version),
+    "//kernel_device_modules-{}/drivers/input/fingerprint:tran_fp".format(kernel_version),
     "//kernel_device_modules-{}/drivers/input/touchscreen/BoTai_Multi_Touch/BoTai_touch_one:botai_touch_one".format(kernel_version),
     "//kernel_device_modules-{}/drivers/input/touchscreen/BoTai_Multi_Touch/BoTai_touch_two:botai_touch_two".format(kernel_version),
     "//kernel_device_modules-{}/drivers/input/touchscreen/GT1151:gt1151".format(kernel_version),

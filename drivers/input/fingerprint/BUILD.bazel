@@ -1,0 +1,48 @@
+# SPDX-License-Identifier: GPL-2.0-only
+#
+# Transsion fingerprint driver (tran_fp).
+#
+# The source is the 6.1 tran_common_v2 common layer, ported to 6.12 and to
+# the X6871 "tran_fp_legacy" DT compatible.  The firmware's 6.12 module
+# bundles several vendor backends; X6871 uses Goodix, and the common layer
+# already provides the /dev/tran_fp control plane (reset, power, IRQ, keys,
+# netlink) that the HAL uses.  See PLAN.md 6.2t.
+
+load("//build/bazel_mgk_rules:mgk_ddk_ko.bzl", "define_mgk_ddk_ko")
+load("@mgk_info//:kernel_version.bzl", "kernel_version",)
+
+package(
+    default_visibility = [
+        "//visibility:public",
+    ],
+)
+
+define_mgk_ddk_ko(
+    name = "tran_fp",
+    srcs = [
+        "tran_common/tran_fp_ext.c",
+        "tran_common/tran_fp_main.c",
+        "tran_common/mtk/transsion/transsion_fp_cust.c",
+    ],
+    hdrs = [
+        "tran_common/tran_fp_common_data_def.h",
+        "tran_common/tran_fp_ext.h",
+        "tran_common/tran_fp_main.h",
+        "tran_common/tran_fp_macro_transfer.h",
+        "tran_common/tran_spi.h",
+        "tran_common/mtk/transsion/transsion_fp_cust.h",
+    ],
+    includes = [
+        "tran_common",
+        "tran_common/mtk/transsion",
+    ],
+    ko_deps = [
+        "//kernel_device_modules-{}/drivers/gpu/drm/mediatek/mediatek_v2:mtk_disp_notify".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/spi:spi-mt65xx".format(kernel_version),
+    ],
+    copts = [
+        "-DCONFIG_TRAN_FP_DRV_MODE_SPI=1",
+        "-I$(DEVICE_MODULES_PATH)/drivers/gpu/drm/mediatek/mediatek_v2",
+        "-I$(srctree)/drivers/regulator",
+    ],
+)
