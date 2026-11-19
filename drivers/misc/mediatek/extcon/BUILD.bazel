@@ -40,3 +40,26 @@ define_mgk_ddk_ko(
         "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/typec/tcpc/inc",
     ],
 )
+
+# Transsion extcon USB driver.  The stock X6871 firmware ships only this
+# module (not extcon-mtk-usb.ko) and its DTBO replaces the base
+# "mediatek,extcon-usb" compatible with "transsion,extcon-usb".  It reports
+# OTG changes to userspace through SWITCH_NAME/SWITCH_STATE uevents and uses
+# the Transsion tc_tcpc notifier.
+define_mgk_ddk_ko(
+    name = "tran_extcon_usb",
+    srcs = [
+        "tran_extcon_usb.c",
+    ],
+    ko_deps = [
+        "//kernel_device_modules-{}/drivers/power/supply:tc_tcpc".format(kernel_version),
+        "//kernel_device_modules-{}/drivers/power/supply:tc_common_class".format(kernel_version),
+    ],
+    includes = ["."],
+    copts = [
+        "-DCONFIG_TC_CLASS_SUPPORT=1",
+        "-I$(DEVICE_MODULES_PATH)/drivers/power/supply/transsion",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/typec/tcpc/inc",
+        "-I$(srctree)/drivers/extcon",
+    ],
+)
