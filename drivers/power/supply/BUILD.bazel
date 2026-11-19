@@ -95,6 +95,24 @@ define_mgk_ddk_ko(
 )
 
 define_mgk_ddk_ko(
+    name = "tc_common_class",
+    srcs = [
+        "transsion/tc_common_class.c",
+    ],
+    hdrs = [
+        "transsion/tc_common_class.h",
+    ],
+    includes = [
+        ".",
+        "transsion",
+    ],
+    # Aktifkan blok extern di tc_common_class.h. Tanpa ini header memakai
+    # static inline fallback yang bertabrakan dengan definisi di .c
+    # (redefinition). Di tree Transsion config ini hidup via Kconfig.
+    copts = ["-DCONFIG_TC_CLASS_SUPPORT=1"],
+)
+
+define_mgk_ddk_ko(
     name = "charger_class",
     srcs = [
         "charger_class.c",
