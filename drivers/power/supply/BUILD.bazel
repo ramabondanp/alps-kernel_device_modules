@@ -841,6 +841,42 @@ define_mgk_ddk_ko(
     ],
 )
 
+# Transsion never released tc_tfcp_ta. Reconstructed from the X6871 firmware
+# .ko: all 40 function names are present (not stripped) and the 27 tfcp_tc_ta_*
+# are a 1:1 match for struct tc_ta_device_ops in tc_ta_class.h, so the
+# signatures are given by the class, not guessed. Register map read out of the
+# disassembly (0xa0..0xb3). See PLAN.md 6.2m.
+define_mgk_ddk_ko(
+    name = "tc_tfcp_ta",
+    srcs = [
+        "transsion/tc_tfcp_ta.c",
+    ],
+    hdrs = [
+        "transsion/tc_adapter_class.h",
+        "transsion/tc_algorithm_class.h",
+        "transsion/tc_charger.h",
+        "transsion/tc_charger_class.h",
+        "transsion/tc_common_class.h",
+        "transsion/tc_misc_intf.h",
+        "transsion/tc_ta_class.h",
+        "transsion/tc_tcpc.h",
+        "transsion/tc_voter.h",
+    ],
+    includes = [
+        ".",
+        "transsion",
+    ],
+    ko_deps = [
+        ":tc_charger_class",
+        ":tc_common_class",
+        ":tc_ta_class",
+    ],
+    copts = [
+        "-DCONFIG_TC_CLASS_SUPPORT=1",
+        "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/typec/tcpc/inc",
+    ],
+)
+
 define_mgk_ddk_ko(
     name = "tc_lcd_notify",
     srcs = [
