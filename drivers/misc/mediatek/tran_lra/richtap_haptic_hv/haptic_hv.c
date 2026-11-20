@@ -4339,7 +4339,14 @@ static int __init aw_i2c_init(void)
 	pr_info("<%s>%s: aw_haptic driver version %s\n", AW_I2C_NAME, __func__,
 		HAPTIC_HV_DRIVER_VERSION);
 	boot_mode = tran_get_boot_mode();
-	if (boot_mode == KERNEL_POWER_OFF_CHARGING_BOOT || boot_mode == LOW_POWER_OFF_CHARGING_BOOT || boot_mode == RECOVERY_BOOT) {
+	/*
+	 * Register the haptic driver in recovery too. TWRP drives the vibrator
+	 * through /sys/class/leds/vibrator_single (libtwrpminui does a
+	 * ram_update poke at boot); with recovery mode excluded here the node
+	 * never appears and the vibrator stays dead. Only power-off charging
+	 * modes still skip registration.
+	 */
+	if (boot_mode == KERNEL_POWER_OFF_CHARGING_BOOT || boot_mode == LOW_POWER_OFF_CHARGING_BOOT) {
 		return 0;
 	}
 	ret = i2c_add_driver(&aw_i2c_driver);
