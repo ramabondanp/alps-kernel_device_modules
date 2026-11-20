@@ -204,6 +204,17 @@ static void sched_queue_task_hook(void *data, struct rq *rq, struct task_struct 
 	int type = *(int *)data;
 	struct sugov_rq_data *sugov_data_ptr;
 
+	if (data) {
+		if (type == enqueue) {
+			if (g_trans_sched_interface.enqueue_task)
+				((void (*)(void *, struct rq *, struct task_struct *, int))
+				 g_trans_sched_interface.enqueue_task)(NULL, rq, p, flags);
+		} else if (g_trans_sched_interface.dequeue_task) {
+			((void (*)(void *, struct rq *, struct task_struct *, int))
+			 g_trans_sched_interface.dequeue_task)(NULL, rq, p, flags);
+		}
+	}
+
 	if (!get_eas_hook())
 		return;
 

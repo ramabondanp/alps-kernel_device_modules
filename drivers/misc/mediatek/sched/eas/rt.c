@@ -659,6 +659,10 @@ void mtk_select_task_rq_rt(void *data, struct task_struct *p, int source_cpu,
 	this_cpu = smp_processor_id();
 	this_cpu_rq = cpu_rq(this_cpu);
 
+	if (g_trans_sched_interface.should_honor_sync)
+		((void (*)(struct rq *, struct task_struct *, bool *))
+		 g_trans_sched_interface.should_honor_sync)(this_cpu_rq, p, &sync);
+
 	/*
 	 * Respect the sync flag as long as the task can run on this CPU.
 	 */
