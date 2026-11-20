@@ -129,7 +129,13 @@ enum {
 	IPI_IN_TOUCH_CTRL        = 53,
 	IPI_OUT_TOUCH_NOTIFY     = 54,
 	IPI_IN_TOUCH_NOTIFY      = 55,
-	SCP_IPI_COUNT
+	/*
+	 * The stock X6871 scp.ko passes SCP_IPI_COUNT=59 to
+	 * mtk_ipi_device_register(); its SCP DT send/recv tables use channel
+	 * IDs 56 and 57.  Keep the stock count so those pins fit, otherwise
+	 * mtk_ipi_device_register() hits its BUG_ON and panics the SCP probe.
+	 */
+	SCP_IPI_COUNT = 59
 };
 
 enum scp_ipi_status {
