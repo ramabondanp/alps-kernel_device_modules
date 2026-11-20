@@ -30,6 +30,7 @@
 #include "ged_tracepoint.h"
 #include "ged_eb.h"
 
+#include "ged_perfetto_tracepoint.h"
 enum {
 	/* 0x00 - 0xff reserved for internal buffer type */
 
@@ -1292,4 +1293,3 @@ ssize_t get_cmd_info_dump(char *buf, int sz, ssize_t pos, struct cmd_info *cmd)
 
 	return pos;
 }
-

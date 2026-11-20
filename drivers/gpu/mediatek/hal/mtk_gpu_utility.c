@@ -756,6 +756,8 @@ void mtk_gpu_fence_debug_dump(int fd, int pid, int type, int timeouts)
 		mtk_gpu_fence_debug_dump_fp(fd, pid, type, timeouts);
 }
 EXPORT_SYMBOL(mtk_gpu_fence_debug_dump);
+
+
 static int mtk_gpu_hal_init(void)
 {
 	/*Do Nothing*/

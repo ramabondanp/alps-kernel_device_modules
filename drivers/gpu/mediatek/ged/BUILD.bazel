@@ -57,6 +57,7 @@ ddk_headers(
         "include/ged_thread.h",
         "include/ged_tracepoint.h",
         "include/ged_type.h",
+        "include/ged_perfetto_tracepoint.h",
     ],
     includes = [
         "include",
@@ -139,6 +140,7 @@ define_mgk_ddk_ko(
         "include/ged_thread.h",
         "include/ged_tracepoint.h",
         "include/ged_type.h",
+        "include/ged_perfetto_tracepoint.h",
     ],
     includes = [
         "include",
