@@ -137,7 +137,7 @@ static bool usb_is_online(struct tran_usb_extcon_info *extcon)
 	}
 
 	ret = power_supply_get_property(extcon->usb_psy,
-					POWER_SUPPLY_PROP_TYPE, &tval);
+					POWER_SUPPLY_PROP_USB_TYPE, &tval);
 	if (ret < 0) {
 		dev_info(extcon->dev, "failed to get usb type\n");
 		return false;
@@ -145,8 +145,8 @@ static bool usb_is_online(struct tran_usb_extcon_info *extcon)
 
 	dev_info(extcon->dev, "online=%d, type=%d\n", pval.intval, tval.intval);
 
-	if (pval.intval && (tval.intval == POWER_SUPPLY_TYPE_USB ||
-			    tval.intval == POWER_SUPPLY_TYPE_USB_CDP))
+	if (pval.intval && (tval.intval == POWER_SUPPLY_USB_TYPE_SDP ||
+			    tval.intval == POWER_SUPPLY_USB_TYPE_CDP))
 		return true;
 
 	return false;
@@ -237,84 +237,33 @@ static void do_otg_work(struct work_struct *work)
 	free_pages((unsigned long)page, 0);
 }
 
-static void tran_usb_extcon_set_role_debounce(struct tran_usb_extcon_info *extcon,
-					      unsigned int role)
-{
-	tran_usb_extcon_set_role(extcon, USB_ROLE_NONE);
-	tran_usb_extcon_set_role(extcon, role);
-}
-
 static int tran_extcon_pd_tcpc_notifier(struct notifier_block *nb,
 					unsigned long event, void *data)
 {
 	struct tran_usb_extcon_info *extcon =
 		container_of(nb, struct tran_usb_extcon_info, tcpc_nb);
 	struct device *dev = extcon->dev;
-	struct tc_tcpc_noti *noti = data;
-	int pd_type;
-	int retry;
 
 	dev_info(dev, "%s event:%lu\n", __func__, event);
 
-	if (event < 8) {
-		switch (event) {
-		case TC_PD_SRC_TO_SNK:
-			dev_info(dev, "Type-C pw_swap Source to Sink!\n");
-			return 0;
-		case TC_PD_SNK_TO_SRC:
-			dev_info(dev, "Type-C pw_swap Sink to Source!\n");
-			return 0;
-		case TC_PD_TYPE:
-			break;
-		default:
-			return 0;
-		}
-
-		if (!noti)
-			return 0;
-
-		pd_type = noti->pd_type;
-
-		if (pd_type == 0 && extcon->c_role != USB_ROLE_HOST) {
-			dev_info(dev, "switch role to host\n");
-			tran_usb_extcon_set_role_debounce(extcon, USB_ROLE_HOST);
-			return 0;
-		}
-
-		if (pd_type == 1 && extcon->c_role != USB_ROLE_DEVICE) {
-			dev_info(dev, "switch role to device\n");
-			tran_usb_extcon_set_role_debounce(extcon, USB_ROLE_DEVICE);
-			return 0;
-		}
-
-		/* PD role is settling: poll up to three times before swapping */
-		for (retry = 0; retry < 3; retry++) {
-			dev_info(dev, "Delay for swap...\n");
-			msleep(500);
-			pd_type = noti->pd_type;
-
-			if (pd_type == 0 && extcon->c_role == USB_ROLE_HOST)
-				continue;
-			if (pd_type == 1 && extcon->c_role == USB_ROLE_DEVICE)
-				continue;
-			break;
-		}
-
-		if (retry == 3)
-			return 0;
-
-		if (pd_type == 0) {
-			dev_info(dev, "switch role to host\n");
-			tran_usb_extcon_set_role_debounce(extcon, USB_ROLE_HOST);
-		} else if (pd_type == 1) {
-			dev_info(dev, "switch role to device\n");
-			tran_usb_extcon_set_role_debounce(extcon, USB_ROLE_DEVICE);
-		}
-
+	/* event 0/1 are decorative only, as in the stock build */
+	if (event == TC_PD_SRC_TO_SNK) {
+		dev_info(dev, "Type-C pw_swap Source to Sink!\n");
 		return 0;
 	}
 
-	if (event == TC_TYPEC_OTG_PLUG_IN) {
+	if (event == TC_PD_SNK_TO_SRC) {
+		dev_info(dev, "Type-C pw_swap Sink to Source!\n");
+		return 0;
+	}
+
+	/*
+	 * USB_PLUG_IN/OUT and OTG_PLUG_IN/OUT are the events that the stock
+	 * tc_tcpc uses for a data cable.  The pre-port source mixed these up
+	 * with the OTG/AUDIO events, so a sink re-plug never restored the
+	 * device role and adb stayed dead until reboot.
+	 */
+	if (event == TC_TYPEC_USB_PLUG_IN) {
 		if (extcon->bypss_typec_sink)
 			return 0;
 		dev_info(dev, "Type-C SINK plug in\n");
@@ -322,14 +271,14 @@ static int tran_extcon_pd_tcpc_notifier(struct notifier_block *nb,
 		return 0;
 	}
 
-	if (event == TC_TYPEC_OTG_PLUG_OUT ||
-	    event == TC_TYPEC_AUDIO_PLUG_OUT) {
+	if (event == TC_TYPEC_USB_PLUG_OUT ||
+	    event == TC_TYPEC_OTG_PLUG_OUT) {
 		dev_info(dev, "Type-C plug out\n");
 		tran_usb_extcon_set_role(extcon, USB_ROLE_NONE);
 		return 0;
 	}
 
-	if (event == TC_TYPEC_AUDIO_PLUG_IN) {
+	if (event == TC_TYPEC_OTG_PLUG_IN) {
 		dev_info(dev, "Type-C SRC plug in\n");
 		tran_usb_extcon_set_role(extcon, USB_ROLE_HOST);
 		return 0;
