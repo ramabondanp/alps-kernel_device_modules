@@ -799,6 +799,7 @@ static void push_table_cb(void *dsi, dcs_write_gce cb, void *handle, struct LCM_
 
 static void lcm_panel_init(struct lcm *ctx)
 {
+	pr_info("[LCMDBG] %s enter\n", __func__);
 	ctx->reset_gpio =
 		devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_LOW);
 	if (IS_ERR(ctx->reset_gpio)) {
@@ -873,12 +874,15 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0x35, 0x00);
 	lcm_dcs_write_seq_static(ctx, 0x11);
 	lcm_dcs_write_seq_static(ctx, 0x29);
+	pr_info("[LCMDBG] %s exit error=%d\n", __func__, ctx->error);
 }
 
 static int lcm_disable(struct drm_panel *panel)
 {
 	struct lcm *ctx = panel_to_lcm(panel);
 
+	pr_info("[LCMDBG] %s enter enabled=%d prepared=%d\n", __func__,
+		ctx->enabled, ctx->prepared);
 	if (!ctx->enabled)
 		return 0;
 
@@ -897,6 +901,7 @@ static int lcm_unprepare(struct drm_panel *panel)
 
 	if (!ctx->prepared)
 		return 0;
+	pr_info("[LCMDBG] %s enter prepared=%d\n", __func__, ctx->prepared);
 	lcm_dcs_write_seq_static(ctx, 0xFE, 0x9a);
 	lcm_dcs_write_seq_static(ctx, 0x00, 0x08);
 	lcm_dcs_write_seq_static(ctx, 0xFE, 0x9b);
@@ -928,6 +933,7 @@ static int lcm_prepare(struct drm_panel *panel)
 
 	if (ctx->prepared)
 		return 0;
+	pr_info("[LCMDBG] %s enter prepared=%d\n", __func__, ctx->prepared);
 	lcm_panel_init(ctx);
 
 	ret = ctx->error;
@@ -947,6 +953,8 @@ static int lcm_enable(struct drm_panel *panel)
 {
 	struct lcm *ctx = panel_to_lcm(panel);
 
+	pr_info("[LCMDBG] %s enter enabled=%d prepared=%d\n", __func__,
+		ctx->enabled, ctx->prepared);
 	if (ctx->enabled)
 		return 0;
 
@@ -1133,6 +1141,7 @@ static int __maybe_unused panel_ext_lcm_power_set(struct drm_panel *panel, int o
 static int panel_doze_enable(struct drm_panel *panel,
 			void *dsi, dcs_write_gce cb, void *handle)
 {
+	pr_info("[LCMDBG] %s enter\n", __func__);
 	push_table_cb(dsi, cb, handle, aod_mode_enter_setting,
 		sizeof(aod_mode_enter_setting) / sizeof(struct LCM_setting_table));
 	g_aod_enable = 1;
@@ -1142,6 +1151,8 @@ static int panel_doze_disable(struct drm_panel *panel,
 			void *dsi, dcs_write_gce cb, void *handle)
 {
 	unsigned int aod_mapped_level = 0;
+
+	pr_info("[LCMDBG] %s enter last_aod_level=%u\n", __func__, last_aod_level);
 
 
 		aod_mapped_level = last_aod_level * 3515 / 4095;
