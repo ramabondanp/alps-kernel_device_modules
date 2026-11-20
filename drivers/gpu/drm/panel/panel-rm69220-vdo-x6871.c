@@ -984,6 +984,8 @@ static void lcm_panel_init(struct lcm *ctx)
 	pr_info("[LCM] %s end error=%d\n", __func__, ctx->error);
 }
 
+static int panel_ext_lcm_power_set(struct drm_panel *panel, int on);
+
 static int lcm_disable(struct drm_panel *panel)
 {
 	struct lcm *ctx = panel_to_lcm(panel);
@@ -1006,7 +1008,7 @@ static int lcm_disable(struct drm_panel *panel)
  * Parameter ini membuat unprepare tidak mengirim sleep-in supaya panel tetap
  * pada state hasil init bootloader. Default 1 (lihat PRETEST.md 34).
  */
-static int skip_unprepare = 1;
+static int skip_unprepare;
 module_param(skip_unprepare, int, 0644);
 
 static int lcm_unprepare(struct drm_panel *panel)
@@ -1040,6 +1042,9 @@ static int lcm_unprepare(struct drm_panel *panel)
 	g_aod_enable = 0;
 	g_hbm_enable = 0;
 
+	/* Rail dimatikan setelah panel di-sleep-in, sama seperti vendor. */
+	panel_ext_lcm_power_set(panel, 0);
+
 	return 0;
 }
 
@@ -1051,6 +1056,12 @@ static int lcm_prepare(struct drm_panel *panel)
 	if (ctx->prepared)
 		return 0;
 	pr_info("[LCM] %s enter prepared=%d\n", __func__, ctx->prepared);
+	/*
+	 * DRM revisi ini tidak punya callback lcm_power_set seperti modul
+	 * vendor, jadi rail vddi/dvdd/vci dinyalakan di sini sebelum panel
+	 * di-reset (urutan sama dengan log vendor: power_set 1 -> prepare).
+	 */
+	panel_ext_lcm_power_set(panel, 1);
 	lcm_panel_init(ctx);
 
 	ret = ctx->error;
@@ -1178,7 +1189,7 @@ static int panel_ext_reset(struct drm_panel *panel, int on)
 extern unsigned int jiffies_to_msecs(const unsigned long j);
 static unsigned long lcm_unprepare_time;
 static unsigned long lcm_prepare_time;
-static int __maybe_unused panel_ext_lcm_power_set(struct drm_panel *panel, int on)
+static int panel_ext_lcm_power_set(struct drm_panel *panel, int on)
 {
 	struct lcm *ctx = panel_to_lcm(panel);
 	int ret = 0;
