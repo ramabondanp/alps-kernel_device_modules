@@ -29,6 +29,18 @@
 #include "../mediatek/mediatek_v2/mtk_drm_graphics_base.h"
 #endif
 
+/*
+ * Tree 6.12 tidak lagi mendefinisikan Kconfig TRANSSION_DOZE_BRIGHTNESS_SUPPORT
+ * (di donor 6.1 ada di mediatek_v2/Kconfig dan di-set =m lewat
+ * tran_custom.config). Modul panel vendor untuk X6871 dibangun dengan fitur ini
+ * aktif: saat probe ia mencetak "[LCM] lcm_probe lcm_doze_backlight:3;5;7;27;"
+ * dan menyediakan jalur doze/AOD. Tanpa itu, transisi layar mati -> nyala
+ * (mtk_atomic_doze_*) berakhir layar hitam dengan DSI underrun.
+ */
+#ifndef CONFIG_TRANSSION_DOZE_BRIGHTNESS_SUPPORT
+#define CONFIG_TRANSSION_DOZE_BRIGHTNESS_SUPPORT 1
+#endif
+
 #define LCM_MIPISWITCH_TE_DELAY 0
 #define REGFLAG_DELAY           0xFFFC
 #define REGFLAG_UDELAY          0xFFFB
@@ -93,6 +105,17 @@ struct mtk_mode_switch_cmd cmd_table_60fps[] = {
 static enum RES_SWITCH_TYPE res_switch_type = RES_SWITCH_NO_USE;
 static int current_fps = 144;
 
+/* Transsion menambah struct ini ke mtk_panel_ext.h di tree mereka.
+ * Di tree MTK 6.12 murni tidak ada, jadi didefinisikan lokal. Struct harus
+ * dideklarasikan sebelum variabel g_lcm_doze_backlight di bawah. */
+struct lcm_doze_backlight {
+	unsigned int doze_backlight_num;
+	unsigned int doze_backlight_level1;
+	unsigned int doze_backlight_level2;
+	unsigned int doze_backlight_level3;
+};
+typedef struct lcm_doze_backlight tran_lcm_doze_backlight;
+
 #if IS_ENABLED(CONFIG_TRANSSION_DOZE_BRIGHTNESS_SUPPORT)
 tran_lcm_doze_backlight g_lcm_doze_backlight = {
 	.doze_backlight_num = 0,
@@ -102,14 +125,6 @@ tran_lcm_doze_backlight g_lcm_doze_backlight = {
 };
 #endif
 
-/* Transsion menambah struct ini ke mtk_panel_ext.h di tree mereka.
- * Di tree MTK 6.12 murni tidak ada, jadi didefinisikan lokal. */
-struct lcm_doze_backlight {
-	unsigned int doze_backlight_num;
-	unsigned int doze_backlight_level1;
-	unsigned int doze_backlight_level2;
-	unsigned int doze_backlight_level3;
-};
 struct tran_panel_driver_params {
 	bool panel_hbm_state;
 	unsigned int dimming_status;
