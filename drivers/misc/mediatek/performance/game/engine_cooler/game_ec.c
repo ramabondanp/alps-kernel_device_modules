@@ -9,7 +9,7 @@
 #include <linux/module.h>
 
 static int engine_cooler_enable = -1;
-static int yield_duration = 2000;
+static int ec_duration = 2000;
 static int lr_frame_time_buffer = 300000;
 static int smallest_yield_time;
 #define MAX_ENGINE_COOLER_DATA_SIZE 2
@@ -27,7 +27,7 @@ static DEFINE_MUTEX(s_ec_lock);
 DEFINE_MUTEX(g_ec_private_lock);
 
 module_param(engine_cooler_enable, int, 0644);
-module_param(yield_duration, int ,0644);
+module_param(ec_duration, int, 0644);
 module_param(lr_frame_time_buffer, int ,0644);
 module_param(smallest_yield_time, int, 0644);
 
@@ -113,11 +113,11 @@ void engine_cooler_set_last_sleep_duration(int pid, uint64_t duration)
 }
 EXPORT_SYMBOL(engine_cooler_set_last_sleep_duration);
 
-int engine_cooler_get_firtst_sleep_duration(void)
+int engine_cooler_trigger_duration(void)
 {
-	return yield_duration * 1000;
+	return ec_duration * 1000;
 }
-EXPORT_SYMBOL(engine_cooler_get_firtst_sleep_duration);
+EXPORT_SYMBOL(engine_cooler_trigger_duration);
 
 static void engine_cooler_cb_from_fpsgo(unsigned long cmd, struct render_frame_info *iter)
 {

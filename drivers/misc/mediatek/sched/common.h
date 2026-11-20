@@ -684,4 +684,50 @@ struct eas_info {
 
 void parse_eas_data(struct eas_info *info);
 
+/*
+ * Shared hook table between the MTK scheduler and trans_sched.ko.
+ *
+ * The layout is part of the vendor ABI: trans_sched.ko fills the slots in
+ * its init and the scheduler calls them. Field offsets match the stock
+ * 6.12 scheduler exactly (34 pointers, 0x110 bytes); keep this order.
+ */
+struct trans_sched_interface {
+	void *enqueue_task;			/* 0x00 */
+	void *dequeue_task;			/* 0x08 */
+	void *sched_fork;			/* 0x10 */
+	void *build_sched_domains;		/* 0x18 */
+	void *scheduler_tick;			/* 0x20 */
+	void *replace_next_task_fair;		/* 0x28 */
+	void *check_preempt_wakeup;		/* 0x30 */
+	void *binder_restore_priority;		/* 0x38 */
+	void *binder_wait_for_work;		/* 0x40 */
+	void *sync_txn_recvd;			/* 0x48 */
+	void *binder_proc_transaction_finish;	/* 0x50 */
+	void *mutex_wait_start;			/* 0x58 */
+	void *mutex_unlock_slowpath;		/* 0x60 */
+	void *alter_mutex_list_add;		/* 0x68 */
+	void *rwsem_wake;			/* 0x70 */
+	void *rwsem_wake_finish;		/* 0x78 */
+	void *alter_rwsem_list_add;		/* 0x80 */
+	void *free_task;			/* 0x88 */
+	void *task_rename;			/* 0x90 */
+	void *sched_switch_prev;		/* 0x98 */
+	void *sched_switch_next;		/* 0xa0 */
+	void *is_ux_task;			/* 0xa8 */
+	void *should_honor_sync;		/* 0xb0 */
+	void *balance_on_wakeup_ux;		/* 0xb8 */
+	void *select_task_rq_rt;		/* 0xc0 */
+	void *filterout_on_wakeup_rt;		/* 0xc8 */
+	void *find_lowest_rq;			/* 0xd0 */
+	void *adjust_rt_lowest_mask;		/* 0xd8 */
+	void *tick_balance;			/* 0xe0 */
+	void *newidle_balance;			/* 0xe8 */
+	void *xmu_schedule;			/* 0xf0 */
+	void *xmu_tick_entry;			/* 0xf8 */
+	void *xmu_cpufreq_limit;		/* 0x100 */
+	void *xmu_is_runnable_boost_enabled;	/* 0x108 */
+};
+
+extern struct trans_sched_interface g_trans_sched_interface;
+
 #endif /* _SCHED_COMMON_H */

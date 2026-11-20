@@ -2415,6 +2415,19 @@ rb_dump_done:
 	return;
 }
 
+void dma_heap_emem_printk(long emem_kb)
+{
+	long buffer_kb = get_dma_heap_buffer_total(NULL) / 1024;
+	long pool_kb = get_dma_heap_pool_total() / 1024;
+
+	pr_info("[TranMemoryInfo] %s: dmabuf buffer total: %ld KB, page pool total: %ld KB, threshold : %ld kB.\n",
+		__func__, buffer_kb, pool_kb, emem_kb);
+
+	if (buffer_kb > emem_kb)
+		dma_heap_default_show(NULL, NULL, 524);
+}
+EXPORT_SYMBOL(dma_heap_emem_printk);
+
 /* Goal: for different heap, show different info */
 static void show_help_info(struct dma_heap *heap, struct seq_file *s)
 {
