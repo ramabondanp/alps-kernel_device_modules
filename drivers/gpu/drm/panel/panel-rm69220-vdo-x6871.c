@@ -1002,25 +1002,12 @@ static int lcm_disable(struct drm_panel *panel)
 	return 0;
 }
 
-/*
- * Panel tidak punya driver iris (iris_reset/iris_enable/iris_lightoff) seperti
- * modul vendor, sehingga jalur sleep-in + init ulang berakhir layar gelap.
- * Parameter ini membuat unprepare tidak mengirim sleep-in supaya panel tetap
- * pada state hasil init bootloader. Default 1 (lihat PRETEST.md 34).
- */
-static int skip_unprepare;
-module_param(skip_unprepare, int, 0644);
-
 static int lcm_unprepare(struct drm_panel *panel)
 {
 	struct lcm *ctx = panel_to_lcm(panel);
 
 	if (!ctx->prepared)
 		return 0;
-	if (skip_unprepare) {
-		pr_info("[LCM] %s skipped (skip_unprepare=1)\n", __func__);
-		return 0;
-	}
 	lcm_dcs_write_seq_static(ctx, 0xFE, 0x9a);
 	lcm_dcs_write_seq_static(ctx, 0x00, 0x08);
 	lcm_dcs_write_seq_static(ctx, 0xFE, 0x9b);
