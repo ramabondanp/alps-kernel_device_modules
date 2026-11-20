@@ -1053,6 +1053,7 @@ static const struct i2c_device_id sgm37864_id_table[] = {
 MODULE_DEVICE_TABLE(i2c, sgm37864_id_table);
 static const struct of_device_id sgm37864_of_table[] = {
 	{ .compatible = "mediatek,sgm37864" },
+	{ .compatible = "mediatek,sgm37864_v4l2" },
 	{ },
 };
 MODULE_DEVICE_TABLE(of, sgm37864_of_table);

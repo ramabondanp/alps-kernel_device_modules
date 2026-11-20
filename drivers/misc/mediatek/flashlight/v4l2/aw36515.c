@@ -1081,6 +1081,7 @@ static const struct i2c_device_id aw36515_id_table[] = {
 MODULE_DEVICE_TABLE(i2c, aw36515_id_table);
 static const struct of_device_id aw36515_of_table[] = {
 	{ .compatible = "mediatek,aw36515" },
+	{ .compatible = "mediatek,aw36515_v4l2" },
 	{ },
 };
 MODULE_DEVICE_TABLE(of, aw36515_of_table);

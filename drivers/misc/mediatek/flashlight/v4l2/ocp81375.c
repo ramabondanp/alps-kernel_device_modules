@@ -1049,6 +1049,7 @@ static const struct i2c_device_id ocp81375_id_table[] = {
 MODULE_DEVICE_TABLE(i2c, ocp81375_id_table);
 static const struct of_device_id ocp81375_of_table[] = {
 	{ .compatible = "mediatek,ocp81375" },
+	{ .compatible = "mediatek,ocp81375_v4l2" },
 	{ },
 };
 MODULE_DEVICE_TABLE(of, ocp81375_of_table);
