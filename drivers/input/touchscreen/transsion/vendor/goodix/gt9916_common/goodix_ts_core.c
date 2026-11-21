@@ -1119,32 +1119,30 @@ static irqreturn_t goodix_ts_threadirq_func(int irq, void *data)
     bool wake;
     int ret;
 
-    ts_esd->irq_status = true;
-    core_data->irq_trig_cnt++;
-    wake = atomic_read(&core_data->suspended);
-    /* inform external module */
-    mutex_lock(&goodix_modules.mutex);
-    list_for_each_entry_safe(ext_module, next,
-                             &goodix_modules.head, list) {
-        if (IS_ERR_OR_NULL(ext_module->funcs->irq_event))
-            continue;
-        ret = ext_module->funcs->irq_event(core_data, ext_module);
-        if (ret == EVT_CANCEL_IRQEVT) {
-            mutex_unlock(&goodix_modules.mutex);
-            /*
-             * Wake only after the gesture handler consumed the event.
-             * Waking first runs the display resume notifier, which resets
-             * the IC and loses the double-tap/FOD data.
-             */
-            if (wake)
-                pm_wakeup_event(&core_data->input_dev->dev, 2000);
-            return IRQ_HANDLED;
-        }
-    }
-    mutex_unlock(&goodix_modules.mutex);
+	ts_esd->irq_status = true;
+	core_data->irq_trig_cnt++;
+	wake = atomic_read(&core_data->suspended);
+	/*
+	 * Stock wakes before dispatching the IRQ.  The gesture read goes over
+	 * the still-suspended SPI bus; waking afterwards made the IC return an
+	 * invalid (checksum-error) event, so DT2W/FOD never produced a key.
+	 */
+	if (wake)
+		pm_wakeup_event(&core_data->input_dev->dev, 2000);
 
-    if (wake)
-        pm_wakeup_event(&core_data->input_dev->dev, 2000);
+	/* inform external module */
+	mutex_lock(&goodix_modules.mutex);
+	list_for_each_entry_safe(ext_module, next,
+	                         &goodix_modules.head, list) {
+		if (IS_ERR_OR_NULL(ext_module->funcs->irq_event))
+			continue;
+		ret = ext_module->funcs->irq_event(core_data, ext_module);
+		if (ret == EVT_CANCEL_IRQEVT) {
+			mutex_unlock(&goodix_modules.mutex);
+			return IRQ_HANDLED;
+		}
+	}
+	mutex_unlock(&goodix_modules.mutex);
 
     /* read touch data from touch device */
     ret = hw_ops->event_handler(core_data, ts_event);

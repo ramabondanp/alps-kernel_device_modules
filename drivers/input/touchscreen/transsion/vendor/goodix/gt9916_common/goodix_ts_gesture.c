@@ -131,8 +131,7 @@ static int gsx_gesture_ist(struct goodix_ts_core *cd,
 	struct gesture_module *gsx = module->priv_data;
 	struct goodix_ts_hw_ops *hw_ops = cd->hw_ops;
 	struct goodix_ts_event gs_event = { 0 };
-	int ret = -EINVAL;
-	int retry;
+	int ret;
 
 	if (atomic_read(&cd->suspended) == 0 || gsx->gesture_type == 0)
 		return EVT_CONTINUE;
@@ -140,20 +139,8 @@ static int gsx_gesture_ist(struct goodix_ts_core *cd,
 	ts_info("gesture irq: suspended=%d type=0x%02x",
 		atomic_read(&cd->suspended), gsx->gesture_type);
 
-	/*
-	 * Do not call pm_wakeup_event() here: it starts display resume, whose
-	 * notifier resets the touch IC before we get to read the gesture data.
-	 * goodix_ts_threadirq_func() wakes the system after this handler has
-	 * consumed the event.
-	 */
-
-	for (retry = 0; retry < 5; retry++) {
-		memset(&gs_event, 0, sizeof(gs_event));
-		ret = hw_ops->event_handler(cd, &gs_event);
-		if (!ret)
-			break;
-		msleep(10);
-	}
+	memset(&gs_event, 0, sizeof(gs_event));
+	ret = hw_ops->event_handler(cd, &gs_event);
 	if (ret) {
 		ts_err("failed get gesture data (ret=%d)", ret);
 		goto re_send_ges_cmd;
@@ -218,6 +205,11 @@ static int gsx_gesture_ist(struct goodix_ts_core *cd,
 re_send_ges_cmd:
 	if (hw_ops->gesture(cd, 0))
 		ts_info("warning: failed re_send gesture cmd");
+
+	/* Stock clears the event on the invalid/error path too. */
+	if (hw_ops->after_event_handler)
+		hw_ops->after_event_handler(cd);
+
 	return EVT_CANCEL_IRQEVT;
 }
 
