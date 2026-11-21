@@ -1436,12 +1436,22 @@ int vcp_enc_encode(struct venc_inst *inst, unsigned int bs_mode,
 		if (!inst->frm_cnt) {
 			dma_addr_t fb0 = frm_buf ?
 				frm_buf->fb_addr[0].dma_addr : 0;
+			dma_addr_t in0 = vsi->venc.input_addr[0];
+			dma_addr_t in1 = vsi->venc.input_addr[1];
+			dma_addr_t bsa = vsi->venc.bs_addr;
+			dma_addr_t bsd = vsi->venc.bs_dma;
 
 			mtk_v4l2_debug(0,
 				"first %s: fb[0]=%pad planes=%u bs=%pad size=%zu",
 				bs_mode == VENC_BS_MODE_FRAME ? "frame" : "header",
 				&fb0, frm_buf ? frm_buf->num_planes : 0,
 				&bs_buf->dma_addr, bs_buf->size);
+			mtk_v4l2_debug(0,
+				"VSI venc: input0=%pad input1=%pad bs_addr=%pad bs_dma=%pad cfg %dx%d fmt=%d slbc=%d/0x%x",
+				&in0, &in1, &bsa, &bsd,
+				vsi->config.pic_w, vsi->config.pic_h,
+				vsi->config.input_fourcc, vsi->config.slbc_ready,
+				vsi->config.slbc_addr);
 		}
 
 		if (bs_buf->dma_general_buf != 0) {
