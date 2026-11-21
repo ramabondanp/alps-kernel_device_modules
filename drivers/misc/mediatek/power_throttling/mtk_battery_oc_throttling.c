@@ -555,7 +555,7 @@ static int battery_oc_parse_dt(struct platform_device *pdev, unsigned int num)
 	const int r_fg_val[] = { 50, 20, 10, 5 };
 	int i, ret = 0, oc_thd_size = 0;
 	unsigned int *oc_thd;
-	u32 regval = 0;
+	u32 regval = 0, r_fg_diff = 15;
 
 
 	/* Get r-fg-value/car-tune-value from gauge dts node */
@@ -571,7 +571,13 @@ static int battery_oc_parse_dt(struct platform_device *pdev, unsigned int num)
 		dev_notice(&pdev->dev, "get r-fg-value fail\n");
 		return -EINVAL;
 	}
-	priv->r_fg_value *= UNIT_TRANS_10;
+	ret = of_property_read_u32(np, "rfg-mtk-tran-conf-diff", &r_fg_diff);
+	if (ret) {
+		dev_notice(&pdev->dev, "get r_fg_diff fail\n");
+		r_fg_diff = 15;
+	}
+	if (priv->r_fg_value < r_fg_diff)
+		priv->r_fg_value *= UNIT_TRANS_10;
 
 	ret = of_property_read_u32(np, "unit-multiple", &priv->unit_multiple);
 	if (priv->ocdata->cust_rfg && ret) {
