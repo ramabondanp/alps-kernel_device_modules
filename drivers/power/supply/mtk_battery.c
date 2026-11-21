@@ -1721,6 +1721,7 @@ void fg_custom_init_from_dts(struct platform_device *dev,
 	int r_pseudo100_raw = 0, r_pseudo100_col = 0;
 	int lk_v = 0, lk_i = 0, shuttime = 0;
 	int is_evb_board = 0;
+	int r_fg_diff = 15;
 	char node_name[128];
 	struct fuel_gauge_custom_data *fg_cust_data;
 	struct fuel_gauge_table_custom_data *fg_table_cust_data;
@@ -1802,8 +1803,10 @@ void fg_custom_init_from_dts(struct platform_device *dev,
 
 	fg_read_dts_val(gm, np, "UNIT_MULTIPLE", &(fg_cust_data->unit_multiple), 1);
 
-	fg_read_dts_val(gm, np, "R_FG_VALUE", &(fg_cust_data->r_fg_value),
-		UNIT_TRANS_10);
+	fg_read_dts_val(gm, np, "rfg-mtk-tran-conf-diff", &r_fg_diff, 1);
+	fg_read_dts_val(gm, np, "r-fg-value", &(fg_cust_data->r_fg_value), 1);
+	if (fg_cust_data->r_fg_value < r_fg_diff)
+		fg_cust_data->r_fg_value *= UNIT_TRANS_10;
 
 	fg_read_dts_val(gm, np, "CURR_MEASURE_20A",
 		&(fg_cust_data->curr_measure_20a), 1);
