@@ -507,7 +507,12 @@ static int disp_c3d_set_3dlut(struct mtk_ddp_comp *comp,
 	}
 
 	ret = disp_c3d_check_sram(comp, true);
-	if(!ret) {
+	if (mtk_crtc->is_dual_pipe && comp_c3d1) {
+		bool ret_right = disp_c3d_check_sram(comp_c3d1, true);
+
+		ret = ret && ret_right;
+	}
+	if (!ret) {
 		if (!pm_ret)
 			mtk_vidle_pq_power_put(__func__);
 		mutex_unlock(&primary_data->clk_lock);
