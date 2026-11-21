@@ -233,9 +233,10 @@ static const char *tran_goodix_chip_name(u32 id)
 	u8 b2 = (id >> 16) & 0xff;
 	u8 b3 = (id >> 24) & 0xff;
 
-	if (b0 == 0x12 && b1 == 0x31)
+	/* Some parts return the four ID bytes big-endian, accept both. */
+	if ((b0 == 0x12 && b1 == 0x31) || (b0 == 0x31 && b1 == 0x12))
 		return "GOODIX_GW9578";
-	if (b0 == 0x12 && b1 == 0x61)
+	if ((b0 == 0x12 && b1 == 0x61) || (b0 == 0x61 && b1 == 0x12))
 		return "GOODIX_GW9598";
 	if (b0 == 0x05 && b1 == 0x02 && b2 == 0x02 && b3 == 0x01)
 		return "GOODIX_GF3956";
@@ -298,7 +299,7 @@ int tran_get_fp_sensor_chip_id(struct tran_fp_data *tran_fp_datap)
 	if (!tran_fp_datap)
 		return -ENODEV;
 
-	for (retry = 0; retry < 3; retry++) {
+	for (retry = 0; retry < 5; retry++) {
 		if (tran_fp_datap->reset)
 			tran_fp_datap->reset(tran_fp_datap,
 					     tran_fp_datap->inter_delay,
@@ -1291,6 +1292,25 @@ static bool tran_ic_name_is(const char *ic_name, const char *short_name)
 }
 
 void setVendorName(void) {
+    /*
+     * If probe detection failed or userspace only told us "goodix", keep the
+     * HAL usable: X6871 is an optical FOD and the Goodix TEE provider for
+     * GW9578/GW9598 is goodix_opt_tee.  Without this the sysfs node stays
+     * empty and the fingerprint HAL bails out during boot.
+     */
+    if ((!g_tran_fp_datap->ic_name[0] ||
+         !strcmp(g_tran_fp_datap->ic_name, "null")) &&
+        g_tran_fp_datap->tran_fp_dev &&
+        g_tran_fp_datap->tran_fp_dev->dev.of_node &&
+        of_find_property(g_tran_fp_datap->tran_fp_dev->dev.of_node,
+                         "goodix", NULL)) {
+        strscpy(g_tran_fp_datap->vendor_name, "goodix_opt_tee",
+                sizeof(g_tran_fp_datap->vendor_name));
+        TRAN_FP_INFO("unknown Goodix id, assuming optical TEE vendor_name=%s",
+                     g_tran_fp_datap->vendor_name);
+        return;
+    }
+
     if (tran_ic_name_is(g_tran_fp_datap->ic_name, "GW9578") ||
         tran_ic_name_is(g_tran_fp_datap->ic_name, "GW9598")) {
         strscpy(g_tran_fp_datap->vendor_name, "goodix_opt_tee", sizeof(g_tran_fp_datap->vendor_name));

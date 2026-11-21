@@ -819,9 +819,12 @@ static int  tran_fp_probe(struct spi_device *tran_fp_dev)
 	 */
 	if (tran_fp_detect_chip) {
 		status = tran_get_fp_sensor_chip_id(tran_fp_datap);
-		if (status < 0)
+		if (status < 0) {
 			TRAN_FP_ERROR("fingerprint chip not detected (%d), continuing",
 				      status);
+			/* Keep HAL usable with the DT-declared Goodix TEE name. */
+			setVendorName();
+		}
 		status = 0;
 	}
 

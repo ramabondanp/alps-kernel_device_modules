@@ -134,8 +134,11 @@ static int gsx_gesture_ist(struct goodix_ts_core *cd,
 	int ret = -EINVAL;
 	int retry;
 
-	if (atomic_read(&cd->suspended) == 0 || gsx->gesture_type == 0)
+	if (cd->tools_ctrl_sync || gsx->gesture_type == 0)
 		return EVT_CONTINUE;
+
+	ts_info("gesture irq: suspended=%d type=0x%02x",
+		atomic_read(&cd->suspended), gsx->gesture_type);
 
 	pm_wakeup_event(&cd->pdev->dev, 2000);
 
@@ -161,6 +164,7 @@ static int gsx_gesture_ist(struct goodix_ts_core *cd,
 	switch (gs_event.gesture_type) {
 	case GESTURE_SINGLECLICK:
 		if (gsx->gesture_type & GESTURE_SINGLE_TAP_BIT) {
+			tran_gesture_set_code(GESTURE_SINGLECLICK);
 			input_report_key(cd->input_dev, TRAN_KEY_SINGLE_TAP, 1);
 			input_sync(cd->input_dev);
 			input_report_key(cd->input_dev, TRAN_KEY_SINGLE_TAP, 0);
@@ -178,12 +182,14 @@ static int gsx_gesture_ist(struct goodix_ts_core *cd,
 		break;
 	case GESTURE_FOD_DOWN:
 		if (gsx->gesture_type & GESTURE_FOD_PRESS_BIT) {
+			tran_gesture_set_code(GESTURE_FOD_DOWN);
 			input_report_key(cd->input_dev, TRAN_KEY_FOD, 1);
 			input_sync(cd->input_dev);
 		}
 		break;
 	case GESTURE_FOD_UP:
 		if (gsx->gesture_type & GESTURE_FOD_PRESS_BIT) {
+			tran_gesture_set_code(GESTURE_FOD_UP);
 			input_report_key(cd->input_dev, TRAN_KEY_FOD, 0);
 			input_sync(cd->input_dev);
 		}
