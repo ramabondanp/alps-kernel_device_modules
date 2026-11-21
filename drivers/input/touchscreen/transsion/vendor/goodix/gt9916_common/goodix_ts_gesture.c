@@ -17,6 +17,8 @@
 #include <linux/uaccess.h>
 #include "goodix_ts_core.h"
 
+extern void tran_gesture_set_code(u8 code);
+
 #define GESTURE_DOUBLE_TAP_BIT		BIT(0)
 #define GESTURE_SINGLE_TAP_BIT		BIT(1)
 #define GESTURE_FOD_PRESS_BIT		BIT(2)
@@ -119,9 +121,9 @@ static int gsx_gesture_exit(struct goodix_ts_core *cd,
 	return 0;
 }
 
-#define TRAN_KEY_DT2W		190 /* 0xbe - stock GestureHandle double-tap */
+#define TRAN_KEY_SINGLE_TAP	190 /* 0xbe - stock GestureHandle single-tap */
 #define TRAN_KEY_FOD		195 /* 0xc3 - stock GestureHandle FOD press/release */
-#define TRAN_KEY_SINGLE_TAP	198 /* 0xc6 - stock GestureHandle single-tap */
+#define TRAN_KEY_DT2W		198 /* 0xc6 - stock GestureHandle KEY_F26 (double-tap/gestures) */
 
 static int gsx_gesture_ist(struct goodix_ts_core *cd,
 			   struct goodix_ext_module *module)
@@ -167,6 +169,7 @@ static int gsx_gesture_ist(struct goodix_ts_core *cd,
 		break;
 	case GESTURE_DOUBLECLICK:
 		if (gsx->gesture_type & GESTURE_DOUBLE_TAP_BIT) {
+			tran_gesture_set_code(GESTURE_DOUBLECLICK);
 			input_report_key(cd->input_dev, TRAN_KEY_DT2W, 1);
 			input_sync(cd->input_dev);
 			input_report_key(cd->input_dev, TRAN_KEY_DT2W, 0);

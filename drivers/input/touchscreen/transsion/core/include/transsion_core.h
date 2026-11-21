@@ -51,6 +51,7 @@ void init_tran_platform_info(void);
 int register_ts_controller(struct tran_ts_controller *controller);
 int unregister_ts_controller(struct tran_ts_controller *controller);
 int get_tpd_ops(struct tran_ts_controller *controller, struct tran_core_ops **ops);
+void tran_gesture_set_code(u8 code);
 
 enum TS_CORE_MODE {
 	TRAN_ACTIVE_MODE = 10,

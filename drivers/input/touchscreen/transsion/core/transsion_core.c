@@ -301,16 +301,49 @@ static void controller_match_work(struct work_struct *work)
 }
 
 static int g_tran_gesture_mode = 1;
-static struct proc_dir_entry *g_gesture_procs[7];
-static const char *const g_gesture_proc_names[7] = {
+static u8 g_tran_gesture_code;
+
+void tran_gesture_set_code(u8 code)
+{
+	g_tran_gesture_code = code;
+}
+EXPORT_SYMBOL_GPL(tran_gesture_set_code);
+
+static struct proc_dir_entry *g_gesture_data_procs[4];
+static const char *const g_gesture_data_proc_names[4] = {
 	"main_gesture_function",
+	"gesture_function",
+	"main_gesture_data",
+	"gesture_data",
+};
+
+static struct proc_dir_entry *g_gesture_procs[5];
+static const char *const g_gesture_proc_names[5] = {
 	"main_gesture_state",
 	"main_gesture_flag",
-	"gesture_function",
 	"gesture_state",
 	"gesture_flag",
 	"touch_gesture",
 };
+
+static ssize_t tran_gesture_data_read(struct file *file, char __user *buf,
+				      size_t count, loff_t *ppos)
+{
+	char tmp[8];
+	u8 code = g_tran_gesture_code;
+	char ch = (code == 0xcc) ? 'f' : (char)code;
+	int len;
+
+	if (*ppos > 0)
+		return 0;
+	len = scnprintf(tmp, sizeof(tmp), "%c\n", ch);
+	if (count < len)
+		return -EINVAL;
+	if (copy_to_user(buf, tmp, len))
+		return -EFAULT;
+	*ppos = len;
+	return len;
+}
 
 static ssize_t tran_gesture_proc_read(struct file *file, char __user *buf,
 				      size_t count, loff_t *ppos)
@@ -350,6 +383,11 @@ static ssize_t tran_gesture_proc_write(struct file *file, const char __user *buf
 	return count;
 }
 
+static const struct proc_ops tran_gesture_data_proc_ops = {
+	.proc_read = tran_gesture_data_read,
+	.proc_write = tran_gesture_proc_write,
+};
+
 static const struct proc_ops tran_gesture_proc_ops = {
 	.proc_read = tran_gesture_proc_read,
 	.proc_write = tran_gesture_proc_write,
@@ -359,6 +397,14 @@ static void tran_gesture_proc_init(void)
 {
 	int i;
 
+	for (i = 0; i < ARRAY_SIZE(g_gesture_data_proc_names); i++) {
+		g_gesture_data_procs[i] = proc_create(g_gesture_data_proc_names[i],
+						      0666, NULL,
+						      &tran_gesture_data_proc_ops);
+		if (!g_gesture_data_procs[i])
+			TRAN_ERROR("Failed to create proc entry for %s",
+				   g_gesture_data_proc_names[i]);
+	}
 	for (i = 0; i < ARRAY_SIZE(g_gesture_proc_names); i++) {
 		g_gesture_procs[i] = proc_create(g_gesture_proc_names[i], 0666,
 						 NULL, &tran_gesture_proc_ops);
@@ -372,6 +418,12 @@ static void tran_gesture_proc_deinit(void)
 {
 	int i;
 
+	for (i = 0; i < ARRAY_SIZE(g_gesture_data_proc_names); i++) {
+		if (g_gesture_data_procs[i]) {
+			proc_remove(g_gesture_data_procs[i]);
+			g_gesture_data_procs[i] = NULL;
+		}
+	}
 	for (i = 0; i < ARRAY_SIZE(g_gesture_proc_names); i++) {
 		if (g_gesture_procs[i]) {
 			proc_remove(g_gesture_procs[i]);
