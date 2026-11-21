@@ -2199,8 +2199,12 @@ static int venc_vcp_set_param(unsigned long handle,
 		inst->vsi->config.svp_mode = enc_prm->svp_mode;
 		inst->vsi->config.tsvc = enc_prm->tsvc;
 		inst->vsi->config.highquality = enc_prm->highquality;
-		inst->vsi->config.max_qp = enc_prm->max_qp;
-		inst->vsi->config.min_qp = enc_prm->min_qp;
+		inst->vsi->config.max_qp[0] = enc_prm->max_qp;
+		inst->vsi->config.max_qp[1] = enc_prm->max_qp;
+		inst->vsi->config.max_qp[2] = enc_prm->max_qp;
+		inst->vsi->config.min_qp[0] = enc_prm->min_qp;
+		inst->vsi->config.min_qp[1] = enc_prm->min_qp;
+		inst->vsi->config.min_qp[2] = enc_prm->min_qp;
 		inst->vsi->config.i_p_qp_delta = enc_prm->ip_qpdelta;
 		inst->vsi->config.qp_control_mode = enc_prm->qp_control_mode;
 		inst->vsi->config.frame_level_qp = enc_prm->framelvl_qp;

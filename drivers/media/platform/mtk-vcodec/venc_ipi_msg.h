@@ -518,8 +518,8 @@ struct venc_vcu_config {
 	__u32 svp_mode;
 	__u32 svp_is_hal_secure_handle;
 	__u32 tsvc;
-	__u32 max_qp;
-	__u32 min_qp;
+	__u32 max_qp[3];
+	__u32 min_qp[3];
 	__u32 i_p_qp_delta;
 	__u32 qp_control_mode;
 	__u32 frame_level_qp;
