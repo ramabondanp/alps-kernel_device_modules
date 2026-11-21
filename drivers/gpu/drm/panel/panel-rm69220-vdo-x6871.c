@@ -1190,26 +1190,19 @@ static int panel_ext_lcm_power_set(struct drm_panel *panel, int on)
 static int panel_doze_enable(struct drm_panel *panel,
 			void *dsi, dcs_write_gce cb, void *handle)
 {
-	push_table_cb(dsi, cb, handle, aod_mode_enter_setting,
-		sizeof(aod_mode_enter_setting) / sizeof(struct LCM_setting_table));
+	pr_info("[LCM] %s enter\n", __func__);
 	g_aod_enable = 1;
+	pr_info("[LCM] %s exit\n", __func__);
 	return 0;
 }
 static int panel_doze_disable(struct drm_panel *panel,
 			void *dsi, dcs_write_gce cb, void *handle)
 {
-	unsigned int aod_mapped_level = 0;
-
-
-
-		aod_mapped_level = last_aod_level * 3515 / 4095;
-	aod_mode_exit_setting[3].para_list[0] = (aod_mapped_level >> 8) & 0xf;
-	aod_mode_exit_setting[3].para_list[1] = aod_mapped_level & 0xFF;
-	push_table_cb(dsi, cb, handle, aod_mode_exit_setting,
-		sizeof(aod_mode_exit_setting) / sizeof(struct LCM_setting_table));
+	pr_info("[LCM] %s enter\n", __func__);
 	g_dim_enable = 0;
 	g_need_dim_enable = 0;
 	g_aod_enable = 0;
+	pr_info("[LCM] %s exit\n", __func__);
 	return 0;
 }
 
@@ -1217,27 +1210,27 @@ static int panel_doze_disable(struct drm_panel *panel,
 static int panel_set_aod_light_mode(void *dsi, dcs_write_gce cb,
 			void *handle, unsigned int level)
 {
-	char bl_aod_level[] = {0x51, 0x0F, 0xFE};
+	char page0[] = {0xFE, 0x00};
+	char bl_aod_level[] = {0x51, 0x01, 0x58};
 	unsigned int aod_mapped_level = 0;
 
-	if (level == 8) {
-		aod_mapped_level = 0x005;
-		last_aod_level = 19;
-	} else if (level == 167) {
-		aod_mapped_level = 0x748;
-		last_aod_level = 184;
-	} else if (level == 330) {
-		aod_mapped_level = 0xFFE;
-		last_aod_level = 342;
+	if (!cb)
+		return -1;
+
+	if (level >= 1 && level < 100) {
+		aod_mapped_level = 0x03e;
+	} else if (level >= 100 && level < 300) {
+		aod_mapped_level = 0x057;
 	} else {
-		aod_mapped_level = 0xFFE;
-		last_aod_level = 342;
+		aod_mapped_level = 0x158;
 	}
 
-	pr_info("[LCM] %s level is %u,aod_mapped_level is %d\n", __func__, level, aod_mapped_level);
+	pr_info("[LCM] %s level is %u, aod_mapped_level is %u\n",
+		__func__, level, aod_mapped_level);
 
-	bl_aod_level[1] = ((aod_mapped_level >> 8) & 0x0f);
-	bl_aod_level[2] = (aod_mapped_level & 0xff);
+	bl_aod_level[1] = (aod_mapped_level >> 8) & 0x0f;
+	bl_aod_level[2] = aod_mapped_level & 0xff;
+	cb(dsi, handle, page0, ARRAY_SIZE(page0));
 	cb(dsi, handle, bl_aod_level, ARRAY_SIZE(bl_aod_level));
 
 	return 0;
