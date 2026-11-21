@@ -119,20 +119,33 @@ static int gsx_gesture_exit(struct goodix_ts_core *cd,
 	return 0;
 }
 
+#define TRAN_KEY_DT2W		190 /* 0xbe - stock GestureHandle double-tap */
+#define TRAN_KEY_FOD		195 /* 0xc3 - stock GestureHandle FOD press/release */
+#define TRAN_KEY_SINGLE_TAP	198 /* 0xc6 - stock GestureHandle single-tap */
+
 static int gsx_gesture_ist(struct goodix_ts_core *cd,
 			   struct goodix_ext_module *module)
 {
 	struct gesture_module *gsx = module->priv_data;
 	struct goodix_ts_hw_ops *hw_ops = cd->hw_ops;
 	struct goodix_ts_event gs_event = { 0 };
-	int ret;
+	int ret = -EINVAL;
+	int retry;
 
 	if (atomic_read(&cd->suspended) == 0 || gsx->gesture_type == 0)
 		return EVT_CONTINUE;
 
-	ret = hw_ops->event_handler(cd, &gs_event);
+	pm_wakeup_event(&cd->pdev->dev, 2000);
+
+	for (retry = 0; retry < 5; retry++) {
+		memset(&gs_event, 0, sizeof(gs_event));
+		ret = hw_ops->event_handler(cd, &gs_event);
+		if (!ret)
+			break;
+		msleep(10);
+	}
 	if (ret) {
-		ts_err("failed get gesture data");
+		ts_err("failed get gesture data (ret=%d)", ret);
 		goto re_send_ges_cmd;
 	}
 
@@ -146,39 +159,29 @@ static int gsx_gesture_ist(struct goodix_ts_core *cd,
 	switch (gs_event.gesture_type) {
 	case GESTURE_SINGLECLICK:
 		if (gsx->gesture_type & GESTURE_SINGLE_TAP_BIT) {
-			input_report_key(cd->input_dev, KEY_WAKEUP, 1);
+			input_report_key(cd->input_dev, TRAN_KEY_SINGLE_TAP, 1);
 			input_sync(cd->input_dev);
-			input_report_key(cd->input_dev, KEY_WAKEUP, 0);
+			input_report_key(cd->input_dev, TRAN_KEY_SINGLE_TAP, 0);
 			input_sync(cd->input_dev);
 		}
 		break;
 	case GESTURE_DOUBLECLICK:
 		if (gsx->gesture_type & GESTURE_DOUBLE_TAP_BIT) {
-			input_report_key(cd->input_dev, KEY_WAKEUP, 1);
+			input_report_key(cd->input_dev, TRAN_KEY_DT2W, 1);
 			input_sync(cd->input_dev);
-			input_report_key(cd->input_dev, KEY_WAKEUP, 0);
+			input_report_key(cd->input_dev, TRAN_KEY_DT2W, 0);
 			input_sync(cd->input_dev);
 		}
 		break;
 	case GESTURE_FOD_DOWN:
 		if (gsx->gesture_type & GESTURE_FOD_PRESS_BIT) {
-			input_report_key(cd->input_dev, BTN_TOUCH, 1);
-			input_mt_slot(cd->input_dev, 0);
-			input_mt_report_slot_state(cd->input_dev, MT_TOOL_FINGER, 1);
-			input_report_abs(cd->input_dev, ABS_MT_POSITION_X,
-					 gs_event.touch_data.coords[0].x);
-			input_report_abs(cd->input_dev, ABS_MT_POSITION_Y,
-					 gs_event.touch_data.coords[0].y);
-			input_report_abs(cd->input_dev, ABS_MT_TOUCH_MAJOR,
-					 gs_event.touch_data.coords[0].w);
+			input_report_key(cd->input_dev, TRAN_KEY_FOD, 1);
 			input_sync(cd->input_dev);
 		}
 		break;
 	case GESTURE_FOD_UP:
 		if (gsx->gesture_type & GESTURE_FOD_PRESS_BIT) {
-			input_report_key(cd->input_dev, BTN_TOUCH, 0);
-			input_mt_slot(cd->input_dev, 0);
-			input_mt_report_slot_state(cd->input_dev, MT_TOOL_FINGER, 0);
+			input_report_key(cd->input_dev, TRAN_KEY_FOD, 0);
 			input_sync(cd->input_dev);
 		}
 		break;

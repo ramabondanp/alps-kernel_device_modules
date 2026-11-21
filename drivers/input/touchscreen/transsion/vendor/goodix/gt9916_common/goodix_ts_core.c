@@ -1365,6 +1365,9 @@ static int goodix_ts_input_dev_config(struct goodix_ts_core *core_data)
     __set_bit(BTN_TOUCH, input_dev->keybit);
     __set_bit(BTN_TOOL_FINGER, input_dev->keybit);
     __set_bit(KEY_WAKEUP, input_dev->keybit);
+    __set_bit(190, input_dev->keybit);
+    __set_bit(195, input_dev->keybit);
+    __set_bit(198, input_dev->keybit);
 
 #ifdef INPUT_PROP_DIRECT
     __set_bit(INPUT_PROP_DIRECT, input_dev->propbit);
