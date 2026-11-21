@@ -516,7 +516,7 @@ static int disp_c3d_set_3dlut(struct mtk_ddp_comp *comp,
 		if (!pm_ret)
 			mtk_vidle_pq_power_put(__func__);
 		mutex_unlock(&primary_data->clk_lock);
-		return false;
+		return -EAGAIN;
 	}
 
 	disp_c3d_flush_3dlut_sram(comp, C3D_USERSPACE);
@@ -918,9 +918,9 @@ int disp_c3d_cfg_set_lut(struct mtk_ddp_comp *comp,
 	}
 
 	disp_c3d_set_1dlut(comp, handle, data);
-	disp_c3d_set_3dlut(comp, handle, (struct DISP_C3D_LUT *)data);
+	ret = disp_c3d_set_3dlut(comp, handle, (struct DISP_C3D_LUT *)data);
 
-	if (atomic_read(&primary_data->c3d_sram_hw_init) == 0) {
+	if (ret == 0 && atomic_read(&primary_data->c3d_sram_hw_init) == 0) {
 		disp_c3d_bypass(comp, 0, PQ_FEATURE_DEFAULT, handle);
 		atomic_set(&primary_data->c3d_sram_hw_init, 1);
 	}
