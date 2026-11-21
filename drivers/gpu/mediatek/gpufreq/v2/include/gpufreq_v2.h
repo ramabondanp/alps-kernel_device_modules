@@ -556,6 +556,15 @@ struct gpufreq_shared_status {
 	int mtcmos_count;
 	int cg_count;
 	int active_count;
+	/*
+	 * The stock X6871 gpufreq wrapper reads shader_present at offset
+	 * 0xe0 and temperature at 0x38.  The stock shared-status layout has
+	 * two extra 4-byte fields between active_count and temperature;
+	 * keep the same offsets so the GPUEB firmware and the AP wrapper
+	 * agree on the shared-memory layout.
+	 */
+	unsigned int reserved0;
+	unsigned int reserved1;
 	int temperature;
 	int temper_comp_norm_gpu;
 	int temper_comp_high_gpu;
