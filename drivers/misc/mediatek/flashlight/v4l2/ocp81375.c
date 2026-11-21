@@ -21,7 +21,7 @@
 #else
 #define OCP81375_FLED_NAME "flash"
 #endif
-#define OCP81375_NAME	"ocp81375"
+#define OCP81375_NAME	"ocp81375_v4l2"
 #define OCP81375_I2C_ADDR	(0x63)
 #define OCP81375_LOGD(format, args...)\
 	pr_debug(OCP81375_NAME "[%s] " format, __func__, ##args)
@@ -777,6 +777,9 @@ static int ocp81375_ioctl(unsigned int cmd, unsigned long arg)
 		OCP81375_LOGI("FLASH_IOC_GET_HW_FAULT(%d)\n", channel);
 		fl_arg->arg = ocp81375_get_hw_fault(ocp81375_flash_data);
 		break;
+	case FLASH_IOC_IS_CHARGER_READY:
+		fl_arg->arg = FLASHLIGHT_CHARGER_READY;
+		break;
 	default:
 		OCP81375_LOGI("No such command and arg(%d): (%d, %d)\n",
 				channel, _IOC_NR(cmd), (int)fl_arg->arg);
@@ -956,20 +959,20 @@ static int ocp81375_probe(struct i2c_client *client)
 	OCP81375_LOGI("device_id_zhengshi =0x%x\n",device_id);
 	if (device_id == 0x3a) {
 		OCP81375_LOGI("OCP81375 DEVICE_ID is match device_id =0x%x\n",device_id);
-		rval = ocp81375_subdev_init(flash, OCP81375_LED0, "ocp81375-led0");
+		rval = ocp81375_subdev_init(flash, OCP81375_LED0, "ocp81375_v4l2-led0");
 		if (rval < 0)
 			return rval;
-		rval = ocp81375_subdev_init(flash, OCP81375_LED1, "ocp81375-led1");
+		rval = ocp81375_subdev_init(flash, OCP81375_LED1, "ocp81375_v4l2-led1");
 		if (rval < 0)
 			return rval;
 	} else {
 		pr_err("OCP81375 DEVICE_ID is mismatch device_id =0x%x\n",device_id);
-		rval = ocp81375_subdev_init(flash, OCP81375_LED0, "ocp81375-led0-f");
-		OCP81375_LOGI("device_id ocp81375-led0-f\n");
+		rval = ocp81375_subdev_init(flash, OCP81375_LED0, "ocp81375_v4l2-led0-f");
+		OCP81375_LOGI("device_id ocp81375_v4l2-led0-f\n");
 		if (rval < 0)
 			return rval;
-		rval = ocp81375_subdev_init(flash, OCP81375_LED1, "ocp81375-led1-f");
-		OCP81375_LOGI("device_id ocp81375-led1-f\n");
+		rval = ocp81375_subdev_init(flash, OCP81375_LED1, "ocp81375_v4l2-led1-f");
+		OCP81375_LOGI("device_id ocp81375_v4l2-led1-f\n");
 		if (rval < 0)
 			return rval;
 		ocp81375_pinctrl_set(flash,
