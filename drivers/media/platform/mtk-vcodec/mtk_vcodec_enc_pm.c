@@ -99,9 +99,17 @@ void mtk_venc_init_ctx_pm(struct mtk_vcodec_ctx *ctx)
 	slbc_ops.deactivate = mtk_slb_user_deactivate_request;
 
 	if (slbc_register_activate_ops(&slbc_ops) != 0) {
-		pr_info("register cb slbc_register_activate_ops fail\n");
-	}
-	if (slbc_request(&ctx->sram_data) >= 0) {
+		/*
+		 * The 6.1 slbc_ops registration does not match the 6.12
+		 * slbc driver.  Without the activate/deactivate callbacks the
+		 * VENC must not be handed an SLBC buffer: doing so leaves the
+		 * encoder DMA pointing at an unmanaged address and faults the
+		 * VENC at IOVA 0.
+		 */
+		pr_info("register cb slbc_register_activate_ops fail, disable slbc\n");
+		ctx->use_slbc = 0;
+		ctx->slbc_addr = 0;
+	} else if (slbc_request(&ctx->sram_data) >= 0) {
 		ctx->use_slbc = 1;
 		ctx->slbc_addr = (unsigned int)(unsigned long)ctx->sram_data.paddr;
 	} else {
