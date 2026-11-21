@@ -1336,6 +1336,22 @@ int vcp_enc_encode(struct venc_inst *inst, unsigned int bs_mode,
 		return -EINVAL;
 	}
 
+	/*
+	 * A zero dma_addr means userspace handed us an unmapped buffer.  Letting
+	 * that reach the VENC makes the hardware read/write IOVA 0, kills the
+	 * VCP daemon and takes the decoder down with it.  Fail cleanly instead.
+	 */
+	if (frm_buf && !frm_buf->fb_addr[0].dma_addr) {
+		mtk_vcodec_err(inst, "frame buffer has no DMA address (planes=%u)",
+			       frm_buf->num_planes);
+		return -EINVAL;
+	}
+	if (bs_buf && !bs_buf->dma_addr) {
+		mtk_vcodec_err(inst, "bitstream buffer has no DMA address (size=%zu)",
+			       bs_buf->size);
+		return -EINVAL;
+	}
+
 	memset(&out, 0, sizeof(out));
 	out.msg_id = AP_IPIMSG_ENC_ENCODE;
 	out.vcu_inst_addr = inst->vcu_inst.inst_addr;
@@ -1416,6 +1432,17 @@ int vcp_enc_encode(struct venc_inst *inst, unsigned int bs_mode,
 		vsi->venc.bs_addr = bs_buf->dma_addr;
 		vsi->venc.bs_dma = bs_buf->dma_addr;
 		out.bs_size = bs_buf->size;
+
+		if (!inst->frm_cnt) {
+			dma_addr_t fb0 = frm_buf ?
+				frm_buf->fb_addr[0].dma_addr : 0;
+
+			mtk_v4l2_debug(0,
+				"first %s: fb[0]=%pad planes=%u bs=%pad size=%zu",
+				bs_mode == VENC_BS_MODE_FRAME ? "frame" : "header",
+				&fb0, frm_buf ? frm_buf->num_planes : 0,
+				&bs_buf->dma_addr, bs_buf->size);
+		}
 
 		if (bs_buf->dma_general_buf != 0) {
 			vsi->general_buf_fd = bs_buf->general_buf_fd;
@@ -2053,12 +2080,16 @@ int vcp_enc_set_param(struct venc_inst *inst,
 		out.data[0] = enc_param->highquality;
 		break;
 	case VENC_SET_PARAM_ADJUST_MAX_QP:
-		out.data_item = 1;
-		out.data[0] = enc_param->max_qp;
+		out.data_item = 3;
+		out.data[0] = enc_param->i_max_qp;
+		out.data[1] = enc_param->p_max_qp;
+		out.data[2] = enc_param->b_max_qp;
 		break;
 	case VENC_SET_PARAM_ADJUST_MIN_QP:
-		out.data_item = 1;
-		out.data[0] = enc_param->min_qp;
+		out.data_item = 3;
+		out.data[0] = enc_param->i_min_qp;
+		out.data[1] = enc_param->p_min_qp;
+		out.data[2] = enc_param->b_min_qp;
 		break;
 	case VENC_SET_PARAM_ADJUST_I_P_QP_DELTA:
 		out.data_item = 1;
@@ -2199,12 +2230,12 @@ static int venc_vcp_set_param(unsigned long handle,
 		inst->vsi->config.svp_mode = enc_prm->svp_mode;
 		inst->vsi->config.tsvc = enc_prm->tsvc;
 		inst->vsi->config.highquality = enc_prm->highquality;
-		inst->vsi->config.max_qp[0] = enc_prm->max_qp;
-		inst->vsi->config.max_qp[1] = enc_prm->max_qp;
-		inst->vsi->config.max_qp[2] = enc_prm->max_qp;
-		inst->vsi->config.min_qp[0] = enc_prm->min_qp;
-		inst->vsi->config.min_qp[1] = enc_prm->min_qp;
-		inst->vsi->config.min_qp[2] = enc_prm->min_qp;
+		inst->vsi->config.i_max_qp = enc_prm->i_max_qp;
+		inst->vsi->config.i_min_qp = enc_prm->i_min_qp;
+		inst->vsi->config.p_max_qp = enc_prm->p_max_qp;
+		inst->vsi->config.p_min_qp = enc_prm->p_min_qp;
+		inst->vsi->config.b_max_qp = enc_prm->b_max_qp;
+		inst->vsi->config.b_min_qp = enc_prm->b_min_qp;
 		inst->vsi->config.i_p_qp_delta = enc_prm->ip_qpdelta;
 		inst->vsi->config.qp_control_mode = enc_prm->qp_control_mode;
 		inst->vsi->config.frame_level_qp = enc_prm->framelvl_qp;
