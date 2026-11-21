@@ -27,6 +27,9 @@
  */
 #define EXT_SPK_AMP_W_NAME "Ext_Speaker_Amp"
 
+extern void tran_audio_add_card_controls(struct snd_soc_card *card);
+extern void tran_audio_pa_switch(bool pa_open_value);
+
 static struct snd_soc_card mt6895_mt6368_soc_card;
 
 struct mt6895_compress_info compr_info;
@@ -154,9 +157,11 @@ static int mt6895_mt6368_spk_amp_event(struct snd_soc_dapm_widget *w,
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
 		/* spk amp on control */
+		tran_audio_pa_switch(true);
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
 		/* spk amp off control */
+		tran_audio_pa_switch(false);
 		break;
 	default:
 		break;
@@ -1490,9 +1495,11 @@ static int mt6895_mt6368_dev_probe(struct platform_device *pdev)
 	if (ret)
 		dev_info(&pdev->dev, "%s snd_soc_register_card fail %d\n",
 			__func__, ret);
-	else
+	else {
 		dev_info(&pdev->dev, "%s snd_soc_register_card pss %d\n",
 				__func__, ret);
+		tran_audio_add_card_controls(card);
+	}
 	return ret;
 }
 
