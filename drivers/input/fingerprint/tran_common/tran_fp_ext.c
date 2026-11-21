@@ -1292,19 +1292,20 @@ static bool tran_ic_name_is(const char *ic_name, const char *short_name)
 
 void setVendorName(void) {
     if (tran_ic_name_is(g_tran_fp_datap->ic_name, "GW9578") ||
-        tran_ic_name_is(g_tran_fp_datap->ic_name, "GW9598") ||
-        tran_ic_name_is(g_tran_fp_datap->ic_name, "GF3976") ||
-        tran_ic_name_is(g_tran_fp_datap->ic_name, "GF3656") ||
-        tran_ic_name_is(g_tran_fp_datap->ic_name, "GF3956") ||
-        tran_ic_name_is(g_tran_fp_datap->ic_name, "GF3986")) {
-        strscpy(g_tran_fp_datap->vendor_name, "common_goodix", sizeof(g_tran_fp_datap->vendor_name));
+        tran_ic_name_is(g_tran_fp_datap->ic_name, "GW9598")) {
+        strscpy(g_tran_fp_datap->vendor_name, "goodix_opt_tee", sizeof(g_tran_fp_datap->vendor_name));
+    } else if (tran_ic_name_is(g_tran_fp_datap->ic_name, "GF3976") ||
+               tran_ic_name_is(g_tran_fp_datap->ic_name, "GF3656") ||
+               tran_ic_name_is(g_tran_fp_datap->ic_name, "GF3956") ||
+               tran_ic_name_is(g_tran_fp_datap->ic_name, "GF3986")) {
+        strscpy(g_tran_fp_datap->vendor_name, "goodix_tee", sizeof(g_tran_fp_datap->vendor_name));
     } else if (strcmp(g_tran_fp_datap->ic_name, "GSL7002") == 0) {
-        strscpy(g_tran_fp_datap->vendor_name, "common_silead", sizeof(g_tran_fp_datap->vendor_name));
+        strscpy(g_tran_fp_datap->vendor_name, "silead_opt_tee", sizeof(g_tran_fp_datap->vendor_name));
     } else if (strcmp(g_tran_fp_datap->ic_name, "JV0307") == 0) {
-        strscpy(g_tran_fp_datap->vendor_name, "common_JOOIV", sizeof(g_tran_fp_datap->vendor_name));
+        strscpy(g_tran_fp_datap->vendor_name, "anc_opt_tee", sizeof(g_tran_fp_datap->vendor_name));
     } else if (strcmp(g_tran_fp_datap->ic_name, "FT9399") == 0 ||
                strcmp(g_tran_fp_datap->ic_name, "FT9391") == 0 ) {
-        strscpy(g_tran_fp_datap->vendor_name, "common_FocalTech", sizeof(g_tran_fp_datap->vendor_name));
+        strscpy(g_tran_fp_datap->vendor_name, "focaltech_tee", sizeof(g_tran_fp_datap->vendor_name));
     } else {
         strscpy(g_tran_fp_datap->vendor_name, "null", sizeof(g_tran_fp_datap->vendor_name));
     }
