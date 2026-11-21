@@ -1116,13 +1116,12 @@ static irqreturn_t goodix_ts_threadirq_func(int irq, void *data)
     struct goodix_ext_module *ext_module, *next;
     struct goodix_ts_event *ts_event = &core_data->ts_event;
     struct goodix_ts_esd *ts_esd = &core_data->ts_esd;
+    bool wake;
     int ret;
 
     ts_esd->irq_status = true;
     core_data->irq_trig_cnt++;
-    if (atomic_read(&core_data->suspended)) {
-        pm_wakeup_event(&core_data->input_dev->dev, 2000);
-    }
+    wake = atomic_read(&core_data->suspended);
     /* inform external module */
     mutex_lock(&goodix_modules.mutex);
     list_for_each_entry_safe(ext_module, next,
@@ -1132,10 +1131,20 @@ static irqreturn_t goodix_ts_threadirq_func(int irq, void *data)
         ret = ext_module->funcs->irq_event(core_data, ext_module);
         if (ret == EVT_CANCEL_IRQEVT) {
             mutex_unlock(&goodix_modules.mutex);
+            /*
+             * Wake only after the gesture handler consumed the event.
+             * Waking first runs the display resume notifier, which resets
+             * the IC and loses the double-tap/FOD data.
+             */
+            if (wake)
+                pm_wakeup_event(&core_data->input_dev->dev, 2000);
             return IRQ_HANDLED;
         }
     }
     mutex_unlock(&goodix_modules.mutex);
+
+    if (wake)
+        pm_wakeup_event(&core_data->input_dev->dev, 2000);
 
     /* read touch data from touch device */
     ret = hw_ops->event_handler(core_data, ts_event);

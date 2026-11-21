@@ -134,13 +134,18 @@ static int gsx_gesture_ist(struct goodix_ts_core *cd,
 	int ret = -EINVAL;
 	int retry;
 
-	if (cd->tools_ctrl_sync || gsx->gesture_type == 0)
+	if (atomic_read(&cd->suspended) == 0 || gsx->gesture_type == 0)
 		return EVT_CONTINUE;
 
 	ts_info("gesture irq: suspended=%d type=0x%02x",
 		atomic_read(&cd->suspended), gsx->gesture_type);
 
-	pm_wakeup_event(&cd->pdev->dev, 2000);
+	/*
+	 * Do not call pm_wakeup_event() here: it starts display resume, whose
+	 * notifier resets the touch IC before we get to read the gesture data.
+	 * goodix_ts_threadirq_func() wakes the system after this handler has
+	 * consumed the event.
+	 */
 
 	for (retry = 0; retry < 5; retry++) {
 		memset(&gs_event, 0, sizeof(gs_event));
@@ -198,6 +203,17 @@ static int gsx_gesture_ist(struct goodix_ts_core *cd,
 		ts_info("unsupported gesture: 0x%x", gs_event.gesture_type);
 		break;
 	}
+
+	/*
+	 * The core returns early on EVT_CANCEL_IRQEVT, so after_event_handler()
+	 * would not run.  Without clearing the IC event the same gesture stays
+	 * pending and every subsequent IRQ is consumed as 0xcc (interrupt
+	 * storm, normal touch never reported).  Stock clears it here.
+	 */
+	if (hw_ops->after_event_handler)
+		hw_ops->after_event_handler(cd);
+
+	return EVT_CANCEL_IRQEVT;
 
 re_send_ges_cmd:
 	if (hw_ops->gesture(cd, 0))
