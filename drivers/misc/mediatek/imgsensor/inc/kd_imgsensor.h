@@ -140,6 +140,15 @@
 
 #define S5K4H7SUB_SENSOR_ID                     0x487C
 #define SENSOR_DRVNAME_S5K4H7SUB_MIPI_RAW       "s5k4h7sub_mipi_raw"
+/* Infinix X6871 */
+#define S5KHM6SX_SENSOR_ID                      0x1AD6
+#define SENSOR_DRVNAME_S5KHM6SX_MIPI_RAW        "s5khm6sx_mipi_raw"
+#define GC32E1_SENSOR_ID                        0x32E1
+#define SENSOR_DRVNAME_GC32E1_MIPI_RAW          "gc32e1_mipi_raw"
+#define GC02M3_SENSOR_ID                        0x0202
+#define SENSOR_DRVNAME_GC02M3_MIPI_RAW          "gc02m3_mipi_raw"
+#define GC02M3MACRO_SENSOR_ID                   0x0203
+#define SENSOR_DRVNAME_GC02M3MACRO_MIPI_RAW     "gc02m3macro_mipi_raw"
 /* SENSOR CHIP VERSION */
 /*IMX*/
 #define IMX06A_SENSOR_ID                        0xa18a
