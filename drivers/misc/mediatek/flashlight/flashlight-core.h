@@ -116,6 +116,7 @@ struct flashlight_dev {
 	int sw_disable_status;
 	int torch_status;
 	unsigned int cur_mW;
+	int fault;
 };
 
 /* device arguments */
@@ -124,7 +125,6 @@ struct flashlight_dev_arg {
 	int arg;
 };
 
-#if IS_ENABLED(CONFIG_MTK_FLASHLIGHT_THERMAL)
 #define FLASHLIGHT_COOLER_MAX_STATE 4
 #define MAX_FLASHLIGHT_COOLER_NAME_LEN 20
 struct flashlight_cooling_device {
@@ -133,7 +133,6 @@ struct flashlight_cooling_device {
 	unsigned long max_state;
 	struct thermal_cooling_device *cdev;
 };
-#endif
 
 /* device operations */
 struct flashlight_operations {
@@ -176,6 +175,7 @@ void flashlight_kicker_pbm_by_device_id(
 		struct flashlight_device_id *dev_id,
 		unsigned int cur_mW);
 #endif
-
+extern int debug_mask;
+#define PR_INFO(cond,...) do{if (cond ) {pr_info(__VA_ARGS__);}}while(0)
 #endif /* _FLASHLIGHT_CORE_H */
 

@@ -58,6 +58,10 @@ define_mgk_ddk_ko(
     hdrs =[
         "flashlight-core.h",
         "flashlight.h",
+        "tran_flash_custom.h",
+    ],
+    local_defines = [
+        "CONFIG_TRAN_FLASHLIGHT_TELE_SUPPORT=1",
     ],
     copts = [
         "-I$(srctree)/drivers/misc/mediatek/flashlight",
