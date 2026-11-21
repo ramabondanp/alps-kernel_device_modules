@@ -7,6 +7,8 @@
 #include <linux/vmalloc.h>
 #include <linux/platform_device.h>
 #include <linux/slab.h>
+#include <linux/proc_fs.h>
+#include <linux/uaccess.h>
 
 #include "transsion_core.h"
 
@@ -294,6 +296,88 @@ static void controller_match_work(struct work_struct *work)
 	if (g_tran_ts.platform_data && g_tran_ts.platform_data->ops &&
 	    g_tran_ts.platform_data->ops->plat_init)
 		g_tran_ts.platform_data->ops->plat_init(&g_tran_ts);
+	if (g_tran_ts.controller->ops && g_tran_ts.controller->ops->tran_gesture_enable)
+		g_tran_ts.controller->ops->tran_gesture_enable(1);
+}
+
+static int g_tran_gesture_mode = 1;
+static struct proc_dir_entry *g_gesture_procs[7];
+static const char *const g_gesture_proc_names[7] = {
+	"main_gesture_function",
+	"main_gesture_state",
+	"main_gesture_flag",
+	"gesture_function",
+	"gesture_state",
+	"gesture_flag",
+	"touch_gesture",
+};
+
+static ssize_t tran_gesture_proc_read(struct file *file, char __user *buf,
+				      size_t count, loff_t *ppos)
+{
+	char tmp[8];
+	int len;
+
+	if (*ppos > 0)
+		return 0;
+	len = scnprintf(tmp, sizeof(tmp), "%d\n", g_tran_gesture_mode);
+	if (count < len)
+		return -EINVAL;
+	if (copy_to_user(buf, tmp, len))
+		return -EFAULT;
+	*ppos = len;
+	return len;
+}
+
+static ssize_t tran_gesture_proc_write(struct file *file, const char __user *buf,
+				       size_t count, loff_t *ppos)
+{
+	char tmp[16];
+	size_t n = min(count, sizeof(tmp) - 1);
+	int en;
+
+	if (!n)
+		return -EINVAL;
+	if (copy_from_user(tmp, buf, n))
+		return -EFAULT;
+	tmp[n] = '\0';
+	en = (tmp[0] != '0' && tmp[0] != '\0' && tmp[0] != '\n') ? 1 : 0;
+	g_tran_gesture_mode = en;
+	TRAN_INFO("gesture proc write: '%c' -> enable=%d", tmp[0], en);
+	if (g_tran_ts.controller && g_tran_ts.controller->ops &&
+	    g_tran_ts.controller->ops->tran_gesture_enable)
+		g_tran_ts.controller->ops->tran_gesture_enable(en);
+	return count;
+}
+
+static const struct proc_ops tran_gesture_proc_ops = {
+	.proc_read = tran_gesture_proc_read,
+	.proc_write = tran_gesture_proc_write,
+};
+
+static void tran_gesture_proc_init(void)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(g_gesture_proc_names); i++) {
+		g_gesture_procs[i] = proc_create(g_gesture_proc_names[i], 0666,
+						 NULL, &tran_gesture_proc_ops);
+		if (!g_gesture_procs[i])
+			TRAN_ERROR("Failed to create proc entry for %s",
+				   g_gesture_proc_names[i]);
+	}
+}
+
+static void tran_gesture_proc_deinit(void)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(g_gesture_proc_names); i++) {
+		if (g_gesture_procs[i]) {
+			proc_remove(g_gesture_procs[i]);
+			g_gesture_procs[i] = NULL;
+		}
+	}
 }
 
 static int tpd_probe(struct platform_device *pdev)
@@ -312,6 +396,7 @@ static int tpd_probe(struct platform_device *pdev)
 	init_completion(&g_tran_ts.comp);
 
 	tran_parse_dt(&pdev->dev, &g_tran_ts);
+	tran_gesture_proc_init();
 
 	g_tran_ts.pdev = pdev;
 	g_tran_ts.ts_core_mode = TRAN_ACTIVE_MODE;
@@ -327,6 +412,7 @@ static void tpd_remove(struct platform_device *pdev)
 {
 	struct tran_ts_platform *pdata = g_tran_ts.platform_data;
 
+	tran_gesture_proc_deinit();
 	if (pdata && pdata->ops && pdata->ops->plat_deinit)
 		pdata->ops->plat_deinit(&g_tran_ts);
 }

@@ -663,6 +663,9 @@ int goodix_get_ic_type(struct device_node *node);
 #define GESTURE_FOD_UP                      0x55
 
 extern struct tran_ts_controller goodix_controller;
+int gesture_module_init(void);
+void gesture_module_exit(void);
+void goodix_gesture_enable(int enable);
 
 /************transsion****************/
 

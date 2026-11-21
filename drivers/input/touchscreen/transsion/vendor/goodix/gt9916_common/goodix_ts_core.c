@@ -1364,6 +1364,7 @@ static int goodix_ts_input_dev_config(struct goodix_ts_core *core_data)
     __set_bit(EV_ABS, input_dev->evbit);
     __set_bit(BTN_TOUCH, input_dev->keybit);
     __set_bit(BTN_TOOL_FINGER, input_dev->keybit);
+    __set_bit(KEY_WAKEUP, input_dev->keybit);
 
 #ifdef INPUT_PROP_DIRECT
     __set_bit(INPUT_PROP_DIRECT, input_dev->propbit);
@@ -2043,6 +2044,7 @@ upgrade:
         ts_err("stage2 init failed");
         goto uninit_fw;
     }
+    gesture_module_init();
     cd->init_stage = CORE_INIT_STAGE2;
     return 0;
 
@@ -2268,6 +2270,7 @@ static void __exit goodix_ts_core_exit(void)
 {
     ts_info("Core layer exit");
 
+    gesture_module_exit();
     platform_driver_unregister(&goodix_ts_driver);
 
 #ifdef CONFIG_TOUCHSCREEN_GOODIX_BRL_SPI
@@ -2316,6 +2319,7 @@ static struct tran_controller_ops controller_ops = {
     .tran_ts_init = goodix_ts_init,
     .tran_ts_suspend = suspend,
     .tran_ts_resume = resume,
+    .tran_gesture_enable = goodix_gesture_enable,
 };
 
 struct tran_ts_controller goodix_controller = {

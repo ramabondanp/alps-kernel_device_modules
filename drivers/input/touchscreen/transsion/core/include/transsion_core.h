@@ -67,6 +67,7 @@ struct tran_controller_ops {
 	int (*tran_ts_init)(void);
 	void (*tran_ts_suspend)(struct device *h);
 	void (*tran_ts_resume)(struct device *h);
+	void (*tran_gesture_enable)(int enable);
 };
 
 struct tran_ts_controller {
