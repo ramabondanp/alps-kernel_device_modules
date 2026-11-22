@@ -176,6 +176,7 @@ static const struct snd_soc_dapm_widget mt6895_mt6368_widgets[] = {
 
 static const struct snd_soc_dapm_route mt6895_mt6368_routes[] = {
 	{EXT_SPK_AMP_W_NAME, NULL, "LINEOUT L"},
+	{EXT_SPK_AMP_W_NAME, NULL, "RCV Mux"},
 	{EXT_SPK_AMP_W_NAME, NULL, "Headphone L Ext Spk Amp"},
 	{EXT_SPK_AMP_W_NAME, NULL, "Headphone R Ext Spk Amp"},
 };
