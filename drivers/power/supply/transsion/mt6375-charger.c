@@ -2263,9 +2263,25 @@ static int mt6375_enable_chg_type_det(struct charger_device *chgdev, bool en)
 		msleep(20);
 		mt6375_chg_field_set(ddata, F_BC12_EN, !en);
 		msleep(20);
+		mutex_lock(&ddata->attach_lock);
+		ddata->tc_bc12_dn = false;
+		mutex_unlock(&ddata->attach_lock);
 		dev_err(ddata->dev, "%s:enable_chg_type_det end\n",__func__);
 	}
 	return mt6375_chg_field_set(ddata, F_BC12_EN, en);
+}
+
+static int mt6375_get_vbus_gd_stat(struct charger_device *chgdev, bool *vbus_gd)
+{
+	int ret;
+	u32 val = 0;
+	struct mt6375_chg_data *ddata = charger_get_data(chgdev);
+
+	ret = mt6375_chg_field_get(ddata, F_ST_PWR_RDY, &val);
+	if (ret < 0)
+		return ret;
+	*vbus_gd = !!val;
+	return 0;
 }
 
 #define DUMP_REG_BUF_SIZE	1024
@@ -3083,6 +3099,7 @@ static const struct charger_ops mt6375_chg_ops = {
 	.enable_discharge = mt6375_enable_discharge,
 	/* charger type detection */
 	.enable_chg_type_det = mt6375_enable_chg_type_det,
+	.get_vbus_gd = mt6375_get_vbus_gd_stat,
 	/* misc */
 	.dump_registers = mt6375_dump_registers,
 	.enable_hz = mt6375_enable_hz,

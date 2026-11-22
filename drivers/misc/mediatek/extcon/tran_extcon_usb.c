@@ -182,7 +182,7 @@ static int tran_usb_extcon_psy_notifier(struct notifier_block *nb,
 	if (data != extcon->usb_psy)
 		return 0;
 
-	queue_delayed_work(system_power_efficient_wq, &extcon->wq_psy, 0);
+	queue_delayed_work(extcon->extcon_wq, &extcon->wq_psy, 0);
 
 	return 0;
 }
