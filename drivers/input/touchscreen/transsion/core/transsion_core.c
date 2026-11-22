@@ -396,8 +396,7 @@ static ssize_t tran_gesture_data_write(struct file *file, const char __user *buf
 				g_tran_gesture_maps[i].enabled = en;
 				TRAN_INFO("gesture_data_write %c%c code[0x%02x] enable[%d]",
 					  tmp[0], tmp[1], g_tran_gesture_maps[i].code, en);
-				if (g_tran_gesture_maps[i].code == 0xcc ||
-				    g_tran_gesture_maps[i].code == 0xff) {
+				if (g_tran_gesture_maps[i].code == 0xcc) {
 					g_tran_gesture_mode = en;
 					if (g_tran_ts.controller && g_tran_ts.controller->ops &&
 					    g_tran_ts.controller->ops->tran_gesture_enable)
