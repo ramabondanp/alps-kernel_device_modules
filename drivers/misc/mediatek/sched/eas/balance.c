@@ -138,27 +138,6 @@ static struct task_struct *detach_one_task(struct rq *src_rq, int dst_cpu)
 	return p;
 }
 
-/* cloned from kmainline attach_task() */
-static void attach_task(struct rq *rq, struct task_struct *p)
-{
-	lockdep_assert_rq_held(rq);
-
-	WARN_ON_ONCE(task_rq(p) != rq);
-	activate_task(rq, p, ENQUEUE_NOCLOCK);
-	wakeup_preempt(rq, p, 0);
-}
-
-/* cloned from kmainline attach_one_task() */
-static void attach_one_task(struct rq *rq, struct task_struct *p)
-{
-	struct rq_flags rf;
-
-	rq_lock(rq, &rf);
-	update_rq_clock(rq);
-	attach_task(rq, p);
-	rq_unlock(rq, &rf);
-}
-
 void try_to_pull_VVIP(int this_cpu, bool *had_pull_vvip, struct rq_flags *src_rf)
 {
 	struct root_domain *rd;
