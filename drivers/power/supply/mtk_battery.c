@@ -928,7 +928,8 @@ void fg_custom_init_from_header(struct mtk_battery *gm)
 	bm_debug(gm, "[%s] init form bat id %d\n", __func__, bat_id);
 
 	fg_cust_data->versionID1 = FG_DAEMON_CMD_FROM_USER_NUMBER;
-	fg_cust_data->versionID2 = sizeof(gm->fg_cust_data);
+	fg_cust_data->versionID2 = gm->x6871_fg_abi ?
+		sizeof(struct x6871_fg_custom_setting) : sizeof(gm->fg_cust_data);
 	fg_cust_data->versionID3 = FG_KERNEL_CMD_FROM_USER_NUMBER;
 
 	if (gm->gauge != NULL) {
@@ -1767,6 +1768,42 @@ void fg_check_bat_type(struct platform_device *dev,
 		__func__, gm->battery_id, bat_dect);
 }
 
+static void x6871_fg_read_vc_data(struct mtk_battery *gm, struct device_node *np)
+{
+	struct x6871_fg_vc_data *vc = &gm->x6871_vc_data;
+
+	/* Defaults and DT overrides from the stock MT6375 gauge. */
+	*vc = (struct x6871_fg_vc_data) {
+		.dynamic_vc_diff_sel = 2,
+		.difference_fgc_fgv_th1_c = 500,
+		.difference_fgc_fgv_th2_c = 100,
+		.difference_fgc_fgv_th3_c = 1000,
+		.difference_agc_fgv_th1 = 1000,
+		.difference_agc_fgv_th2 = 1000,
+		.difference_agc_fgv_th3 = 1000,
+		.difference_agc_fgv_th1_c = 1000,
+		.difference_agc_fgv_th2_c = 1000,
+		.difference_agc_fgv_th3_c = 1000,
+		.dynamic_vc_temp_diff = 5,
+		.dynamic_vc_cycle_diff = 100,
+		.dynamic_vc_force_rl = 0,
+	};
+
+	fg_read_dts_val(gm, np, "DYNAMIC_VC_DIFF_SEL", &vc->dynamic_vc_diff_sel, 1);
+	fg_read_dts_val(gm, np, "DIFFERENCE_FGC_FGV_TH1_C", &vc->difference_fgc_fgv_th1_c, 1);
+	fg_read_dts_val(gm, np, "DIFFERENCE_FGC_FGV_TH2_C", &vc->difference_fgc_fgv_th2_c, 1);
+	fg_read_dts_val(gm, np, "DIFFERENCE_FGC_FGV_TH3_C", &vc->difference_fgc_fgv_th3_c, 1);
+	fg_read_dts_val(gm, np, "DIFFERENCE_AGC_FGV_TH1", &vc->difference_agc_fgv_th1, 1);
+	fg_read_dts_val(gm, np, "DIFFERENCE_AGC_FGV_TH2", &vc->difference_agc_fgv_th2, 1);
+	fg_read_dts_val(gm, np, "DIFFERENCE_AGC_FGV_TH3", &vc->difference_agc_fgv_th3, 1);
+	fg_read_dts_val(gm, np, "DIFFERENCE_AGC_FGV_TH1_C", &vc->difference_agc_fgv_th1_c, 1);
+	fg_read_dts_val(gm, np, "DIFFERENCE_AGC_FGV_TH2_C", &vc->difference_agc_fgv_th2_c, 1);
+	fg_read_dts_val(gm, np, "DIFFERENCE_AGC_FGV_TH3_C", &vc->difference_agc_fgv_th3_c, 1);
+	fg_read_dts_val(gm, np, "DYNAMIC_VC_TEMP_DIFF", &vc->dynamic_vc_temp_diff, 1);
+	fg_read_dts_val(gm, np, "DYNAMIC_VC_CYCLE_DIFF", &vc->dynamic_vc_cycle_diff, 1);
+	fg_read_dts_val(gm, np, "DYNAMIC_VC_FORCE_RL", &vc->dynamic_vc_force_rl, 1);
+}
+
 void fg_custom_init_from_dts(struct platform_device *dev,
 	struct mtk_battery *gm)
 {
@@ -1787,6 +1824,8 @@ void fg_custom_init_from_dts(struct platform_device *dev,
 	fg_cust_data = &gm->fg_cust_data;
 	fg_table_cust_data = &gm->fg_table_cust_data;
 
+	if (gm->x6871_fg_abi)
+		x6871_fg_read_vc_data(gm, np);
 
 	if (gm->ptim_lk_v == 0) {
 		fg_read_dts_val(gm, np, "fg_swocv_v", &(lk_v), 1);
@@ -3440,6 +3479,9 @@ int battery_init(struct platform_device *pdev)
 	fg_check_lk_swocv(&pdev->dev, gm);
 	fg_prop_control_init(gm);
 	fg_check_bat_type(pdev, gm);
+	gm->x6871_fg_abi = of_device_is_compatible(pdev->dev.of_node, "mediatek,mt6375-gauge") &&
+		(of_property_present(pdev->dev.of_node, "tran_Q_diff") ||
+		 of_property_present(pdev->dev.of_node, "tran-q-diff"));
 	fg_custom_init_from_header(gm);
 	fg_custom_init_from_dts(pdev, gm);
 	mtk_irq_thread_init(gm);

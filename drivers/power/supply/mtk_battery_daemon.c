@@ -146,6 +146,52 @@ void fg_cmd_check(struct mtk_battery *gm, struct afw_header *msg)
 	}
 }
 
+static size_t fg_custom_setting_size(const struct mtk_battery *gm)
+{
+	static_assert(sizeof(struct fuel_gauge_custom_data) == 900);
+	static_assert(offsetof(struct x6871_fg_custom_setting, vc) == 0x384);
+	static_assert(offsetof(struct x6871_fg_vc_data, dynamic_vc_force_rl) == 0x30);
+	static_assert(sizeof(struct x6871_fg_custom_setting) == 952);
+	static_assert(sizeof(struct fuel_gauge_table_custom_data) == 55124);
+	static_assert(offsetof(struct x6871_fgd_custom_table, table) == 952);
+	static_assert(sizeof(struct x6871_fgd_custom_table) == 56076);
+
+	return gm->x6871_fg_abi ? sizeof(struct x6871_fg_custom_setting) :
+		sizeof(struct fuel_gauge_custom_data);
+}
+
+static bool fg_data_range_valid(const struct afw_data_param *req, size_t len)
+{
+	return req->total_size == len && req->idx <= len &&
+		req->size <= len - req->idx && req->size <= sizeof(req->input);
+}
+
+static void fg_daemon_get_custom_setting(struct mtk_battery *gm,
+					 const struct afw_data_param *req,
+					 struct afw_data_param *reply)
+{
+	size_t len = fg_custom_setting_size(gm);
+	size_t base_len = sizeof(gm->fg_cust_data);
+	size_t base_bytes = 0;
+
+	if (!fg_data_range_valid(req, len)) {
+		bm_err(gm, "Invalid custom setting range: total %u, index %u, size %u\n",
+		       req->total_size, req->idx, req->size);
+		reply->size = 0;
+		return;
+	}
+
+	/* The stock wire layout is the existing prefix followed by the VC fields. */
+	if (req->idx < base_len) {
+		base_bytes = min_t(size_t, req->size, base_len - req->idx);
+		memcpy(reply->input, (const char *)&gm->fg_cust_data + req->idx, base_bytes);
+	}
+	if (base_bytes < req->size)
+		memcpy(reply->input + base_bytes,
+		       (const char *)&gm->x6871_vc_data + (req->idx + base_bytes - base_len),
+		       req->size - base_bytes);
+}
+
 void fg_daemon_send_data(struct mtk_battery *gm,
 	int cmd, char *rcv, char *ret, int hash)
 {
@@ -243,36 +289,16 @@ void fg_daemon_send_data(struct mtk_battery *gm,
 		break;
 	case FG_DAEMON_CMD_SEND_CUSTOM_TABLE:
 		{
-			char *ptr;
+			size_t len = gm->x6871_fg_abi ? sizeof(gm->fg_data.x6871) :
+				sizeof(gm->fg_data.standard);
 
-			if (sizeof(struct fgd_cmd_param_t_custom)
-				!= prcv->total_size) {
-				bm_err(gm, "%s size is different %d %d hash:%d\n",
-				__func__,
-				(int)sizeof(
-				struct fgd_cmd_param_t_custom),
-				prcv->total_size, hash);
-			} else {
-				if ((prcv->idx + prcv->size) >
-					sizeof(struct fgd_cmd_param_t_custom)) {
-					bm_err(gm, "size is different %d size %d idx %d\n",
-						(int)sizeof(struct fgd_cmd_param_t_custom),
-						prcv->size, prcv->idx);
-					return;
-				}
-
-				ptr = (char *)&gm->fg_data;
-				memcpy(&ptr[prcv->idx],
-					prcv->input,
-					prcv->size);
-
-				bm_debug(gm,
-					"FG_DATA_TYPE_TABLE type:%d size:%d %d idx:%d\n",
-					FG_DAEMON_CMD_SEND_CUSTOM_TABLE,
-					prcv->total_size,
-					prcv->size,
-					prcv->idx);
+			if (!fg_data_range_valid(prcv, len)) {
+				bm_err(gm, "Invalid custom table range: total %u, index %u, size %u\n",
+				       prcv->total_size, prcv->idx, prcv->size);
+				pret->size = 0;
+				return;
 			}
+			memcpy((char *)&gm->fg_data + prcv->idx, prcv->input, prcv->size);
 		}
 		break;
 	case FG_DAEMON_CMD_SEND_VERSION_CONTROL:
@@ -288,8 +314,7 @@ void fg_daemon_send_data(struct mtk_battery *gm,
 				prcv->total_size, hash);
 			} else {
 
-				if ((prcv->idx + prcv->size) >
-					sizeof(struct VersionControl)) {
+				if (!fg_data_range_valid(prcv, sizeof(struct VersionControl))) {
 					bm_err(gm, "size is different %d size %d idx %d\n",
 						(int)sizeof(struct VersionControl),
 						prcv->size, prcv->idx);
@@ -318,7 +343,7 @@ void fg_daemon_send_data(struct mtk_battery *gm,
 				if (gm->fg_version.daemon_cmds != FG_DAEMON_CMD_FROM_USER_NUMBER ||
 					gm->fg_version.kernel_cmds != FG_KERNEL_CMD_FROM_USER_NUMBER ||
 					gm->fg_version.custom_data_len !=
-						sizeof(struct fuel_gauge_custom_data) ||
+						fg_custom_setting_size(gm) ||
 					gm->fg_version.custom_table_len !=
 						sizeof(struct fuel_gauge_table_custom_data)) {
 
@@ -329,9 +354,13 @@ void fg_daemon_send_data(struct mtk_battery *gm,
 						gm->fg_version.daemon_cmds, FG_DAEMON_CMD_FROM_USER_NUMBER,
 						gm->fg_version.kernel_cmds, FG_KERNEL_CMD_FROM_USER_NUMBER,
 						gm->fg_version.custom_data_len,
-						sizeof(struct fuel_gauge_custom_data),
+						fg_custom_setting_size(gm),
 						gm->fg_version.custom_table_len,
 						sizeof(struct fuel_gauge_table_custom_data));
+				} else if (gm->x6871_fg_abi && !gm->algo.active) {
+					bm_err(gm, "X6871 fuelgauged ABI matched: custom %zu, table %zu bytes\n",
+					       fg_custom_setting_size(gm),
+					       sizeof(struct fuel_gauge_table_custom_data));
 				}
 			}
 		}
@@ -382,43 +411,8 @@ void fg_daemon_get_data(struct mtk_battery *gm, int cmd,
 
 	switch (cmd) {
 	case FG_DAEMON_CMD_GET_CUSTOM_SETTING:
-	{
-		char *ptr;
-
-		if (prcv->idx + prcv->size >
-			sizeof(struct fuel_gauge_custom_data)) {
-			bm_err(gm, "%s size is different %d %d %d\n",
-			__func__,
-			(int)sizeof(
-			struct fuel_gauge_custom_data),
-			prcv->idx, prcv->size);
-			return;
-		}
-
-		if (sizeof(struct fuel_gauge_custom_data)
-			!= prcv->total_size) {
-			bm_err(gm, "%s size is different %d %d\n",
-			__func__,
-			(int)sizeof(
-			struct fuel_gauge_custom_data),
-			prcv->total_size);
-		}
-
-		ptr = (char *)&gm->fg_cust_data;
-		memcpy(pret->input, &ptr[prcv->idx], pret->size);
-		bm_trace(gm,
-			"FG_DATA_TYPE_TABLE type:%d size:%d %d idx:%d data:%d %d %d %d\n",
-			FG_DAEMON_CMD_GET_CUSTOM_SETTING,
-			pret->total_size,
-			pret->size,
-			pret->idx,
-			pret->input[0],
-			pret->input[1],
-			pret->input[2],
-			pret->input[3]);
-
-	}
-	break;
+		fg_daemon_get_custom_setting(gm, prcv, pret);
+		break;
 	case FG_DAEMON_CMD_GET_CUSTOM_TABLE:
 		{
 			char *ptr;
@@ -6163,4 +6157,3 @@ int mtk_battery_daemon_init(struct platform_device *pdev)
 	mtk_battery_setup_files(pdev);
 	return 0;
 }
-

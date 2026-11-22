@@ -12,6 +12,7 @@
 #include <linux/irq.h>
 #include <linux/irqdomain.h>
 #include <linux/kernel.h>
+#include <linux/math64.h>
 #include <linux/module.h>
 #include <linux/mutex.h>
 #include <linux/netlink.h>
@@ -28,6 +29,7 @@
 
 #include "mtk_battery.h"
 #include "mtk_gauge.h"
+#include "transsion/tc_common_class.h"
 #if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 #include <mt-plat/aee.h>
 #endif
@@ -1337,6 +1339,24 @@ static int bs_psy_set_property(struct power_supply *psy,
 	return ret;
 }
 
+static bool bm_charger_uses_low_cv(void)
+{
+	struct tran_device *charger;
+	union com_propval low_cv = { 0 };
+	int ret;
+
+	if (!IS_ENABLED(CONFIG_TC_CLASS_SUPPORT))
+		return false;
+
+	charger = tran_get_by_name("tc_charger");
+	if (IS_ERR_OR_NULL(charger))
+		return false;
+	ret = tran_dev_get_prop(charger, TRAN_PROP_GET_LOW_CV_STATUS, &low_cv);
+	put_device(&charger->dev);
+
+	return ret >= 0 && low_cv.intval;
+}
+
 static void mtk_battery_external_power_changed(struct power_supply *psy)
 {
 	struct mtk_battery_manager *bm;
@@ -1415,9 +1435,11 @@ static void mtk_battery_external_power_changed(struct power_supply *psy)
 			&& bm->b_EOC != true) {
 			pr_err("POWER_SUPPLY_STATUS_FULL, EOC\n");
 			gauge_get_int_property(bm->gm1, GAUGE_PROP_BAT_EOC);
-			bm_send_cmd(bm, MANAGER_NOTIFY_CHR_FULL, 0);
 			pr_err("GAUGE_PROP_BAT_EOC done\n");
 			bm->b_EOC = true;
+			/* Stock keeps gauge EOC calibration but skips full tracking at low CV. */
+			if (!bm_charger_uses_low_cv())
+				bm_send_cmd(bm, MANAGER_NOTIFY_CHR_FULL, 0);
 		} else
 			bm->b_EOC = false;
 
@@ -1815,6 +1837,116 @@ void bm_custom_init_from_dts(struct platform_device *pdev, struct mtk_battery_ma
 		bm->disable_quick_shutdown, bm->vsys_det_voltage1, bm->vsys_det_voltage2);
 }
 
+#if IS_ENABLED(CONFIG_TC_CLASS_SUPPORT)
+static int bm_tran_batt_remaining(struct mtk_battery *gm, int *remaining)
+{
+	int capacity, soc;
+
+	if (READ_ONCE(gm->algo.active)) {
+		capacity = READ_ONCE(gm->algo.quse_tb1);
+		soc = READ_ONCE(gm->algo.fg_c_soc);
+	} else {
+		capacity = READ_ONCE(gm->algo_qmax);
+		soc = READ_ONCE(gm->fg_cust_data.c_soc);
+	}
+	if (capacity <= 0)
+		return -ENODATA;
+
+	/* Charge is in 0.1 mAh and SOC in 0.01%; report whole mAh. */
+	*remaining = div_s64((s64)capacity * clamp(soc, 0, 10000), 100000);
+	return 0;
+}
+
+static int bm_tran_batt_get(struct tran_device *dev, enum tran_common_prop prop,
+			  union com_propval *val)
+{
+	struct mtk_battery_manager *bm;
+	struct mtk_battery *gm;
+	int ret = 0, car;
+
+	/* Serialize access to the manager against class device unregister. */
+	mutex_lock(&dev->ops_lock);
+	if (!dev->ops) {
+		ret = -ENODEV;
+		goto out;
+	}
+	bm = tran_get_data(dev);
+	gm = bm->gm1;
+
+	switch (prop) {
+	case TRAN_PROP_BATTERY_ID:
+		val->intval = READ_ONCE(gm->battery_id);
+		break;
+	case TRAN_PROP_BATTERY_RAW_CYCLE:
+	case TRAN_PROP_BATTERY_CYCLE:
+		val->intval = READ_ONCE(gm->bat_cycle);
+		break;
+	case TRAN_PROP_ACCURACY_UISOC:
+		if (READ_ONCE(bm->bs_data.bat_capacity) < 0) {
+			ret = -ENODATA;
+			break;
+		}
+		val->intval = READ_ONCE(gm->fg_cust_data.ui_old_soc);
+		break;
+	case TRAN_PROP_BATT_SOC:
+		val->intval = READ_ONCE(gm->ui_soc);
+		break;
+	case TRAN_PROP_FG_REAL_SOC:
+		val->intval = READ_ONCE(gm->soc);
+		break;
+	case TRAN_PROP_FG_HW_CAR:
+		ret = gauge_get_property(gm, GAUGE_PROP_COULOMB, &car);
+		if (ret >= 0) {
+			val->intval = car / 10;
+			ret = 0;
+		}
+		break;
+	case TRAN_PROP_BATT_RM:
+		ret = bm_tran_batt_remaining(gm, &val->intval);
+		break;
+	default:
+		ret = -EOPNOTSUPP;
+		break;
+	}
+out:
+	mutex_unlock(&dev->ops_lock);
+	return ret;
+}
+
+static const struct tran_ops bm_tran_batt_ops = {
+	.get_prop = bm_tran_batt_get,
+};
+
+static void bm_tran_batt_unregister(void *data)
+{
+	tran_device_unregister(data);
+}
+
+static void bm_tran_batt_register(struct mtk_battery_manager *bm)
+{
+	static const struct tran_properties props = { .alias_name = "tran_batt" };
+	struct tran_device *dev;
+	int ret;
+
+	if (bm->gm_no != 1 || IS_ERR_OR_NULL(bm->bs_data.psy) ||
+	    !of_device_is_compatible(bm->gm1->gauge->pdev->dev.of_node,
+				     "mediatek,mt6375-gauge"))
+		return;
+
+	dev = tran_device_register("tran_batt", bm->dev, bm, &bm_tran_batt_ops, &props);
+	if (IS_ERR(dev)) {
+		dev_warn(bm->dev, "failed to register tran_batt: %ld\n", PTR_ERR(dev));
+		return;
+	}
+
+	ret = devm_add_action_or_reset(bm->dev, bm_tran_batt_unregister, dev);
+	if (ret)
+		dev_warn(bm->dev, "failed to manage tran_batt: %d\n", ret);
+}
+#else
+static void bm_tran_batt_register(struct mtk_battery_manager *bm) { }
+#endif
+
 static int mtk_bm_probe(struct platform_device *pdev)
 {
 	struct mtk_battery_manager *bm;
@@ -1919,6 +2051,7 @@ static int mtk_bm_probe(struct platform_device *pdev)
 		pr_err("[%s]Fail to get chg_psy!\n", __func__);
 
 	bm_battery_service_init(bm);
+	bm_tran_batt_register(bm);
 	mtk_bm_create_netlink(pdev);
 
 	mtk_power_misc_init(bm, &bm->sdc);

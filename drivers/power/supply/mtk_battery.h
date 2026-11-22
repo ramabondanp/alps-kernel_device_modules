@@ -758,9 +758,36 @@ struct fuel_gauge_custom_data {
 	int enable_overheat_shutdown;
 };
 
+/* X6871 MT6375 stock fuelgauged custom-setting extension. */
+struct x6871_fg_vc_data {
+	s32 dynamic_vc_diff_sel;
+	s32 difference_fgc_fgv_th1_c;
+	s32 difference_fgc_fgv_th2_c;
+	s32 difference_fgc_fgv_th3_c;
+	s32 difference_agc_fgv_th1;
+	s32 difference_agc_fgv_th2;
+	s32 difference_agc_fgv_th3;
+	s32 difference_agc_fgv_th1_c;
+	s32 difference_agc_fgv_th2_c;
+	s32 difference_agc_fgv_th3_c;
+	s32 dynamic_vc_temp_diff;
+	s32 dynamic_vc_cycle_diff;
+	s32 dynamic_vc_force_rl;
+};
+
+struct x6871_fg_custom_setting {
+	struct fuel_gauge_custom_data base;
+	struct x6871_fg_vc_data vc;
+};
+
 struct fgd_cmd_param_t_custom {
 	struct fuel_gauge_custom_data fg_cust_data;
 	struct fuel_gauge_table_custom_data fg_table_cust_data;
+};
+
+struct x6871_fgd_custom_table {
+	struct x6871_fg_custom_setting setting;
+	struct fuel_gauge_table_custom_data table;
 };
 
 struct fg_temp {
@@ -1313,7 +1340,12 @@ struct mtk_battery {
 	int battery_id;
 	struct fuel_gauge_custom_data fg_cust_data;
 	struct fuel_gauge_table_custom_data fg_table_cust_data;
-	struct fgd_cmd_param_t_custom fg_data;
+	struct x6871_fg_vc_data x6871_vc_data;
+	bool x6871_fg_abi;
+	union {
+		struct fgd_cmd_param_t_custom standard;
+		struct x6871_fgd_custom_table x6871;
+	} fg_data;
 
 	/*daemon version control*/
 	struct VersionControl fg_version;
