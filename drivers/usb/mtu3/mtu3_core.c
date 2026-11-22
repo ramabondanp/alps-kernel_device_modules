@@ -535,6 +535,7 @@ void mtu3_dev_on_off(struct mtu3 *mtu, int is_on)
 	} else {
 		mtu3_ss_func_set(mtu, false);
 		mtu3_hs_softconn_set(mtu, false);
+		mdelay(4);
 	}
 
 	if (is_on)
@@ -644,6 +645,8 @@ void mtu3_stop(struct mtu3 *mtu)
 
 	if (mtu->softconnect)
 		mtu3_dev_on_off(mtu, 0);
+	else if (!mtu->is_gadget_ready && mtu->ssusb->dp_work.func)
+		ssusb_phy_dp_pullup(mtu->ssusb);
 
 	mtu->is_active = 0;
 	mtu3_dev_power_down(mtu);
@@ -1324,6 +1327,10 @@ int ssusb_gadget_init(struct ssusb_mtk *ssusb)
 	}
 
 	ssusb_dev_debugfs_init(ssusb);
+
+	dev_info(dev, "remove cdp-block property\n");
+	of_remove_property(dev->of_node,
+			   of_find_property(dev->of_node, "cdp-block", NULL));
 
 	dev_dbg(dev, " %s() done...\n", __func__);
 
