@@ -2097,6 +2097,8 @@ static void mtk_iommu_release_device(struct device *dev)
 	unsigned int larbid;
 
 	data = dev_iommu_priv_get(dev);
+	if (!fwspec || !data)
+		return;
 
 	if(data->plat_data->iommu_type == MM_IOMMU &&
 	   MTK_IOMMU_HAS_FLAG(data->plat_data, SMI_DEV_LINK_SKIP))
@@ -2107,8 +2109,11 @@ static void mtk_iommu_release_device(struct device *dev)
 		return;
 
 	larbid = MTK_M4U_TO_LARB(fwspec->ids[0]);
+	if (larbid >= ARRAY_SIZE(data->larb_imu))
+		return;
 	larbdev = data->larb_imu[larbid].dev;
-	device_link_remove(dev, larbdev);
+	if (larbdev)
+		device_link_remove(dev, larbdev);
 }
 
 static struct iommu_group *mtk_iommu_device_group(struct device *dev)
@@ -3175,10 +3180,6 @@ skip_smi:
 	if (ret)
 		goto out_link_remove;
 
-	ret = iommu_device_register(&data->iommu, &mtk_iommu_ops, dev);
-	if (ret)
-		goto out_sysfs_remove;
-
 	spin_lock_init(&data->tlb_lock);
 
 	if (MTK_IOMMU_HAS_FLAG(data->plat_data, SHARE_PGTABLE)) {
@@ -3188,6 +3189,12 @@ skip_smi:
 	} else {
 		list_add_tail(&data->list, data->plat_data->hw_list);
 		data->hw_list = data->plat_data->hw_list;
+	}
+
+	ret = iommu_device_register(&data->iommu, &mtk_iommu_ops, dev);
+	if (ret) {
+		list_del(&data->list);
+		goto out_sysfs_remove;
 	}
 
 	if (data->plat_data->iommu_type == MM_IOMMU &&
