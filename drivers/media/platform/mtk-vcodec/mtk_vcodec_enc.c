@@ -1146,7 +1146,10 @@ static int vidioc_venc_g_ctrl(struct v4l2_ctrl *ctrl)
 		ctrl->val = mtk_venc_cap_common.max_temporal_layer;
 		break;
 	case V4L2_CID_MTK_VIDEO_ENC_GET_ADAB_CAPABILITY:
-		ctrl->val = mtk_venc_cap_common.support_adab;
+		ctrl->p_new.p_u32[0] = mtk_venc_cap_common.support_adab;
+		ctrl->p_new.p_u32[1] = mtk_venc_cap_common.adab_max_fps;
+		ctrl->p_new.p_u32[2] = mtk_venc_cap_common.adab_max_throughput;
+		ctrl->p_new.p_u32[3] = mtk_venc_cap_common.adab_max_width;
 		break;
 	default:
 		mtk_v4l2_debug(4, "ctrl-id=%d not support!", ctrl->id);
@@ -4766,13 +4769,14 @@ int mtk_vcodec_enc_ctrls_setup(struct mtk_vcodec_ctx *ctx)
 
 	memset(&cfg, 0, sizeof(cfg));
 	cfg.id = V4L2_CID_MTK_VIDEO_ENC_GET_ADAB_CAPABILITY;
-	cfg.type = V4L2_CTRL_TYPE_INTEGER;
+	cfg.type = V4L2_CTRL_TYPE_U32;
 	cfg.flags = V4L2_CTRL_FLAG_READ_ONLY | V4L2_CTRL_FLAG_VOLATILE;
 	cfg.name = "Get Video Encoder ADAB capability";
 	cfg.min = 0;
-	cfg.max = 1;
+	cfg.max = 0x7fffffff;
 	cfg.step = 1;
 	cfg.def = 0;
+	cfg.dims[0] = 4;
 	cfg.ops = ops;
 	mtk_vcodec_enc_custom_ctrls_check(handler, &cfg, NULL);
 

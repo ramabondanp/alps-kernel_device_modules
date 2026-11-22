@@ -145,7 +145,7 @@ enum mtk_codec_type {
 	VDEC_RV30,
 	VDEC_RV40,
 	VDEC_AV1,
-	VENC_H264,
+	VENC_H264 = 1,
 	VENC_H265,
 	VENC_HEIF,
 	VENC_VP8,
