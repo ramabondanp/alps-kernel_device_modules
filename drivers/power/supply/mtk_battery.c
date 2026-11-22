@@ -6,6 +6,7 @@
 
 #include <linux/cdev.h>		/* cdev */
 #include <linux/err.h>	/* IS_ERR, PTR_ERR */
+#include <linux/iio/consumer.h>
 #include <linux/init.h>		/* For init/exit macros */
 #include <linux/interrupt.h>
 #include <linux/irq.h>
@@ -1694,10 +1695,57 @@ void reload_battery_zcv_table(
 	}
 }
 
+static int fg_read_battery_id(struct device *dev)
+{
+	/* Stock MT6375 thresholds, in microvolts, for both resistor networks. */
+	static const u32 stock_thresholds[][TOTAL_BATTERY_NUMBER] = {
+		{ 150000, 1000000, 1500000, U32_MAX },
+		{ 900000, 1200000, 1480000, U32_MAX },
+	};
+	struct device_node *np = dev->of_node;
+	u32 thresholds[TOTAL_BATTERY_NUMBER];
+	u32 new_res = 0;
+	struct iio_channel *channel;
+	int mv, ret, i;
+
+	of_property_read_u32(np, "new-res-bat-id", &new_res);
+	if (new_res >= ARRAY_SIZE(stock_thresholds))
+		return -EINVAL;
+	if (of_property_read_u32_array(np, "tc,battery_id_voltage", thresholds,
+				       ARRAY_SIZE(thresholds)))
+		memcpy(thresholds, stock_thresholds[new_res], sizeof(thresholds));
+
+	for (i = 0; i < ARRAY_SIZE(thresholds); i++) {
+		if (i > 0 && thresholds[i] <= thresholds[i - 1])
+			return -EINVAL;
+		if (thresholds[i] == U32_MAX && i != ARRAY_SIZE(thresholds) - 1)
+			return -EINVAL;
+	}
+
+	channel = iio_channel_get(dev, "batteryID-channel");
+	if (IS_ERR(channel))
+		return PTR_ERR(channel);
+	ret = iio_read_channel_processed(channel, &mv);
+	iio_channel_release(channel);
+	if (ret < 0)
+		return ret;
+	if (mv < 0)
+		return -ERANGE;
+
+	for (i = 0; i < ARRAY_SIZE(thresholds); i++) {
+		if (thresholds[i] == U32_MAX || (u64)mv * 1000 < thresholds[i]) {
+			dev_info(dev, "battery ID %d (AUXADC %d mV)\n", i, mv);
+			return i;
+		}
+	}
+
+	return -ERANGE;
+}
+
 void fg_check_bat_type(struct platform_device *dev,
 	struct mtk_battery *gm)
 {
-	int val = 0, bat_dect = 0;
+	int val = 0, bat_dect = 0, id;
 	struct device_node *np = dev->dev.of_node;
 
 	gm->battery_id = 0;
@@ -1705,7 +1753,15 @@ void fg_check_bat_type(struct platform_device *dev,
 	fg_read_dts_val(gm, np, "DETECT_BAT_TYPE", &(bat_dect), 1);
 	if (bat_dect) {
 		fg_read_dts_val(gm, np, "bat_type", &(val), 1);
-		gm->battery_id = val;
+		if (val >= 0 && val < TOTAL_BATTERY_NUMBER)
+			gm->battery_id = val;
+	} else if (of_device_is_compatible(np, "mediatek,mt6375-gauge") &&
+		   of_property_match_string(np, "io-channel-names", "batteryID-channel") >= 0) {
+		id = fg_read_battery_id(&dev->dev);
+		if (id >= 0)
+			gm->battery_id = id;
+		else
+			dev_warn(&dev->dev, "battery ID read failed (%d), using profile 0\n", id);
 	}
 	bm_err(gm, "[%s] init battery type val:%d %d\n",
 		__func__, gm->battery_id, bat_dect);
@@ -1717,6 +1773,7 @@ void fg_custom_init_from_dts(struct platform_device *dev,
 	struct device_node *np = dev->dev.of_node;
 	unsigned int val = 0;
 	int bat_id, multi_battery = 0, active_table = 0;
+	int tran_qmax = 0;
 	int i, j, ret, column = 0;
 	int r_pseudo100_raw = 0, r_pseudo100_col = 0;
 	int lk_v = 0, lk_i = 0, shuttime = 0;
@@ -2229,15 +2286,28 @@ void fg_custom_init_from_dts(struct platform_device *dev,
 	fg_read_dts_val(gm, np, "TEMPERATURE_TB1",
 		&(fg_table_cust_data->temperature_tb1), 1);
 
+	if (of_device_is_compatible(np, "mediatek,mt6375-gauge")) {
+		fg_read_dts_val_by_idx(gm, np, "tran_Q_diff", bat_id, &tran_qmax, 1);
+		/* Leave room for two gauges reporting in microamp-hours. */
+		if (tran_qmax < 0 || tran_qmax > INT_MAX / 2000)
+			tran_qmax = 0;
+		if (tran_qmax)
+			dev_info(&dev->dev, "battery profile %d Qmax %d mAh from DT\n",
+				 bat_id, tran_qmax);
+	}
+
 	for (i = 0; i < MAX_TABLE; i++) {
 		struct fuelgauge_profile_struct *p;
 
 		p = &fg_table_cust_data->fg_profile[i].fg_profile[0];
 		fg_read_dts_val_by_idx(gm, np, "g_temperature", i,
 			&(fg_table_cust_data->fg_profile[i].temperature), 1);
-		fg_read_dts_val_by_idx(gm, np, "g_Q_MAX",
-			i*TOTAL_BATTERY_NUMBER + gm->battery_id,
-			&(fg_table_cust_data->fg_profile[i].q_max), 1);
+		if (tran_qmax)
+			fg_table_cust_data->fg_profile[i].q_max = tran_qmax;
+		else
+			fg_read_dts_val_by_idx(gm, np, "g_Q_MAX",
+				i*TOTAL_BATTERY_NUMBER + gm->battery_id,
+				&(fg_table_cust_data->fg_profile[i].q_max), 1);
 		fg_read_dts_val_by_idx(gm, np, "g_Q_MAX_H_CURRENT",
 			i*TOTAL_BATTERY_NUMBER + gm->battery_id,
 			&(fg_table_cust_data->fg_profile[i].q_max_h_current),
