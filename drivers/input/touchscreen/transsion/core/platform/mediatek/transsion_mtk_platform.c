@@ -15,11 +15,13 @@ static int nvt_disp_notifier_callback(struct notifier_block *nb,
 	}
 
 	if (value == MTK_DISP_EVENT_BLANK) {
-		if (*data == MTK_DISP_BLANK_UNBLANK ||
-		    *data == TRAN_DISP_BLANK_AOD_NOTIFY) {
+		if (*data == TRAN_DISP_BLANK_AOD_NOTIFY) {
 			TRAN_INFO("drm notify tp resume start");
 			mutex_lock(&g_tran_ts.dsp_event_mutex);
-			queue_work(g_tran_ts.tpd_workqueue, &g_tran_ts.tpd_dsp_work);
+			if (!queue_work(g_tran_ts.tpd_workqueue, &g_tran_ts.tpd_dsp_work)) {
+				TRAN_INFO("tpd_dsp_work already queued");
+				mutex_unlock(&g_tran_ts.dsp_event_mutex);
+			}
 		}
 	} else if (value == MTK_DISP_EARLY_EVENT_BLANK) {
 		if (*data == MTK_DISP_BLANK_POWERDOWN) {

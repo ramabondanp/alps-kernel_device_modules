@@ -286,6 +286,7 @@ int brl_gesture(struct goodix_ts_core *cd, int gesture_type)
 {
     struct goodix_ts_cmd cmd;
 
+    memset(&cmd, 0, sizeof(cmd));
     cmd.cmd = GOODIX_GESTURE_CMD;
     cmd.len = 6;
     cmd.data[0] = 0x00;
@@ -293,6 +294,7 @@ int brl_gesture(struct goodix_ts_core *cd, int gesture_type)
     cmd.data[2] = 0xac;
     cmd.data[3] = 0x00;
     (void)gesture_type;
+    ts_info("single_double_finger");
     if (cd->hw_ops->send_cmd(cd, &cmd))
         ts_err("failed send gesture cmd");
 
@@ -1184,6 +1186,19 @@ static int brl_event_handler(struct goodix_ts_core *cd,
     }
     ts_event->event_type = EVENT_INVALID;
     event_status = pre_buf[0];
+    if (tran_fingerprint_status && event_status == 0x88 && !g_fp_flag) {
+        ts_info("fp key finger pre_buf[0] = 0x%x, pre_buf[2] = 0x%x",
+                pre_buf[0], pre_buf[2]);
+        input_report_key(cd->input_dev, 195, 1);
+        input_sync(cd->input_dev);
+        g_fp_flag = 1;
+    }
+    if ((event_status & 0x0f) == 0 && g_fp_flag == 1) {
+        ts_info("fp key finger up");
+        input_report_key(cd->input_dev, 195, 0);
+        input_sync(cd->input_dev);
+        g_fp_flag = 0;
+    }
     if (event_status & GOODIX_TOUCH_EVENT)
         return goodix_touch_handler(cd, ts_event,
                                     pre_buf, pre_read_len);

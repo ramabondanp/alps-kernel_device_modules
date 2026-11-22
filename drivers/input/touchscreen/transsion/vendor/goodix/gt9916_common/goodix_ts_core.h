@@ -645,6 +645,9 @@ int goodix_get_ic_type(struct device_node *node);
 
 /***********transsion*****************/
 
+extern int tran_fingerprint_status;
+extern int g_fp_flag;
+
 #define GESTURE_UP                          0xba
 #define GESTURE_C                           0x63
 #define GESTURE_O                           0x6f

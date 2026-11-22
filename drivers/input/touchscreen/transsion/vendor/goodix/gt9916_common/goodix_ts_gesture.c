@@ -34,6 +34,8 @@ struct gesture_module {
 
 static struct gesture_module *gsx_gesture;
 static bool module_initialized;
+int tran_fingerprint_status;
+int g_fp_flag;
 
 void goodix_gesture_enable(int enable)
 {
@@ -55,7 +57,7 @@ static ssize_t fingerprint_status_read(struct file *file, char __user *buf,
 
 	if (*ppos > 0 || !gsx_gesture)
 		return 0;
-	len = scnprintf(tmp, sizeof(tmp), "%d\n", gsx_gesture->fp_status);
+	len = scnprintf(tmp, sizeof(tmp), "%d\n", tran_fingerprint_status);
 	if (count < len)
 		return -EINVAL;
 	if (copy_to_user(buf, tmp, len))
@@ -67,20 +69,55 @@ static ssize_t fingerprint_status_read(struct file *file, char __user *buf,
 static ssize_t fingerprint_status_write(struct file *file, const char __user *buf,
 					size_t count, loff_t *ppos)
 {
-	char tmp[4];
-	int en;
+	struct goodix_ts_core *cd;
+	struct goodix_ts_cmd cmd;
+	char tmp[4] = { 0 };
+	int val;
 
 	if (!count || !gsx_gesture)
 		return -EINVAL;
 	if (copy_from_user(tmp, buf, 1))
 		return -EFAULT;
-	en = (tmp[0] != '0') ? 1 : 0;
-	gsx_gesture->fp_status = en;
-	if (en)
+
+	cd = gsx_gesture->ts_core;
+	switch (tmp[0]) {
+	case '0':
+		val = 0;
+		break;
+	case '1':
+		val = 1;
+		if (cd && cd->hw_ops && cd->hw_ops->send_cmd) {
+			memset(&cmd, 0, sizeof(cmd));
+			cmd.len = 5;
+			cmd.cmd = 0x30;
+			cmd.data[0] = 0x00;
+			if (cd->hw_ops->send_cmd(cd, &cmd))
+				ts_err("failed send fp enable cmd (1)");
+		}
+		break;
+	case '2':
+		val = 2;
+		if (cd && cd->hw_ops && cd->hw_ops->send_cmd) {
+			memset(&cmd, 0, sizeof(cmd));
+			cmd.len = 5;
+			cmd.cmd = 0x30;
+			cmd.data[0] = 0x01;
+			if (cd->hw_ops->send_cmd(cd, &cmd))
+				ts_err("failed send fp enable cmd (2)");
+		}
+		break;
+	default:
+		ts_info("invalid fingerprint_status value: 0x%02x", tmp[0]);
+		return count;
+	}
+
+	tran_fingerprint_status = val;
+	gsx_gesture->fp_status = val;
+	if (val)
 		gsx_gesture->gesture_type |= GESTURE_FOD_PRESS_BIT;
 	else
 		gsx_gesture->gesture_type &= ~GESTURE_FOD_PRESS_BIT;
-	ts_info("tran_fingerprint_status = %d", en);
+	ts_info("tran_fingerprint_status = %d", tran_fingerprint_status);
 	return count;
 }
 

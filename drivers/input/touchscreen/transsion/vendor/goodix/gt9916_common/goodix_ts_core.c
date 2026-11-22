@@ -1716,6 +1716,12 @@ static int goodix_ts_resume(struct goodix_ts_core *core_data)
     ts_info("Resume start");
     atomic_set(&core_data->suspended, 0);
     hw_ops->irq_enable(core_data, false);
+    if (g_fp_flag == 1) {
+        ts_info("resume key finger up");
+        input_report_key(core_data->input_dev, 195, 0);
+        input_sync(core_data->input_dev);
+        g_fp_flag = 0;
+    }
     mutex_lock(&goodix_modules.mutex);
     if (!list_empty(&goodix_modules.head)) {
         list_for_each_entry_safe(ext_module, next,
@@ -1763,6 +1769,8 @@ out:
     hw_ops->irq_enable(core_data, true);
     /* open esd */
     goodix_ts_blocking_notify(NOTIFY_RESUME, NULL);
+    ts_info("tran_fingerprint_status=%d g_fp_flag=%d",
+            tran_fingerprint_status, g_fp_flag);
     ts_info("Resume end");
     return 0;
 }
