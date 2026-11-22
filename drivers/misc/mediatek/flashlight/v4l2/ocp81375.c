@@ -216,7 +216,7 @@ static int ocp81375_set_scenario(int scenario)
 	return 0;
 }
 /* enable mode control */
-static int ocp81375_mode_ctrl_tran(struct ocp81375_flash *flash,enum ocp81375_led_id led_no)
+static int __maybe_unused ocp81375_mode_ctrl_tran(struct ocp81375_flash *flash,enum ocp81375_led_id led_no)
 {
 	int rval = -EINVAL;
 	OCP81375_LOGI("mode:[%d] led_no=%d", flash->led_mode,led_no);
@@ -398,7 +398,7 @@ static int ocp81375_set_ctrl(struct v4l2_ctrl *ctrl, enum ocp81375_led_id led_no
 	case V4L2_CID_FLASH_LED_MODE:
 		flash->led_mode = ctrl->val;
 		if (flash->led_mode != V4L2_FLASH_LED_MODE_FLASH)
-			rval = ocp81375_mode_ctrl_tran(flash,led_no);
+			rval = ocp81375_mode_ctrl(flash);
 		else
 			rval = 0;
 		if (flash->led_mode == V4L2_FLASH_LED_MODE_NONE){
@@ -742,6 +742,17 @@ static int ocp81375_ioctl(unsigned int cmd, unsigned long arg)
 		OCP81375_LOGD("FLASH_IOC_SET_SCENARIO(%d): %d\n",
 				channel, (int)fl_arg->arg);
 		ocp81375_set_scenario(fl_arg->arg);
+		break;
+	case FLASH_IOC_SET_DUTY:
+		OCP81375_LOGI("FLASH_IOC_SET_DUTY(%d): %d\n",
+				channel, (int)fl_arg->arg);
+		curr_uA = ((int)fl_arg->arg + 1) * 50000;
+		if (curr_uA > OCP81375_TORCH_BRT_MAX)
+			curr_uA = OCP81375_TORCH_BRT_MAX;
+		g_flashCurrNow = curr_uA;
+		ocp81375_torch_brt_ctrl(ocp81375_flash_data, channel, curr_uA);
+		ocp81375_flash_data->led_mode = V4L2_FLASH_LED_MODE_TORCH;
+		ocp81375_mode_ctrl(ocp81375_flash_data);
 		break;
 	case FLASH_IOC_SET_CURRENT:
 		OCP81375_LOGD("FLASH_IOC_SET_CURRENT(%d): %d\n",

@@ -607,7 +607,7 @@ static int sgm37864_subdev_init(struct sgm37864_flash *flash,
 {
 	struct i2c_client *client = to_i2c_client(flash->dev);
 	struct device_node *np = flash->dev->of_node, *child;
-	const char *fled_name = SGM37864_FLED_NAME;
+	const char *fled_name = "flash_sgm37864";
 	int rval;
 	if (led_no < 0 || led_no >= SGM37864_LED_MAX) {
 		SGM37864_LOGI("led_no error\n");
@@ -620,6 +620,12 @@ static int sgm37864_subdev_init(struct sgm37864_flash *flash,
 	flash->subdev_led[led_no].internal_ops = &sgm37864_int_ops;
 	strscpy(flash->subdev_led[led_no].name, led_name,
 		sizeof(flash->subdev_led[led_no].name));
+	child = of_get_child_by_name(np, fled_name);
+	if (child) {
+		of_node_put(child);
+	} else {
+		fled_name = SGM37864_FLED_NAME;
+	}
 	for (child = of_get_child_by_name(np, fled_name); child;
 			child = of_find_node_by_name(child, fled_name)) {
 		int rv;
@@ -965,18 +971,18 @@ static int sgm37864_probe(struct i2c_client *client)
 	SGM37864_LOGI("device_id =0x%x\n",device_id);
 	if (device_id == 0x11){
 		SGM37864_LOGI("SGM37864 device_id is match device_id =0x%x\n",device_id);
-		rval = sgm37864_subdev_init(flash, SGM37864_LED0, "sgm37864-led0");
+		rval = sgm37864_subdev_init(flash, SGM37864_LED0, "sgm37864_v4l2-led0");
 		if (rval < 0)
 			return rval;
-		rval = sgm37864_subdev_init(flash, SGM37864_LED1, "sgm37864-led1");
+		rval = sgm37864_subdev_init(flash, SGM37864_LED1, "sgm37864_v4l2-led1");
 		if (rval < 0)
 			return rval;
 	} else {
 		pr_err("SGM37864 device_id is mismatch device_id =0x%x\n",device_id);
-		rval = sgm37864_subdev_init(flash, SGM37864_LED0, "sgm37864-led0-f");
+		rval = sgm37864_subdev_init(flash, SGM37864_LED0, "sgm37864_v4l2-led0-f");
 		if (rval < 0)
 			return rval;
-		rval = sgm37864_subdev_init(flash, SGM37864_LED1, "sgm37864-led1-f");
+		rval = sgm37864_subdev_init(flash, SGM37864_LED1, "sgm37864_v4l2-led1-f");
 		if (rval < 0)
 			return rval;
 		sgm37864_pinctrl_set(flash,
