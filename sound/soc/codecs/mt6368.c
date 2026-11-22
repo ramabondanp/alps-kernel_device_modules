@@ -750,12 +750,12 @@ static const struct snd_kcontrol_new hpr_in_mux_control =
 
 /* RCV MUX */
 static const char *const rcv_in_mux_map[] = {
-	"Open", "Mute", "Voice Playback", "Test Mode"
+	"Open", "Playback_R_DAC", "Voice Playback", "Test Mode"
 };
 
 static int rcv_in_mux_map_value[] = {
 	RCV_MUX_OPEN,
-	RCV_MUX_MUTE,
+	RCV_MUX_PLAYBACK_R_DAC,
 	RCV_MUX_VOICE_PLAYBACK,
 	RCV_MUX_TEST_MODE,
 };
@@ -1559,9 +1559,9 @@ static int mt_rcv_event(struct snd_soc_dapm_widget *w,
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
 	struct mt6368_priv *priv = snd_soc_component_get_drvdata(cmpnt);
+	unsigned int mux = dapm_kcontrol_get_value(w->kcontrols[0]);
 
-	dev_info(priv->dev, "%s(), event 0x%x, mux %u\n",
-		 __func__, event, dapm_kcontrol_get_value(w->kcontrols[0]));
+	dev_info(priv->dev, "%s(), event 0x%x, mux %u\n", __func__, event, mux);
 
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
@@ -1599,14 +1599,39 @@ static int mt_rcv_event(struct snd_soc_dapm_widget *w,
 			     priv->ana_gain[AUDIO_ANALOG_VOLUME_HSOUTL]);
 
 
-		/* Enable Audio DAC  */
-		regmap_write(priv->regmap, MT6368_AUDDEC_ANA_CON1, 0x0);
-		regmap_write(priv->regmap, MT6368_AUDDEC_ANA_CON0, 0x9);
-		/* Enable low-noise mode of DAC */
-		regmap_write(priv->regmap, MT6368_AUDDEC_ANA_CON18, 0x1);
-		regmap_write(priv->regmap, MT6368_AUDDEC_ANA_CON19, 0x0);
-		/* Switch HS MUX to audio DAC */
-		regmap_write(priv->regmap, MT6368_AUDDEC_ANA_CON11, 0x9b);
+		/* Enable Audio DAC path */
+		switch (mux) {
+		case RCV_MUX_PLAYBACK_R_DAC:
+			/* Enable Audio DAC R */
+			regmap_update_bits(priv->regmap,
+					   MT6368_AUDDEC_ANA_CON0,
+					   RG_AUDDACRPWRUP_VAUDP32_MASK_SFT |
+					   RG_AUD_DAC_PWR_UP_VA32_MASK_SFT,
+					   0x6);
+			/* Switch HS MUX to audio DAC R */
+			regmap_write(priv->regmap,
+				     MT6368_AUDDEC_ANA_CON11, 0x97);
+			break;
+		case RCV_MUX_VOICE_PLAYBACK:
+			/* Enable low-noise mode of DAC */
+			regmap_write(priv->regmap, MT6368_AUDDEC_ANA_CON18, 0x1);
+			/* Enable Audio DAC L */
+			regmap_update_bits(priv->regmap,
+					   MT6368_AUDDEC_ANA_CON0, 0x9, 0x9);
+			/* Switch HS MUX to audio DAC L */
+			regmap_write(priv->regmap,
+				     MT6368_AUDDEC_ANA_CON11, 0x9b);
+			break;
+		case RCV_MUX_TEST_MODE:
+			regmap_write(priv->regmap, MT6368_ZCD_CON5, 0x8);
+			/* Switch HS MUX to LO */
+			regmap_write(priv->regmap,
+				     MT6368_AUDDEC_ANA_CON11, 0x9f);
+			break;
+		default:
+			break;
+		}
+		priv->mux_select[MUX_RCV] = mux;
 		/* Enable AUD_ZCD */
 		zcd_enable(priv, true, DEVICE_RCV);
 		break;
@@ -1616,13 +1641,23 @@ static int mt_rcv_event(struct snd_soc_dapm_widget *w,
 				   RG_AUDHSMUXINPUTSEL_VAUDP32_MASK_SFT,
 				   RCV_MUX_OPEN);
 
-		/* Disable Audio DAC */
-		regmap_update_bits(priv->regmap, MT6368_AUDDEC_ANA_CON0,
-				   0xf, 0x0);
-
+		/* Disable the DAC that was enabled for this mux */
+		if (priv->mux_select[MUX_RCV] == RCV_MUX_VOICE_PLAYBACK)
+			regmap_update_bits(priv->regmap,
+					   MT6368_AUDDEC_ANA_CON0,
+					   RG_AUDDACLPWRUP_VAUDP32_MASK_SFT |
+					   RG_AUD_DAC_PWR_UP_VA32_MASK_SFT,
+					   0x0);
+		else if (priv->mux_select[MUX_RCV] == RCV_MUX_PLAYBACK_R_DAC)
+			regmap_update_bits(priv->regmap,
+					   MT6368_AUDDEC_ANA_CON0,
+					   RG_AUDDACRPWRUP_VAUDP32_MASK_SFT |
+					   RG_AUD_DAC_PWR_UP_VA32_MASK_SFT,
+					   0x0);
 
 		/* decrease HS gain to minimum gain step by step */
 		regmap_write(priv->regmap, MT6368_ZCD_CON5, DL_GAIN_N_40DB);
+		priv->mux_select[MUX_RCV] = mux;
 
 		/* Disable HS driver core circuits */
 		regmap_update_bits(priv->regmap, MT6368_AUDDEC_ANA_CON11,
@@ -1714,6 +1749,7 @@ static int mt_lo_event(struct snd_soc_dapm_widget *w,
 			regmap_write(priv->regmap, MT6368_AUDDEC_ANA_CON13, 0x1b);
 		}
 		/* Enable AUD_ZCD */
+		priv->mux_select[MUX_LO] = mux;
 		zcd_enable(priv, true, DEVICE_LO);
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
@@ -1753,6 +1789,7 @@ static int mt_lo_event(struct snd_soc_dapm_widget *w,
 		regmap_update_bits(priv->regmap, MT6368_AUDDEC_ANA_CON13,
 				   RG_AUDLOLPWRUP_IBIAS_VAUDP32_MASK_SFT, 0x0);
 		/* Disable AUD_ZCD */
+		priv->mux_select[MUX_LO] = mux;
 		zcd_enable(priv, false, DEVICE_LO);
 		break;
 	default:
@@ -3914,8 +3951,10 @@ static const struct snd_soc_dapm_route mt6368_dapm_routes[] = {
 	{"HPR Mux", "Audio Playback", "DACR"},
 	{"HPL Mux", "HP Impedance", "DACL"},
 	{"HPR Mux", "HP Impedance", "DACR"},
-	{"HPL Mux", "LoudSPK Playback", "DACL"},
-	{"HPR Mux", "LoudSPK Playback", "DACR"},
+	{"HPL Mux", "LoudSPK Playback", "LINEOUT L"},
+	{"HPR Mux", "LoudSPK Playback", "LINEOUT L"},
+	{"HPL Mux", "Test Mode", "Receiver"},
+	{"HPR Mux", "Test Mode", "Receiver"},
 
 	{"Headphone L", NULL, "HPL Mux"},
 	{"Headphone R", NULL, "HPR Mux"},
@@ -3924,6 +3963,8 @@ static const struct snd_soc_dapm_route mt6368_dapm_routes[] = {
 
 	/* Receiver Path */
 	{"RCV Mux", "Voice Playback", "DACL"},
+	{"RCV Mux", "Playback_R_DAC", "DACR"},
+	{"RCV Mux", "Test Mode", "LINEOUT L"},
 	{"Receiver", NULL, "RCV Mux"},
 
 	/* VOW */
