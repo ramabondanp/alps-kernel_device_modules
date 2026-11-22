@@ -310,7 +310,9 @@ struct charger_data {
 enum alg_id_enum {
 	ALG_NONE = 0,
 	PE5_ID,
+	TC30_ID,
 	PDC_ID,
+	HVDCP20_ID,
 	PE2_ID,
 	ALG_MAX,
 };
@@ -318,9 +320,19 @@ enum alg_id_enum {
 static char * const alg_name_array[] = {
 	[ALG_NONE]   =     "none",
 	[PE5_ID]     =     "pe5",
+	[TC30_ID]    =     "tc30",
 	[PDC_ID]     =     "pd",
+	[HVDCP20_ID] =     "hvdcp20",
 	[PE2_ID]     =     "pe20",
 };
+
+static inline const char *tchg_alg_id_to_name(int alg_id)
+{
+	if (alg_id >= 0 && alg_id < ARRAY_SIZE(alg_name_array) &&
+	    alg_name_array[alg_id])
+		return alg_name_array[alg_id];
+	return "unknown";
+}
 
 enum feature_id_enum {
 	BYPASS_CHG = 0,

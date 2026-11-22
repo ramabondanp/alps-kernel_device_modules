@@ -785,6 +785,12 @@ static int tc_get_chg_type(struct tc_charger *info)
 	case PE2_ID:
 		chg_type = TRAN_USB_TYPE_PE2;
 		break;
+	case TC30_ID:
+		chg_type = TRAN_USB_TYPE_TC30;
+		break;
+	case HVDCP20_ID:
+		chg_type = TRAN_USB_TYPE_HVDCP;
+		break;
 	case PDC_ID:
 		chg_type = TRAN_USB_TYPE_PDC;
 		break;

@@ -189,9 +189,11 @@ static ssize_t Pump_Express_show(struct device *dev,
 
 	switch (alg_id) {
 		case PE5_ID:
-		case PDC_ID:
+		case TC30_ID:
 			type = 2;
 			break;
+		case PDC_ID:
+		case HVDCP20_ID:
 		case PE2_ID:
 			type = 4;
 			break;
@@ -199,13 +201,11 @@ static ssize_t Pump_Express_show(struct device *dev,
 		default:
 			type = 0;
 			break;
-
-		
 	}
 
 out:
 	tchr_err("%s: idx = %d, name:%s, type = %d\n",
-		__func__, alg_id, alg_name_array[alg_id], type);
+		__func__, alg_id, tchg_alg_id_to_name(alg_id), type);
 
 	return sprintf(buf, "%d\n", type);
 }
@@ -259,7 +259,9 @@ static ssize_t Charger_Type_show(struct device *dev,
 		case PE5_ID:
 			type = DV2_CHARGER;
 			break;
+		case TC30_ID:
 		case PDC_ID:
+		case HVDCP20_ID:
 		case PE2_ID:
 			type = PE_CHARGER;
 			break;
@@ -271,7 +273,7 @@ static ssize_t Charger_Type_show(struct device *dev,
 
 out:
 	tchr_err("%s: idx = %d, name:%s, type = %d\n",
-		__func__, alg_id, alg_name_array[alg_id], type);
+		__func__, alg_id, tchg_alg_id_to_name(alg_id), type);
 
 	return sprintf(buf, "%d\n", type);
 }
@@ -367,8 +369,8 @@ static ssize_t alg_debug_show(struct device *dev,
 	for (i = 0; i < MAX_ALG_NO; i++) {
 		alg = data->alg[i];
 		if (alg != NULL && alg->is_disabled) {
-			ret += snprintf(buf + ret, PAGE_SIZE - ret, "alg:%s, is_disabled:%d\n", 
-			                alg_name_array[alg->alg_id], alg->is_disabled);
+			ret += snprintf(buf + ret, PAGE_SIZE - ret, "alg:%s, is_disabled:%d\n",
+			                tchg_alg_id_to_name(alg->alg_id), alg->is_disabled);
 			if (ret >= PAGE_SIZE)
 				break;
 		}
@@ -542,8 +544,8 @@ static ssize_t Charging_mode_show(struct device *dev,
 	if (alg == NULL)
 		return sprintf(buf, "ALG_NOT_RUNNING\n");
 
-	tchr_err("%s: charging_mode: %s\n", __func__, alg_name_array[alg->alg_id]);
-	return sprintf(buf, "%s\n", alg_name_array[alg->alg_id]);
+	tchr_err("%s: charging_mode: %s\n", __func__, tchg_alg_id_to_name(alg->alg_id));
+	return sprintf(buf, "%s\n", tchg_alg_id_to_name(alg->alg_id));
 }
 
 static DEVICE_ATTR_RO(Charging_mode);
