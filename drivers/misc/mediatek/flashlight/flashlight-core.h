@@ -10,6 +10,16 @@
 #include <linux/thermal.h>
 #include "flashlight.h"
 
+/*
+ * Stock X6871 flashlight.ko and ocp81375_v4l2.ko are built without
+ * CONFIG_MTK_FLASHLIGHT_PT / CONFIG_MTK_FLASHLIGHT_PT_STRICT. Leaving them
+ * enabled from mgk_64_k612_defconfig causes pt_trigger to permanently block
+ * torch/flash via FLASH_IOC_IS_LOW_POWER and flashlight_pt_is_low() at low
+ * battery (e.g. <= 15% SOC).
+ */
+#undef CONFIG_MTK_FLASHLIGHT_PT
+#undef CONFIG_MTK_FLASHLIGHT_PT_STRICT
+
 /* protocol version */
 #define FLASHLIGHT_PROTOCOL_VERSION 2
 
