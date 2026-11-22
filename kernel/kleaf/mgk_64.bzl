@@ -10,6 +10,10 @@ load("@mgk_info//:dict.bzl",
     "DEFCONFIG_OVERLAYS",
 )
 
+load(":kernel/kleaf/x6871_modules.bzl",
+     "x6871_runtime_modules",
+)
+
 load("@mgk_info//:kernel_version.bzl",
      "kernel_version",
 )
@@ -4901,3 +4905,17 @@ def get_overlay_modules_list():
 
 
 get_overlay_modules_list()
+
+def _filter_x6871_modules():
+    kept_kleaf = [m for m in mgk_64_kleaf_modules if m in x6871_runtime_modules]
+    mgk_64_kleaf_modules.clear()
+    mgk_64_kleaf_modules.extend(kept_kleaf)
+
+    kept_device = [m for m in mgk_64_kleaf_device_modules if m in x6871_runtime_modules]
+    mgk_64_kleaf_device_modules.clear()
+    mgk_64_kleaf_device_modules.extend(kept_device)
+
+    for k in [k for k in mgk_64_kleaf_platform_modules if k not in x6871_runtime_modules]:
+        mgk_64_kleaf_platform_modules.pop(k)
+
+_filter_x6871_modules()
