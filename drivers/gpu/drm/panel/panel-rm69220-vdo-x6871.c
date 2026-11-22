@@ -771,9 +771,7 @@ static int panel_ext_lcm_power_set(struct drm_panel *panel, int on)
 		if (regulator_is_enabled(ctx->dvdd_regulator))
 			dev_err(ctx->dev, "<%s:%d>after disable, lcm dvdd still enable!ret[%d]\n", __func__, __LINE__, ret);
 		mdelay(2);
-		ctx->vddi_gpio = devm_gpiod_get(ctx->dev, "vddi", GPIOD_OUT_HIGH);
-		gpiod_set_value(ctx->vddi_gpio, 0);
-		devm_gpiod_put(ctx->dev, ctx->vddi_gpio);
+		/* Match stock RM69220: keep vddi-gpios high so Goodix GT9916 stays powered for screen-off FOD/DT2W */
 		lcm_unprepare_time = jiffies_to_msecs(jiffies);
 	}
 	return 0;
