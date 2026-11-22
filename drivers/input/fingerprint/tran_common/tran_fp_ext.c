@@ -954,13 +954,14 @@ int tran_fp_input_init(void)
 int tran_fp_irq_init(void)
 {
 	int rc = 0;
-	if(g_tran_fp_datap->tran_pinctrl)
-	{
+	if (g_tran_fp_datap->tran_pinctrl && !IS_ERR_OR_NULL(g_tran_fp_datap->pins_irq)) {
 		rc = pinctrl_select_state(g_tran_fp_datap->tran_pinctrl, g_tran_fp_datap->pins_irq);
-		if(rc)
+		if (rc)
 			TRAN_FP_ERROR("[tran]cannot set irq pinctrl state, rc = %d \n", rc);
 	}
-	return g_tran_fp_datap->irq_init();
+	if (g_tran_fp_datap->irq_init)
+		return g_tran_fp_datap->irq_init();
+	return 0;
 }
 
 int tran_netlink_init(struct tran_fp_data *tran_fp_datap)
@@ -1306,26 +1307,32 @@ void setVendorName(void) {
                          "goodix", NULL)) {
         strscpy(g_tran_fp_datap->vendor_name, "goodix_opt_tee",
                 sizeof(g_tran_fp_datap->vendor_name));
-        TRAN_FP_INFO("unknown Goodix id, assuming optical TEE vendor_name=%s",
-                     g_tran_fp_datap->vendor_name);
+        g_tran_fp_datap->miscdev.name = "goodix_fp";
+        TRAN_FP_INFO("unknown Goodix id, assuming optical TEE vendor_name=%s miscdev=%s",
+                     g_tran_fp_datap->vendor_name, g_tran_fp_datap->miscdev.name);
         return;
     }
 
     if (tran_ic_name_is(g_tran_fp_datap->ic_name, "GW9578") ||
         tran_ic_name_is(g_tran_fp_datap->ic_name, "GW9598")) {
         strscpy(g_tran_fp_datap->vendor_name, "goodix_opt_tee", sizeof(g_tran_fp_datap->vendor_name));
+        g_tran_fp_datap->miscdev.name = "goodix_fp";
     } else if (tran_ic_name_is(g_tran_fp_datap->ic_name, "GF3976") ||
                tran_ic_name_is(g_tran_fp_datap->ic_name, "GF3656") ||
                tran_ic_name_is(g_tran_fp_datap->ic_name, "GF3956") ||
                tran_ic_name_is(g_tran_fp_datap->ic_name, "GF3986")) {
         strscpy(g_tran_fp_datap->vendor_name, "goodix_tee", sizeof(g_tran_fp_datap->vendor_name));
+        g_tran_fp_datap->miscdev.name = "goodix_fp";
     } else if (strcmp(g_tran_fp_datap->ic_name, "GSL7002") == 0) {
         strscpy(g_tran_fp_datap->vendor_name, "silead_opt_tee", sizeof(g_tran_fp_datap->vendor_name));
+        g_tran_fp_datap->miscdev.name = "silead_fp";
     } else if (strcmp(g_tran_fp_datap->ic_name, "JV0307") == 0) {
         strscpy(g_tran_fp_datap->vendor_name, "anc_opt_tee", sizeof(g_tran_fp_datap->vendor_name));
+        g_tran_fp_datap->miscdev.name = "jiiov_fp";
     } else if (strcmp(g_tran_fp_datap->ic_name, "FT9399") == 0 ||
                strcmp(g_tran_fp_datap->ic_name, "FT9391") == 0 ) {
         strscpy(g_tran_fp_datap->vendor_name, "focaltech_tee", sizeof(g_tran_fp_datap->vendor_name));
+        g_tran_fp_datap->miscdev.name = "focaltech_fp";
     } else {
         strscpy(g_tran_fp_datap->vendor_name, "null", sizeof(g_tran_fp_datap->vendor_name));
     }

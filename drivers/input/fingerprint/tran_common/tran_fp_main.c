@@ -760,6 +760,9 @@ static int  tran_fp_probe(struct spi_device *tran_fp_dev)
 
 	g_tran_fp_datap = tran_fp_datap;
 	tran_fp_datap->tran_fp_dev = tran_fp_dev;
+	tran_fp_dev->bits_per_word = 8;
+	tran_fp_dev->max_speed_hz = 4000000;
+	tran_fp_dev->mode = SPI_MODE_0;
 	tran_fp_datap->miscdev.minor = TRAN_FP_STATIC_MINOR;
 	tran_fp_datap->miscdev.name = "tran_fp";
 	tran_fp_datap->miscdev.fops = &tran_fp_fops;
@@ -865,11 +868,11 @@ static int  tran_fp_probe(struct spi_device *tran_fp_dev)
 		goto input_init_err;
 	}
 
-//	status = tran_fp_irq_init();
-//	if (status < 0) {
-//		TRAN_FP_ERROR(" tran_fp_irq_init failed");
-//		goto irq_init_err;
-//	}
+	status = tran_fp_irq_init();
+	if (status < 0) {
+		TRAN_FP_ERROR(" tran_fp_irq_init failed");
+		goto input_init_err;
+	}
 
 	status = tran_netlink_init(tran_fp_datap);
 	if (status < 0) {

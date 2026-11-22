@@ -91,7 +91,6 @@ irqreturn_t tran_irq(int irq, void *handle)
 #endif
 	return IRQ_HANDLED;
 }
-#if IS_ENABLED(CONFIG_TRAN_HBM_NOTIFY_FINGERPRINT) || IS_ENABLED(CONFIG_TRAN_LHBM_NOTIFY_FINGERPRINT)
 static void tran_fasync_for_lcm_full_HBM(void)
 {
 	struct tran_fp_data *tran_fp_datap = g_tran_fp_datap;
@@ -104,7 +103,6 @@ static void tran_fasync_for_lcm_full_HBM(void)
 	}
 	//kill_fasync(&tran_fp_datap->async_queue, sig, band);
 }
-#endif
 
 #ifdef CONFIG_HAS_EARLYSUSPEND
  void tran_early_suspend(struct early_suspend *handler)
@@ -148,12 +146,10 @@ int tran_fb_notifier_callback(struct notifier_block *self,unsigned long event, v
 
 	TRAN_FP_DEBUG(" enter, blank=0x%x\n", *blank);
 	switch (*blank) {
-#if IS_ENABLED(CONFIG_TRAN_HBM_NOTIFY_FINGERPRINT) || IS_ENABLED(CONFIG_TRAN_LHBM_NOTIFY_FINGERPRINT)
-		case TRAN_DISP_BLANK_NOTIFY_FINGERPRINT:
+	case TRAN_DISP_BLANK_NOTIFY_FINGERPRINT:
 		TRAN_FP_INFO(" TRAN_DISP_BLANK_NOTIFY_FINGERPRINT\n");
 		tran_fasync_for_lcm_full_HBM();
 		break;
-#endif
 	case MTK_DISP_BLANK_UNBLANK:
 		TRAN_FP_INFO(" lcd on notify\n");
 		tran_netlink_send(tran_dev, TRAN_NETLINK_SCREEN_ON);
