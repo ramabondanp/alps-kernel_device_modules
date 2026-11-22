@@ -303,6 +303,34 @@ static void controller_match_work(struct work_struct *work)
 static int g_tran_gesture_mode = 1;
 static u8 g_tran_gesture_code;
 
+struct tran_gesture_map {
+	char cmd[2];
+	u8 unused;
+	u8 enabled;
+	u8 code;
+	u32 type;
+};
+
+static struct tran_gesture_map g_tran_gesture_maps[] = {
+	{ {'a', 'l'}, 0, 1, 0xff, 3 },
+	{ {'c', 'c'}, 0, 1, 0xcc, 0 },
+	{ {'a', 'a'}, 0, 0, 0xaa, 1 },
+	{ {'b', 'b'}, 0, 0, 0xbb, 1 },
+	{ {'a', 'b'}, 0, 0, 0xab, 1 },
+	{ {'b', 'a'}, 0, 0, 0xba, 1 },
+	{ {'5', 'e'}, 0, 0, 0x5e, 4 },
+	{ {'3', 'e'}, 0, 0, 0x3e, 4 },
+	{ {'f', 'p'}, 0, 1, 0xbe, 4 },
+	{ {'w', '0'}, 0, 0, 'w',  2 },
+	{ {'o', '0'}, 0, 0, 'o',  2 },
+	{ {'m', '0'}, 0, 0, 'm',  2 },
+	{ {'e', '0'}, 0, 0, 'e',  2 },
+	{ {'c', '0'}, 0, 0, 'c',  2 },
+	{ {'z', '0'}, 0, 0, 'z',  2 },
+	{ {'s', '0'}, 0, 0, 's',  2 },
+	{ {'v', '0'}, 0, 0, 'v',  2 },
+};
+
 void tran_gesture_set_code(u8 code)
 {
 	g_tran_gesture_code = code;
@@ -317,11 +345,15 @@ static const char *const g_gesture_data_proc_names[4] = {
 	"gesture_data",
 };
 
-static struct proc_dir_entry *g_gesture_procs[5];
-static const char *const g_gesture_proc_names[5] = {
+static struct proc_dir_entry *g_gesture_state_procs[2];
+static const char *const g_gesture_state_proc_names[2] = {
 	"main_gesture_state",
-	"main_gesture_flag",
 	"gesture_state",
+};
+
+static struct proc_dir_entry *g_gesture_flag_procs[3];
+static const char *const g_gesture_flag_proc_names[3] = {
+	"main_gesture_flag",
 	"gesture_flag",
 	"touch_gesture",
 };
@@ -333,16 +365,71 @@ static ssize_t tran_gesture_data_read(struct file *file, char __user *buf,
 	u8 code = g_tran_gesture_code;
 	char ch = (code == 0xcc) ? 'f' : (char)code;
 	int len;
+	ssize_t ret;
 
-	if (*ppos > 0)
-		return 0;
 	len = scnprintf(tmp, sizeof(tmp), "%c\n", ch);
-	if (count < len)
+	ret = simple_read_from_buffer(buf, count, ppos, tmp, len);
+	if (ret > 0)
+		TRAN_INFO("CTP gesture ret:%zd ppos:%lld ges:%02x char:%c",
+			  ret, *ppos, code, ch);
+	return ret;
+}
+
+static ssize_t tran_gesture_data_write(struct file *file, const char __user *buf,
+				       size_t count, loff_t *ppos)
+{
+	char tmp[16];
+	size_t n = min(count, sizeof(tmp) - 1);
+	int i, en;
+
+	if (!n)
 		return -EINVAL;
-	if (copy_to_user(buf, tmp, len))
+	if (copy_from_user(tmp, buf, n))
 		return -EFAULT;
-	*ppos = len;
-	return len;
+	tmp[n] = '\0';
+
+	if (n >= 3 && (tmp[2] == '1' || tmp[2] == '2')) {
+		en = (tmp[2] == '1') ? 1 : 0;
+		for (i = 0; i < ARRAY_SIZE(g_tran_gesture_maps); i++) {
+			if (g_tran_gesture_maps[i].cmd[0] == tmp[0] &&
+			    g_tran_gesture_maps[i].cmd[1] == tmp[1]) {
+				g_tran_gesture_maps[i].enabled = en;
+				TRAN_INFO("gesture_data_write %c%c code[0x%02x] enable[%d]",
+					  tmp[0], tmp[1], g_tran_gesture_maps[i].code, en);
+				if (g_tran_gesture_maps[i].code == 0xcc ||
+				    g_tran_gesture_maps[i].code == 0xff) {
+					g_tran_gesture_mode = en;
+					if (g_tran_ts.controller && g_tran_ts.controller->ops &&
+					    g_tran_ts.controller->ops->tran_gesture_enable)
+						g_tran_ts.controller->ops->tran_gesture_enable(en);
+				}
+				return count;
+			}
+		}
+	}
+
+	en = (tmp[0] != '0' && tmp[0] != '2' && tmp[0] != '\0' && tmp[0] != '\n') ? 1 : 0;
+	g_tran_gesture_mode = en;
+	TRAN_INFO("gesture data write fallback: '%c' -> enable=%d", tmp[0], en);
+	if (g_tran_ts.controller && g_tran_ts.controller->ops &&
+	    g_tran_ts.controller->ops->tran_gesture_enable)
+		g_tran_ts.controller->ops->tran_gesture_enable(en);
+	return count;
+}
+
+static ssize_t tran_gesture_status_read(struct file *file, char __user *buf,
+					size_t count, loff_t *ppos)
+{
+	char tmp[256];
+	int i, len = 0;
+
+	for (i = 0; i < ARRAY_SIZE(g_tran_gesture_maps); i++) {
+		len += scnprintf(tmp + len, sizeof(tmp) - len, "%c%c : %d\n",
+				 g_tran_gesture_maps[i].cmd[0],
+				 g_tran_gesture_maps[i].cmd[1],
+				 g_tran_gesture_maps[i].enabled);
+	}
+	return simple_read_from_buffer(buf, count, ppos, tmp, len);
 }
 
 static ssize_t tran_gesture_proc_read(struct file *file, char __user *buf,
@@ -351,15 +438,8 @@ static ssize_t tran_gesture_proc_read(struct file *file, char __user *buf,
 	char tmp[8];
 	int len;
 
-	if (*ppos > 0)
-		return 0;
 	len = scnprintf(tmp, sizeof(tmp), "%d\n", g_tran_gesture_mode);
-	if (count < len)
-		return -EINVAL;
-	if (copy_to_user(buf, tmp, len))
-		return -EFAULT;
-	*ppos = len;
-	return len;
+	return simple_read_from_buffer(buf, count, ppos, tmp, len);
 }
 
 static ssize_t tran_gesture_proc_write(struct file *file, const char __user *buf,
@@ -374,7 +454,7 @@ static ssize_t tran_gesture_proc_write(struct file *file, const char __user *buf
 	if (copy_from_user(tmp, buf, n))
 		return -EFAULT;
 	tmp[n] = '\0';
-	en = (tmp[0] != '0' && tmp[0] != '\0' && tmp[0] != '\n') ? 1 : 0;
+	en = (tmp[0] != '0' && tmp[0] != '2' && tmp[0] != '\0' && tmp[0] != '\n') ? 1 : 0;
 	g_tran_gesture_mode = en;
 	TRAN_INFO("gesture proc write: '%c' -> enable=%d", tmp[0], en);
 	if (g_tran_ts.controller && g_tran_ts.controller->ops &&
@@ -385,10 +465,15 @@ static ssize_t tran_gesture_proc_write(struct file *file, const char __user *buf
 
 static const struct proc_ops tran_gesture_data_proc_ops = {
 	.proc_read = tran_gesture_data_read,
+	.proc_write = tran_gesture_data_write,
+};
+
+static const struct proc_ops tran_gesture_state_proc_ops = {
+	.proc_read = tran_gesture_status_read,
 	.proc_write = tran_gesture_proc_write,
 };
 
-static const struct proc_ops tran_gesture_proc_ops = {
+static const struct proc_ops tran_gesture_flag_proc_ops = {
 	.proc_read = tran_gesture_proc_read,
 	.proc_write = tran_gesture_proc_write,
 };
@@ -405,12 +490,21 @@ static void tran_gesture_proc_init(void)
 			TRAN_ERROR("Failed to create proc entry for %s",
 				   g_gesture_data_proc_names[i]);
 	}
-	for (i = 0; i < ARRAY_SIZE(g_gesture_proc_names); i++) {
-		g_gesture_procs[i] = proc_create(g_gesture_proc_names[i], 0666,
-						 NULL, &tran_gesture_proc_ops);
-		if (!g_gesture_procs[i])
+	for (i = 0; i < ARRAY_SIZE(g_gesture_state_proc_names); i++) {
+		g_gesture_state_procs[i] = proc_create(g_gesture_state_proc_names[i],
+						       0666, NULL,
+						       &tran_gesture_state_proc_ops);
+		if (!g_gesture_state_procs[i])
 			TRAN_ERROR("Failed to create proc entry for %s",
-				   g_gesture_proc_names[i]);
+				   g_gesture_state_proc_names[i]);
+	}
+	for (i = 0; i < ARRAY_SIZE(g_gesture_flag_proc_names); i++) {
+		g_gesture_flag_procs[i] = proc_create(g_gesture_flag_proc_names[i],
+						      0666, NULL,
+						      &tran_gesture_flag_proc_ops);
+		if (!g_gesture_flag_procs[i])
+			TRAN_ERROR("Failed to create proc entry for %s",
+				   g_gesture_flag_proc_names[i]);
 	}
 }
 
@@ -424,10 +518,16 @@ static void tran_gesture_proc_deinit(void)
 			g_gesture_data_procs[i] = NULL;
 		}
 	}
-	for (i = 0; i < ARRAY_SIZE(g_gesture_proc_names); i++) {
-		if (g_gesture_procs[i]) {
-			proc_remove(g_gesture_procs[i]);
-			g_gesture_procs[i] = NULL;
+	for (i = 0; i < ARRAY_SIZE(g_gesture_state_proc_names); i++) {
+		if (g_gesture_state_procs[i]) {
+			proc_remove(g_gesture_state_procs[i]);
+			g_gesture_state_procs[i] = NULL;
+		}
+	}
+	for (i = 0; i < ARRAY_SIZE(g_gesture_flag_proc_names); i++) {
+		if (g_gesture_flag_procs[i]) {
+			proc_remove(g_gesture_flag_procs[i]);
+			g_gesture_flag_procs[i] = NULL;
 		}
 	}
 }
