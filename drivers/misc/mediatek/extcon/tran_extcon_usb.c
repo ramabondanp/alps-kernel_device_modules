@@ -70,8 +70,6 @@ static void tran_usb_extcon_update_role(struct work_struct *work)
 	cur_dr = extcon->c_role;
 	new_dr = role->d_role;
 
-	extcon->c_role = new_dr;
-
 	dev_info(extcon->dev, "cur_dr(%d) new_dr(%d)\n", cur_dr, new_dr);
 
 	/* none -> device */
@@ -99,6 +97,8 @@ static void tran_usb_extcon_update_role(struct work_struct *work)
 	/* usb role switch */
 	if (extcon->role_sw)
 		usb_role_switch_set_role(extcon->role_sw, new_dr);
+
+	extcon->c_role = new_dr;
 
 	kfree(role);
 }
@@ -182,7 +182,7 @@ static int tran_usb_extcon_psy_notifier(struct notifier_block *nb,
 	if (data != extcon->usb_psy)
 		return 0;
 
-	queue_delayed_work(extcon->extcon_wq, &extcon->wq_psy, 0);
+	queue_delayed_work(system_power_efficient_wq, &extcon->wq_psy, 0);
 
 	return 0;
 }
@@ -406,7 +406,7 @@ static int tran_usb_extcon_probe(struct platform_device *pdev)
 		tran_usb_extcon_procfs_init(extcon);
 
 	extcon->extcon_wq = alloc_workqueue("tran-extcon-usb",
-					    WQ_MEM_RECLAIM, 1);
+					    WQ_HIGHPRI | WQ_UNBOUND, 1);
 	if (!extcon->extcon_wq)
 		return -ENOMEM;
 
