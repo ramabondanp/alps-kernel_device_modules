@@ -48,6 +48,7 @@
 #include "mtk_sync.h"
 #include "mtk_drm_session.h"
 #include "mtk_dump.h"
+#include "mtk_disp_notify.h"
 #include "mtk_drm_fb.h"
 #include "mtk_rect.h"
 #include "mtk_drm_ddp_addon.h"
@@ -3765,6 +3766,13 @@ int mtk_drm_crtc_set_panel_hbm(struct drm_crtc *crtc, bool en)
 
 	cmdq_pkt_flush(cmdq_handle);
 	cmdq_pkt_destroy(cmdq_handle);
+
+	if (en) {
+		int blank = TRAN_DISP_BLANK_NOTIFY_FINGERPRINT;
+
+		mtk_disp_notifier_call_chain(MTK_DISP_EVENT_BLANK, &blank);
+		DDPMSG("%s notify fingerprint end\n", __func__);
+	}
 
 	return 0;
 }

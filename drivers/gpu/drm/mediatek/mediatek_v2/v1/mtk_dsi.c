@@ -6118,6 +6118,14 @@ static void mtk_dsi_encoder_enable(struct drm_encoder *encoder)
 	struct mtk_ddp_comp *comp = &dsi->ddp_comp;
 	int index = drm_crtc_index(crtc);
 	int data = MTK_DISP_BLANK_UNBLANK;
+	int aod_data = TRAN_DISP_BLANK_AOD_NOTIFY;
+	int lcd_aod_data = TRAN_DISP_BLANK_ENTER_LCD_AOD_NOTIFY;
+	bool is_doze = mtk_dsi_doze_state(dsi);
+	bool lcd_aod_notify = dsi->dev && dsi->dev->of_node &&
+		of_find_property(dsi->dev->of_node,
+				 "mediatek,tran-lcd-aod-notify-support", NULL);
+
+	DDP_PROFILE("[PROFILE] tran_lcd_aod_notify_support = %d\n", lcd_aod_notify);
 
 	CRTC_MMP_EVENT_START(index, dsi_resume,
 			(unsigned long)crtc, index);
@@ -6129,6 +6137,9 @@ static void mtk_dsi_encoder_enable(struct drm_encoder *encoder)
 		DDP_PROFILE("[PROFILE] %s before notify start\n", __func__);
 		mtk_disp_notifier_call_chain(MTK_DISP_EARLY_EVENT_BLANK,
 					&data);
+		if (is_doze && lcd_aod_notify)
+			mtk_disp_notifier_call_chain(MTK_DISP_EARLY_EVENT_BLANK,
+						&lcd_aod_data);
 		DDP_PROFILE("[PROFILE] %s before notify end\n", __func__);
 	} else if (comp->id == DDP_COMPONENT_DSI1) {
 		DDP_PROFILE("[PROFILE] %s before notify start\n", __func__);
@@ -6155,6 +6166,12 @@ static void mtk_dsi_encoder_enable(struct drm_encoder *encoder)
 		DDP_PROFILE("[PROFILE] %s after notify start\n", __func__);
 		mtk_disp_notifier_call_chain(MTK_DISP_EVENT_BLANK,
 					&data);
+		if (!is_doze)
+			mtk_disp_notifier_call_chain(MTK_DISP_EVENT_BLANK,
+						&aod_data);
+		else if (lcd_aod_notify)
+			mtk_disp_notifier_call_chain(MTK_DISP_EVENT_BLANK,
+						&lcd_aod_data);
 		DDP_PROFILE("[PROFILE] %s after notify end\n", __func__);
 	} else if (comp->id == DDP_COMPONENT_DSI1) {
 		DDP_PROFILE("[PROFILE] %s after notify start\n", __func__);
