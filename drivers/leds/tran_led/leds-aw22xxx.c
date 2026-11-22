@@ -2124,7 +2124,7 @@ static int aw22xxx_i2c_probe(struct i2c_client *i2c)
 
     if (gpio_is_valid(aw22xxx->irq_gpio)) {
         ret = devm_gpio_request_one(&i2c->dev, aw22xxx->irq_gpio,
-            0, "aw22xxx_int");
+				    GPIOF_IN, "aw22xxx_int");
         if (ret) {
             dev_err(&i2c->dev, "%s: int request failed\n", __func__);
             goto err_cleanup;
