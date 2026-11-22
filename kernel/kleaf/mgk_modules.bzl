@@ -32,15 +32,16 @@ mgk_module_ext_outs = [
     "drivers/mmc/core/pwrseq_simple.ko",
 ]
 
-mgk_module_eng_outs = mgk_module_ext_outs + [
-    "fs/pstore/pstore_blk.ko",
-    "fs/pstore/pstore_zone.ko",
+_PSTORE_EXTRA_OUTS = [
+    m for m in [
+        "fs/pstore/pstore_blk.ko",
+        "fs/pstore/pstore_zone.ko",
+    ] if m not in COMMON_GKI_MODULES_LIST
 ]
 
-mgk_module_userdebug_outs = mgk_module_ext_outs + [
-    "fs/pstore/pstore_blk.ko",
-    "fs/pstore/pstore_zone.ko",
-]
+mgk_module_eng_outs = mgk_module_ext_outs + _PSTORE_EXTRA_OUTS
+
+mgk_module_userdebug_outs = mgk_module_ext_outs + _PSTORE_EXTRA_OUTS
 
 mgk_module_user_outs = mgk_module_ext_outs + [
 ]
