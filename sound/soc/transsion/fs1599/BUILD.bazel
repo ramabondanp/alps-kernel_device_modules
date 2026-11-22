@@ -43,5 +43,4 @@ define_mgk_ddk_ko(
     ko_deps = [
         "//kernel_device_modules-{}/sound/soc/mediatek/common:mtk-sp-spk-amp".format(kernel_version),
     ],
-    copts = ["-DCONFIG_SND_SOC_FS1599=1"],
 )

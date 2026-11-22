@@ -17,14 +17,6 @@
 #include "tc_hl7139a.h"
 //#include "usb_switch.h"
 #include "tc_charger_class.h"
-/*
- * 6.12 build has no CONFIG_TC_CHARGER, so the guarded block below would drop
- * these includes.  The module needs tc_get_alias_type() from tc_misc_intf.h
- * and get_charger_by_name() from tc_charger_class.h (already included above),
- * so pull in only tc_misc_intf.h unconditionally instead of enabling the whole
- * Transsion Kconfig set -- tc_charger.h drags in six more headers that this
- * module does not use.
- */
 #include "tc_misc_intf.h"
 #if IS_ENABLED(CONFIG_TC_CHARGER)
 #include "tc_charger.h"

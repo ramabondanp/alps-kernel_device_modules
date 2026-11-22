@@ -1,7 +1,7 @@
 #ifndef __MSM_DRM_IRIS_H__
 #define __MSM_DRM_IRIS_H__
 
-#if defined(CONFIG_PXLW_IRIS) || defined(PXLW_IRIS5) || defined(CONFIG_PXLW_SOFT_IRIS) || defined(PXLW_SOFT_IRIS_ONLY)
+#ifdef CONFIG_PXLW_IRIS
 #define DRM_MSM_IRIS_OPERATE_CONF	   0x52
 #define DRM_MSM_IRIS_OPERATE_TOOL	   0x53
 
@@ -57,5 +57,5 @@ struct msmfb_iris_maxcll_info {
 
 #define DRM_IOCTL_MSM_IRIS_OPERATE_CONF 	DRM_IOW (DRM_COMMAND_BASE + DRM_MSM_IRIS_OPERATE_CONF, struct msm_iris_operate_value)
 #define DRM_IOCTL_MSM_IRIS_OPERATE_TOOL 	DRM_IOW (DRM_COMMAND_BASE + DRM_MSM_IRIS_OPERATE_TOOL, struct msm_iris_operate_value)
-#endif // CONFIG_PXLW_IRIS5 || PXLW_IRIS5
+#endif /* CONFIG_PXLW_IRIS */
 #endif /* __MSM_DRM_IRIS_H__ */

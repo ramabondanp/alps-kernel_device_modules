@@ -23,25 +23,8 @@
 #include <linux/of_graph.h>
 #include <linux/platform_device.h>
 
-#define CONFIG_MTK_PANEL_EXT
-#if defined(CONFIG_MTK_PANEL_EXT)
 #include "../mediatek/mediatek_v2/mtk_panel_ext.h"
 #include "../mediatek/mediatek_v2/mtk_drm_graphics_base.h"
-#endif
-
-/*
- * Tree 6.12 tidak lagi mendefinisikan Kconfig TRANSSION_DOZE_BRIGHTNESS_SUPPORT
- * (di donor 6.1 ada di mediatek_v2/Kconfig dan di-set =m lewat
- * tran_custom.config). Modul panel vendor untuk X6871 dibangun dengan fitur ini
- * aktif: saat probe ia mencetak "[LCM] lcm_probe lcm_doze_backlight:3;5;7;27;"
- * dan menyediakan jalur doze/AOD. Tanpa itu, transisi layar mati -> nyala
- * (mtk_atomic_doze_*) berakhir layar hitam dengan DSI underrun.
- */
-#ifndef CONFIG_TRANSSION_DOZE_BRIGHTNESS_SUPPORT
-#define CONFIG_TRANSSION_DOZE_BRIGHTNESS_SUPPORT 1
-#endif
-
-
 
 #define LCM_MIPISWITCH_TE_DELAY 0
 #define REGFLAG_DELAY           0xFFFC
@@ -681,7 +664,6 @@ static const struct drm_display_mode switch_mode_40hz = {
 };
 
 
-#if defined(CONFIG_MTK_PANEL_EXT)
 static int panel_ext_reset(struct drm_panel *panel, int on)
 {
 	struct lcm *ctx = panel_to_lcm(panel);
@@ -1251,7 +1233,6 @@ static struct mtk_panel_funcs ext_funcs = {
 	.doze_enable = panel_doze_enable,
 	.doze_disable = panel_doze_disable,
 };
-#endif
 
 struct panel_desc {
 	const struct drm_display_mode *modes;
@@ -1463,13 +1444,11 @@ static int lcm_probe(struct mipi_dsi_device *dsi)
 	if (ret < 0)
 		drm_panel_remove(&ctx->panel);
 
-#if defined(CONFIG_MTK_PANEL_EXT)
 	ret = mtk_panel_ext_create(dev, &ext_params, &ext_funcs, &ctx->panel);
 	if (ret < 0)
 		return ret;
 #if LCM_MIPISWITCH_TE_DELAY
 	ctx->lcm_dst_datarate = ext_params_120hz.data_rate;
-#endif
 #endif
 
 	pr_info("%s-\n", __func__);
@@ -1480,18 +1459,15 @@ static int lcm_probe(struct mipi_dsi_device *dsi)
 static void lcm_remove(struct mipi_dsi_device *dsi)
 {
 	struct lcm *ctx = mipi_dsi_get_drvdata(dsi);
-#if defined(CONFIG_MTK_PANEL_EXT)
 	struct mtk_panel_ctx *ext_ctx = find_panel_ctx(&ctx->panel);
-#endif
+
 	mipi_dsi_detach(dsi);
 	drm_panel_remove(&ctx->panel);
 
-#if defined(CONFIG_MTK_PANEL_EXT)
 	if (ext_ctx != NULL) {
 		mtk_panel_detach(ext_ctx);
 		mtk_panel_remove(ext_ctx);
 	}
-#endif
 
 }
 

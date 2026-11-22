@@ -44,7 +44,4 @@ define_mgk_ddk_ko(
     ko_deps = [
         "//kernel_device_modules-{}/drivers/input/touchscreen/transsion/core:adaptive-ts".format(kernel_version),
     ],
-    copts = [
-        "-DCONFIG_TOUCHSCREEN_GOODIX_BRL_SPI=1",
-    ],
 )

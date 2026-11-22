@@ -57,13 +57,6 @@
 #include <linux/of_device.h>
 #include <linux/of_platform.h>
 
-#define CONFIG_SPI_MT65XX_KERNEL510 y
-
-#if !defined(CONFIG_SPI_MT65XX_KERNEL510)
-#include <mt_spi.h>
-#include <mt_spi_hal.h>
-#endif
-
 #include "tran_fp_main.h"
 
 #include <linux/timex.h>

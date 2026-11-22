@@ -9,9 +9,6 @@
 #include <linux/netlink.h>
 #include <linux/cdev.h>
 #include <linux/input.h>
-#ifndef CONFIG_SPI_MT65XX_KERNEL510
-#include "mtk_spi.h"
-#endif
 #ifdef CONFIG_HAS_EARLYSUSPEND
 #include <linux/earlysuspend.h>
 #else

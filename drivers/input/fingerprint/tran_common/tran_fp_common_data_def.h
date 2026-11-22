@@ -6,8 +6,6 @@
 #include <linux/wakelock.h>
 #endif
 
-#define CONFIG_SPI_MT65XX_KERNEL510 y
-
 #include <linux/device.h>
 #include <linux/platform_device.h>
 #include <linux/miscdevice.h>
@@ -15,11 +13,6 @@
 #include <linux/input.h>
 #include <linux/timer.h>
 #include "mtk_disp_notify.h"
-
-#if !defined(CONFIG_SPI_MT65XX_KERNEL510)
-#include <mt_spi.h>
-#include <mt_spi_hal.h>
-#endif
 
 #define FP_NAME_SIZE 32
 #define KEY_MAP_SIZE 16
@@ -64,9 +57,6 @@ struct tran_fp_data {
 	struct device *device;
 	struct class *class;
 	int device_count;
-#ifndef CONFIG_SPI_MT65XX_KERNEL510
-	struct mt_chip_conf spi_mcc;
-#endif
 #ifndef CONFIG_TRAN_FP_DRV_MODE_SPI
 	struct clk * clk;
 #endif

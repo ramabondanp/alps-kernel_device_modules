@@ -53,19 +53,10 @@
 #define KEY_F28 KEY_ENTER
 #endif
 
-#define CONFIG_SPI_MT65XX_KERNEL510 y
-
-#if !defined(CONFIG_SPI_MT65XX_KERNEL510)
-#include <mt_spi.h>
-#include <mt_spi_hal.h>
-#else
 #include "tran_spi.h"
-#endif
 
 #ifdef CONFIG_TRAN_FP_DRV_MODE_SPI
-#ifdef CONFIG_SPI_MT65XX_KERNEL510
 #include <linux/platform_data/spi-mt65xx.h>
-#endif
 #endif
 
 #include "tran_fp_ext.h"

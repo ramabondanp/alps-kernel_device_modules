@@ -1,0 +1,91 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
+config TC_CLASS_SUPPORT
+	tristate "Transsion charger common class"
+	depends on POWER_SUPPLY
+	help
+	  Provide the common device class used by Transsion charger drivers.
+	  It lets charger and USB drivers register charging properties and
+	  exchange notifications. Select M when these drivers are built as
+	  external modules for X6871.
+
+config TC_CHARGER
+	tristate "Transsion charging framework"
+	depends on TC_CLASS_SUPPORT
+	help
+	  Enable the Transsion charging framework and the matching charger
+	  paths for charger detection and control. Use M for the X6871
+	  module build so the charger and algorithm classes use their
+	  module initialization paths.
+
+config SND_SOC_FS1599
+	tristate "FourSemi FS1599 speaker amplifier"
+	depends on I2C && SND_SOC
+	help
+	  Enable the FourSemi FS1599 amplifier and its speaker controls
+	  in Transsion audio control. Select M for the X6871 module build,
+	  which ships the amplifier as a separate ASoC codec module.
+	  Leave this disabled on boards without the amplifier.
+
+config USB_SWITCH_ET7480
+	bool "ET7480 external jack detection callback"
+	depends on SND_SOC_MT6368_ACCDET
+	help
+	  Expose the MT6368 accessory detection callback for a board with
+	  an ET7480 USB switch. The callback queues jack detection work
+	  when the external switch signals a change in plug state.
+	  Leave this disabled on boards without the switch.
+
+config TOUCHSCREEN_GOODIX_BRL_SPI
+	bool "Use SPI for the Goodix BRL touchscreen"
+	depends on INPUT_TOUCHSCREEN && SPI
+	help
+	  Register the SPI transport instead of the I2C transport for
+	  the Goodix BRL touchscreen driver. Enable this for boards with
+	  a Goodix BRL touchscreen wired to SPI, such as X6871.
+	  Leave it disabled for the I2C variant.
+
+config TRAN_FP_DRV_MODE_SPI
+	bool "Use the MediaTek SPI clock API for Transsion fingerprint"
+	depends on SPI
+	help
+	  Use the MediaTek SPI controller's clock helpers in the Transsion
+	  fingerprint driver rather than controlling its clocks directly.
+	  Also use the SPI device reference helper for sensor transfers.
+	  Enable this for the X6871 SPI fingerprint sensor.
+
+config TRAN_HBM_NOTIFY_FINGERPRINT
+	bool "Notify Transsion fingerprint userspace of display HBM"
+	depends on DRM_MEDIATEK_V2
+	help
+	  Send a uevent to Transsion fingerprint userspace when the panel
+	  signals full high brightness mode. The Goodix optical fingerprint
+	  HAL on X6871 uses this event to coordinate sensor capture with
+	  panel illumination.
+
+config TRANSSION_DOZE_BRIGHTNESS_SUPPORT
+	bool "Transsion panel doze brightness control"
+	depends on DRM_MEDIATEK_V2
+	help
+	  Enable doze brightness handling in the X6871 RM69220 panel
+	  driver. This reads doze brightness levels from the device tree
+	  and installs the panel callback used to change brightness
+	  while the always-on display is active.
+
+config PXLW_IRIS
+	bool "Pixelworks Iris integration in MediaTek DRM v1"
+	depends on DRM_MEDIATEK_V2
+	help
+	  Build the Pixelworks Iris driver into the MediaTek DRM v1
+	  module and enable its DSI command hooks. This supports the
+	  external display processor on X6871. Leave this disabled
+	  on boards that do not use an Iris processor.
+
+config TRAN_FLASHLIGHT_TELE_SUPPORT
+	bool "Transsion telephoto torch support"
+	depends on MTK_FLASHLIGHT
+	help
+	  Enable the Transsion flashlight core's additional torch channel
+	  and its sysfs controls. This also expands the flashlight type
+	  table to include that channel. Select this when the board and
+	  userspace expect the X6871 torch interface.

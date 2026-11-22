@@ -31,22 +31,6 @@ define_mgk_ddk_ko(
     name = "mediatek_drm_v1",
     srcs = [
         "mtk_drm_drv.c",
-        "iris_cmds.c",
-        "iris_dbg.c",
-        "iris_extended.c",
-        "iris_frc.c",
-        "iris_gpio.c",
-        "iris_i2c.c",
-        "iris_i3c.c",
-        "iris_ioctl.c",
-        "iris_lightup.c",
-        "iris_lightup_ocp.c",
-        "iris_loop_back.c",
-        "iris_lp.c",
-        "iris_lut.c",
-        "iris_mode_switch.c",
-        "iris_pq.c",
-        "iris_timing_switch.c",
         "mtk_disp_tdshp.c",
         "mtk_disp_color.c",
         "mtk_disp_ccorr.c",
@@ -146,8 +130,6 @@ define_mgk_ddk_ko(
             "//conditions:default" : []
     }) + [
         "DDISP_MDP_COLOR_ON=1",
-        "CONFIG_PXLW_IRIS=1",
-        "PXLW_IRIS5=1",
     ] ,
     copts = [
         "-I$(DEVICE_MODULES_PATH)/drivers/gpu/drm/mediatek/mediatek_v2/v1",
@@ -256,6 +238,26 @@ define_mgk_ddk_ko(
         "//kernel_device_modules-{}/drivers/gpu/drm/mediatek/dpc:ddk_public_headers".format(kernel_version),
     ],
     conditional_srcs = {
+        "CONFIG_PXLW_IRIS": {
+            True: [
+                "iris_cmds.c",
+                "iris_dbg.c",
+                "iris_extended.c",
+                "iris_frc.c",
+                "iris_gpio.c",
+                "iris_i2c.c",
+                "iris_i3c.c",
+                "iris_ioctl.c",
+                "iris_lightup.c",
+                "iris_lightup_ocp.c",
+                "iris_loop_back.c",
+                "iris_lp.c",
+                "iris_lut.c",
+                "iris_mode_switch.c",
+                "iris_pq.c",
+                "iris_timing_switch.c",
+            ],
+        },
         "CONFIG_DRM_MEDIATEK_DEBUG_FS": {
             True: ["mtk_drm_debugfs.c"],
         },

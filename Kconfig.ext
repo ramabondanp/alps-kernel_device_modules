@@ -8,6 +8,8 @@ config DEVICE_MODULES_ALLOW_BUILTIN
 	  into the kernel image.
 	  If unsure, say N.
 
+source "$(KCONFIG_EXT_PREFIX)kernel/configs/Kconfig.x6871"
+
 source "$(KCONFIG_EXT_PREFIX)drivers/memory/Kconfig"
 
 source "$(KCONFIG_EXT_PREFIX)drivers/edac/Kconfig"
