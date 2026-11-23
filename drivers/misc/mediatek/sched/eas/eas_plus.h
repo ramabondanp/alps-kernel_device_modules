@@ -362,7 +362,7 @@ extern void task_check_for_rotation(struct rq *src_rq);
 extern void rotat_after_enqueue_task(void *data, struct rq *rq, struct task_struct *p);
 extern void rotat_task_stats(void *data, struct task_struct *p);
 extern void rotat_task_newtask(void __always_unused *data, struct task_struct *p,
-				unsigned long clone_flags);
+				u64 clone_flags);
 #endif //CONFIG_MTK_SCHED_BIG_TASK_ROTATE
 extern void mtk_hook_after_enqueue_task(void *data, struct rq *rq,
 				struct task_struct *p, int flags);
