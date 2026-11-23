@@ -16,6 +16,10 @@
 #include "himax_platform.h"
 #include "himax_common.h"
 
+#ifndef FB_EVENT_BLANK
+#define FB_EVENT_BLANK 0x09
+#endif
+
 int i2c_error_count;
 bool ic_boot_done;
 struct spi_device *spi;

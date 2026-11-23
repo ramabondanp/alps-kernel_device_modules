@@ -17,6 +17,10 @@
 
 #ifdef CONFIG_COMPAT
 #include <linux/compat.h>
+
+#ifndef FB_EVENT_BLANK
+#define FB_EVENT_BLANK 0x09
+#endif
 #endif
 
 /* for magnify velocity******************************************** */

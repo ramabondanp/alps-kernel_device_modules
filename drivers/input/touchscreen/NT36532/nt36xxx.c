@@ -42,6 +42,10 @@
 
 #if NVT_TOUCH_ESD_PROTECT
 #include <linux/jiffies.h>
+
+#ifndef FB_EVENT_BLANK
+#define FB_EVENT_BLANK 0x09
+#endif
 #endif /* #if NVT_TOUCH_ESD_PROTECT */
 
 #if NVT_TOUCH_ESD_PROTECT

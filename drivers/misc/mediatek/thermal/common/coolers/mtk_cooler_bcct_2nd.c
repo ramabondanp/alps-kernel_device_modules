@@ -22,6 +22,10 @@
 #include "mtk_disp_notify.h"
 #include <linux/fb.h>
 
+#ifndef FB_EVENT_BLANK
+#define FB_EVENT_BLANK 0x09
+#endif
+
 
 #define mtk_cooler_bcct_2nd_dprintk_always(fmt, args...) \
 	pr_notice("[Thermal/TC/bcct_2nd]" fmt, ##args)

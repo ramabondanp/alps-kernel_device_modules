@@ -30,6 +30,10 @@
 #else
 #include <tmp_battery.h>
 #include <charging.h>
+
+#ifndef FB_EVENT_BLANK
+#define FB_EVENT_BLANK 0x09
+#endif
 #endif
 /* ************************************ */
 /* Weak functions */
