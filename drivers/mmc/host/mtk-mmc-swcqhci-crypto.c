@@ -242,7 +242,7 @@ static int mmc_crypto_keyslot_program(struct blk_crypto_profile *profile,
 	cfg.crypto_cap_idx = cap_idx;
 	cfg.config_enable |= MMC_CRYPTO_CONFIGURATION_ENABLE;
 
-	err = mmc_crypto_cfg_entry_write_key(&cfg, key->raw,
+	err = mmc_crypto_cfg_entry_write_key(&cfg, key->bytes,
 				cq_host->crypto_cap_array[cap_idx]);
 	if (err) {
 		dev_info(mmc_dev(cq_host->mmc), "[%s]: write key to crypto_cfg error: %d\n",
@@ -353,7 +353,7 @@ static int swcq_mmc_init_crypto_spec(struct mmc_host *mmc)
 	/* only supports 32 DUN bits. */
 	profile->max_dun_bytes_supported = 4;
 
-	profile->key_types_supported = BLK_CRYPTO_KEY_TYPE_STANDARD;
+	profile->key_types_supported = BLK_CRYPTO_KEY_TYPE_RAW;
 
 	/* Hardcode for special swcmdq */
 	profile->modes_supported[1] = 0x1200;
