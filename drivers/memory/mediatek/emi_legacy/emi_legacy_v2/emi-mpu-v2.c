@@ -285,7 +285,7 @@ static irqreturn_t emimpu_violation_irq(int irq, void *dev_id)
 		 * Have a hook function in the EMI MPU ISR for this
 		 * purpose.
 		 */
-		if (mpu->md_handler) {
+		if (show && mpu->md_handler) {
 			strscpy(md_str, "emi-mpu-v2.c", 13);
 			strncat(md_str, mpu->vio_msg, sizeof(md_str) - strlen(md_str) - 1);
 			mpu->md_handler(md_str);
