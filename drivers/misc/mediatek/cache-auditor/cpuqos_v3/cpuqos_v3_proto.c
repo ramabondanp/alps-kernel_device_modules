@@ -739,7 +739,7 @@ static void cpuqos_v3_hook_switch(void __always_unused *data,
 }
 
 static void cpuqos_v3_task_newtask(void __always_unused *data,
-				struct task_struct *p, unsigned long clone_flags)
+				struct task_struct *p, u64 clone_flags)
 {
 	struct cpuqos_task_struct *cqts = &((struct mtk_task *)android_task_vendor_data(p))->cpuqos_task;
 

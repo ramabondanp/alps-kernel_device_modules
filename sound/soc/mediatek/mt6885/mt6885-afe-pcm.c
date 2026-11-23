@@ -3568,7 +3568,7 @@ struct bin_attribute bin_attr_afe_dump = {
 	.write = afe_sysfs_debug_write,
 };
 
-static struct bin_attribute *afe_bin_attrs[] = {
+static const struct bin_attribute *const afe_bin_attrs[] = {
 	&bin_attr_afe_dump,
 	NULL,
 };

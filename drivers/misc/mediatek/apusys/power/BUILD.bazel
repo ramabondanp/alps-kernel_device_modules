@@ -122,6 +122,7 @@ define_mgk_ddk_ko(
 		"-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/power_throttling/",
 	],
 	header_deps = [
+		"//common:drivers/devfreq/governor.h",
 		"//kernel_device_modules-{}/drivers/misc/mediatek/apusys:apusys_public_hdrs".format(kernel_version),
 		"//kernel_device_modules-{}/drivers/misc/mediatek/power_throttling:power_throttling_headers".format(kernel_version),
 	],

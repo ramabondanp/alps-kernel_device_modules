@@ -300,7 +300,7 @@ static struct attribute *reg_dump_attrs[] = {
 	NULL,
 };
 
-static struct bin_attribute *reg_dump_bin_attrs[] = {
+static const struct bin_attribute *const reg_dump_bin_attrs[] = {
 		&reg_dump_attr,
 		NULL,
 };

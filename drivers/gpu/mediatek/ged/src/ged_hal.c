@@ -1203,36 +1203,6 @@ static KOBJ_ATTR_RW(pre_fence_chk);
 
 //-----------------------------------------------------------------------------
 
-static struct notifier_block ged_fb_notifier;
-
-static int ged_fb_notifier_callback(struct notifier_block *self,
-	unsigned long event, void *data)
-{
-	struct fb_event *evdata = data;
-	int blank;
-
-	/* If we aren't interested in this event, skip it immediately ... */
-	if (event != FB_EVENT_BLANK)
-		return 0;
-
-	blank = *(int *)evdata->data;
-
-	switch (blank) {
-	case FB_BLANK_UNBLANK:
-		g_ui32EventStatus |= GED_EVENT_LCD;
-		ged_dvfs_probe_signal(GED_GAS_SIGNAL_EVENT);
-		break;
-	case FB_BLANK_POWERDOWN:
-		g_ui32EventStatus &= ~GED_EVENT_LCD;
-		ged_dvfs_probe_signal(GED_GAS_SIGNAL_EVENT);
-		break;
-	default:
-		break;
-	}
-
-	return 0;
-}
-
 struct ged_event_change_entry_t {
 	ged_event_change_fp callback;
 	void *private_data;
@@ -3112,10 +3082,6 @@ GED_ERROR ged_hal_init(void)
 		GED_LOGE("Failed to create dvfs_workload_mode entry!\n");
 		goto ERROR;
 	}
-
-	ged_fb_notifier.notifier_call = ged_fb_notifier_callback;
-	if (fb_register_client(&ged_fb_notifier))
-		GED_LOGE("Register fb_notifier fail!\n");
 
 	err = ged_sysfs_create_file(hal_kobj, &kobj_attr_eb_dvfs_policy);
 	if (unlikely(err != GED_OK))
