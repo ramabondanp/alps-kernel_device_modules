@@ -2795,7 +2795,7 @@ static const struct drm_bridge_funcs mtk_edp_bridge_funcs = {
 
 static void mtk_edp_debounce_timer(struct timer_list *t)
 {
-	struct mtk_edp *mtk_edp = from_timer(mtk_edp, t, debounce_timer);
+	struct mtk_edp *mtk_edp = timer_container_of(mtk_edp, t, debounce_timer);
 
 	mtk_edp->need_debounce = true;
 }

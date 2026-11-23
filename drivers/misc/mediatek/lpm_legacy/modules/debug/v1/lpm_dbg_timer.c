@@ -12,7 +12,7 @@
 static void lpm_timer_tm_func(struct timer_list *data)
 {
 	int ret = -EINVAL;
-	struct lpm_timer *timer = from_timer(timer, data, tm);
+	struct lpm_timer *timer = timer_container_of(timer, data, tm);
 
 
 	if (timer && timer->timeout) {

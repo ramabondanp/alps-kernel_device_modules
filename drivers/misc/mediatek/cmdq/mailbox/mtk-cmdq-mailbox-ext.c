@@ -2478,7 +2478,7 @@ unlock_free_done:
 }
 static void cmdq_thread_handle_timeout(struct timer_list *t)
 {
-	struct cmdq_thread *thread = from_timer(thread, t, timeout);
+	struct cmdq_thread *thread = timer_container_of(thread, t, timeout);
 	struct cmdq *cmdq = container_of(thread->chan->mbox, struct cmdq, mbox);
 	unsigned long flags;
 	bool empty;

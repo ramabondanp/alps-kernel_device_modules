@@ -1736,7 +1736,7 @@ static int cmdq_sec_mbox_send_data(struct mbox_chan *chan, void *data)
 
 static void cmdq_sec_thread_timeout(struct timer_list *t)
 {
-	struct cmdq_sec_thread *thread = from_timer(thread, t, timeout);
+	struct cmdq_sec_thread *thread = timer_container_of(thread, t, timeout);
 	struct cmdq_sec *cmdq =
 		container_of(thread->chan->mbox, struct cmdq_sec, mbox);
 

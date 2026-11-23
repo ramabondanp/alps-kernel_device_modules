@@ -1703,7 +1703,7 @@ static inline void mtk_smmu_irq_setup(struct mtk_smmu_data *data, bool enable)
 
 static void mtk_smmu_irq_restart(struct timer_list *t)
 {
-	struct mtk_smmu_data *data = from_timer(data, t, irq_pause_timer);
+	struct mtk_smmu_data *data = timer_container_of(data, t, irq_pause_timer);
 	struct arm_smmu_device *smmu;
 	int ret;
 

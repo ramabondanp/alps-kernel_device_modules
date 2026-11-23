@@ -60,7 +60,7 @@ void mtk_vcodec_check_alive(struct timer_list *t)
 
 	/* Only support vdec check alive now */
 	if (mtk_vcodec_is_vcp(MTK_INST_DECODER)) {
-		params = from_timer(params, t, vdec_active_checker);
+		params = timer_container_of(params, t, vdec_active_checker);
 		dev = container_of(params, struct mtk_vcodec_dev, vdec_dvfs_params);
 		dev->check_alive_work.dev = dev;
 		dev->check_alive_work.ctx = NULL;

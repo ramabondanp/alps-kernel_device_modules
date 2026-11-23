@@ -1067,7 +1067,7 @@ static int ccmni_napi_poll(struct napi_struct *napi, int budget)
 static void ccmni_napi_poll_timeout(struct timer_list *t)
 {
 	//struct ccmni_instance *ccmni = (struct ccmni_instance *)data;
-	//struct ccmni_instance *ccmni = from_timer(ccmni, t, timer);
+	//struct ccmni_instance *ccmni = timer_container_of(ccmni, t, timer);
 
 	//netdev_dbg(dev,
 	//	"CCMNI%d lost NAPI polling\n", ccmni->index);

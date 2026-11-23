@@ -103,7 +103,7 @@ step_c_loop:
 
 static void step_c_poll(struct timer_list *t)
 {
-	struct step_c_context *obj = from_timer(obj, t, timer);
+	struct step_c_context *obj = timer_container_of(obj, t, timer);
 
 	if (obj != NULL)
 		schedule_work(&obj->report);

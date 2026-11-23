@@ -519,7 +519,7 @@ void md_cd_traffic_monitor_func(struct timer_list *t)
 {
 	int i;
 	//struct md_cd_ctrl *md_ctrl = (struct md_cd_ctrl *)data;
-	struct md_cd_ctrl *md_ctrl = from_timer(md_ctrl, t, traffic_monitor);
+	struct md_cd_ctrl *md_ctrl = timer_container_of(md_ctrl, t, traffic_monitor);
 
 	struct ccci_hif_traffic *tinfo = &md_ctrl->traffic_info;
 	unsigned long q_rx_rem_nsec[CLDMA_RXQ_NUM] = {0};

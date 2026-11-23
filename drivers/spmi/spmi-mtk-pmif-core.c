@@ -1725,7 +1725,7 @@ static void dump_spmi_pmic_dbg_rg(struct pmif *arb, unsigned int nack_0, unsigne
 static void enable_nack_irq_handler(struct timer_list *t)
 {
 	int err;
-	struct pmif_irq_timer *pmt = from_timer(pmt, t, irq_mask_timer);
+	struct pmif_irq_timer *pmt = timer_container_of(pmt, t, irq_mask_timer);
 	struct pmif *arb = NULL;
 	struct platform_device *irq_pdev = NULL;
 

@@ -436,7 +436,7 @@ err_exit1:
 
 static void md_ccif_traffic_monitor_func(struct timer_list *t)
 {
-	struct md_ccif_ctrl *ccif_ctrl = from_timer(ccif_ctrl, t, traffic_monitor);
+	struct md_ccif_ctrl *ccif_ctrl = timer_container_of(ccif_ctrl, t, traffic_monitor);
 
 	schedule_work(&ccif_ctrl->traffic_info.traffic_work_struct);
 }

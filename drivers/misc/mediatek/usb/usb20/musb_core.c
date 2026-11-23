@@ -517,7 +517,7 @@ void musb_load_testpacket(struct musb *musb)
  */
 static void musb_otg_timer_func(struct timer_list *t)
 {
-	struct musb	*musb = from_timer(musb, t, otg_timer);
+	struct musb	*musb = timer_container_of(musb, t, otg_timer);
 	unsigned long flags;
 	bool vbus_off = false;
 
@@ -3747,7 +3747,7 @@ exit:
 #if IS_ENABLED(CONFIG_MTK_BASE_POWER)
 static void musb_do_idle(struct timer_list *t)
 {
-	struct musb *musb = from_timer(musb, t, idle_timer);
+	struct musb *musb = timer_container_of(musb, t, idle_timer);
 
 	queue_delayed_work(musb->st_wq, &idle_work, 0);
 }

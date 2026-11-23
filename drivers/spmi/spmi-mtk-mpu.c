@@ -70,7 +70,7 @@ static void enable_kernel_mpu(void)
 	u32 pmic_all_rgn_en = 0, rgn_en = 0, rgn_en_2 = 0;
 	int err;
 
-	struct pmif_mpu_timer *pmt = from_timer(pmt,
+	struct pmif_mpu_timer *pmt = timer_container_of(pmt,
 				&(mpu_timer.mpu_enable_timer), mpu_enable_timer);
 	struct pmif_mpu *mpu_arb = pmt->mpu_arb;
 	struct platform_device *mpu_pdev = pmt->mpu_pdev;

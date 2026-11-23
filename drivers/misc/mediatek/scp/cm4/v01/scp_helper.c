@@ -465,7 +465,7 @@ static void scp_A_set_ready(void)
 #if SCP_BOOT_TIME_OUT_MONITOR
 static void scp_wait_ready_timeout(struct timer_list *t)
 {
-	struct scp_timer *timer = from_timer(timer, t, tl);
+	struct scp_timer *timer = timer_container_of(timer, t, tl);
 
 	/*id = 0: SCP A, id=1: SCP B*/
 	pr_notice("%s(),timer %d timeout\n", __func__, timer->tid);

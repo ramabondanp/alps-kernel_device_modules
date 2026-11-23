@@ -652,7 +652,7 @@ static inline void mtk_iommu_isr_setup(struct mtk_iommu_data *data, unsigned lon
 
 static void mtk_iommu_isr_restart(struct timer_list *t)
 {
-	struct mtk_iommu_data *data = from_timer(data, t, iommu_isr_pause_timer);
+	struct mtk_iommu_data *data = timer_container_of(data, t, iommu_isr_pause_timer);
 
 	mtk_iommu_isr_setup(data, 1);
 

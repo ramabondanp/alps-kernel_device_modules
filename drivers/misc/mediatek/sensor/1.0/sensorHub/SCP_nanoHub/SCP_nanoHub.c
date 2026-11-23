@@ -479,7 +479,7 @@ static void SCP_sensorHub_sync_time_work(struct work_struct *work)
 
 static void SCP_sensorHub_sync_time_func(struct timer_list *t)
 {
-	struct SCP_sensorHub_data *obj = from_timer(obj, t, sync_time_timer);
+	struct SCP_sensorHub_data *obj = timer_container_of(obj, t, sync_time_timer);
 
 	schedule_work(&obj->sync_time_worker);
 }

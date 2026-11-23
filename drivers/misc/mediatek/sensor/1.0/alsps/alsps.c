@@ -274,7 +274,7 @@ ps_loop:
 
 static void als_poll(struct timer_list *t)
 {
-	struct alsps_context *obj = from_timer(obj, t, timer_als);
+	struct alsps_context *obj = timer_container_of(obj, t, timer_als);
 
 	if ((obj != NULL) && (obj->is_als_polling_run))
 		schedule_work(&obj->report_als);
@@ -282,7 +282,7 @@ static void als_poll(struct timer_list *t)
 
 static void ps_poll(struct timer_list *t)
 {
-	struct alsps_context *obj = from_timer(obj, t, timer_ps);
+	struct alsps_context *obj = timer_container_of(obj, t, timer_ps);
 
 	if (obj != NULL)
 		schedule_work(&obj->report_ps);

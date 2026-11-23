@@ -515,7 +515,7 @@ static void cmdq_test_mbox_large_cmd(struct cmdq_test *test, const u32 count)
 
 static void cmdq_test_mbox_sync_token_loop_iter(struct timer_list *t)
 {
-	struct cmdq_test *test = from_timer(test, t, timer);
+	struct cmdq_test *test = timer_container_of(test, t, timer);
 
 	if (!test->tick)
 		timer_delete(&test->timer);
@@ -713,7 +713,7 @@ static void cmdq_test_mbox_write_dma_cpr(
 static void cmdq_test_mbox_sync_token_flush(struct timer_list *t)
 {
 	u32	val;
-	struct cmdq_test *test = from_timer(test, t, timer);
+	struct cmdq_test *test = timer_container_of(test, t, timer);
 
 	if (clk_prepare_enable(test->gce.clk)) {
 		cmdq_err("clk fail");

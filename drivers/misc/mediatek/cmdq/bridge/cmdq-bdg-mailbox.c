@@ -623,7 +623,7 @@ static void cmdq_bdg_thread_timeout_work(struct work_struct *work)
 
 static void cmdq_bdg_thread_timeout(struct timer_list *timer)
 {
-	struct cmdq_thread *thread = from_timer(thread, timer, timeout);
+	struct cmdq_thread *thread = timer_container_of(thread, timer, timeout);
 	struct cmdq *cmdq =
 		container_of(thread->chan->mbox, typeof(*cmdq), mbox);
 

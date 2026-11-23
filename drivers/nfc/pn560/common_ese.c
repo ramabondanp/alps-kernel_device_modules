@@ -25,7 +25,7 @@
 
 static void cold_reset_gaurd_timer_callback(struct timer_list *t)
 {
-	struct cold_reset *cold_reset = from_timer(cold_reset, t, timer);
+	struct cold_reset *cold_reset = timer_container_of(cold_reset, t, timer);
 
 	cold_reset->in_progress = false;
 }
