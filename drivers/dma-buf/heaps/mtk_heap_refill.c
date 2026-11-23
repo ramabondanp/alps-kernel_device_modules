@@ -26,6 +26,7 @@
 #include "mtk_heap.h"
 #include "mtk_heap_priv.h"
 #include "mtk_page_pool.h"
+MODULE_IMPORT_NS("DMA_BUF_HEAP");
 
 static int pool_refill_check_memory_pages = (4 * SZ_1M / PAGE_SIZE);
 

@@ -31,8 +31,8 @@
 #include "mtk-smmu-v3.h"
 #if !IS_ENABLED(CONFIG_DEVICE_MODULES_ARM_SMMU_V3)
 #include "iommu_pseudo.h"
-MODULE_IMPORT_NS("DMA_BUF_HEAP");
 #endif
+MODULE_IMPORT_NS("DMA_BUF_HEAP");
 
 struct dmabuf_page_pool *sec_pools[SEC_NUM_ORDERS];
 

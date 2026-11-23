@@ -311,7 +311,7 @@ void rpmb_req_copy_data_for_hmac(u8 *buf, struct rpmb_frame *f)
 	buf += size;
 }
 
-static int hmac_sha256(const char *keybytes, u32 klen, const char *str,
+static int rpmb_hmac_sha256(const char *keybytes, u32 klen, const char *str,
 			size_t len, u8 *hmac)
 {
 	struct shash_desc *shash;
@@ -382,7 +382,7 @@ static int rpmb_cal_hmac(struct rpmb_frame *frame, int blk_cnt,
 		buf += RPMB_SZ_CAL_HMAC;
 	}
 
-	if (hmac_sha256(key, RPMB_SZ_KEY, buf_start, RPMB_SZ_CAL_HMAC * blk_cnt, key_mac) != 0)
+	if (rpmb_hmac_sha256(key, RPMB_SZ_KEY, buf_start, RPMB_SZ_CAL_HMAC * blk_cnt, key_mac) != 0)
 		MSG(ERR, "hmac_sha256() return error!\n");
 
 	kfree(buf_start);
@@ -603,7 +603,7 @@ static int rpmb_req_get_wc_ufs(u8 region, u8 *keybytes, u32 *wc, u8 *frame)
 			/*
 			 * Authenticate response write counter frame.
 			 */
-			if (hmac_sha256(keybytes, RPMB_SZ_KEY,
+			if (rpmb_hmac_sha256(keybytes, RPMB_SZ_KEY,
 					rpmbdata.ocmd.frames->data,
 					RPMB_SZ_CAL_HMAC, hmac) != 0)
 				MSG(ERR, "hmac_sha256() return error!\n");
@@ -1164,7 +1164,7 @@ static int rpmb_req_ioctl_write_data_ufs(struct rpmb_ioc_param *param)
 
 		iCnt--;
 
-		if (hmac_sha256(rpmb_key, RPMB_SZ_KEY, dataBuf_start,
+		if (rpmb_hmac_sha256(rpmb_key, RPMB_SZ_KEY, dataBuf_start,
 				RPMB_SZ_CAL_HMAC * tran_blkcnt,
 				rpmbdata.icmd.frames[iCnt].key_mac) != 0)
 			MSG(ERR, "hmac_sha256() return error!\n");
@@ -1190,7 +1190,7 @@ static int rpmb_req_ioctl_write_data_ufs(struct rpmb_ioc_param *param)
 		 * 2. check result.
 		 * 3. compare write counter is increamented.
 		 */
-		if (hmac_sha256(rpmb_key, RPMB_SZ_KEY,
+		if (rpmb_hmac_sha256(rpmb_key, RPMB_SZ_KEY,
 				rpmbdata.ocmd.frames->data,
 				RPMB_SZ_CAL_HMAC, hmac) != 0)
 			MSG(ERR, "hmac_sha256() return error!\n");
@@ -1403,7 +1403,7 @@ static int rpmb_req_ioctl_read_data_ufs(struct rpmb_ioc_param *param)
 		/*
 		 * Authenticate response read data frame.
 		 */
-		if (hmac_sha256(rpmb_key, RPMB_SZ_KEY,
+		if (rpmb_hmac_sha256(rpmb_key, RPMB_SZ_KEY,
 			    dataBuf_start, size_for_hmac * tran_blkcnt,
 			    hmac) != 0)
 			MSG(ERR, "hmac_sha256() return error!\n");
