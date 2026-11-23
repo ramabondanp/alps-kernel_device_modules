@@ -20,6 +20,10 @@
 #define PULL_DELAY 50 /* in ms */
 #define FUN_3STATE "gpio_get_value_tristate"
 
+#ifndef GPIO_DYNAMIC_BASE
+#define GPIO_DYNAMIC_BASE 512
+#endif
+
 static const char *pinctrl_paris_modname = MTK_PINCTRL_DEV;
 static struct mtk_pinctrl *g_hw;
 

@@ -25,7 +25,7 @@
 #define MTK_SIP_VCOREFS_FB_ACTION     8
 #define MTK_SIP_VCOREFS_QOS_MODE      32
 
-#if IS_ENABLED(CONFIG_MTK_DVFSRC)
+/* X6871 always builds the OOT dvfsrc modules. */
 extern void register_dvfsrc_opp_handler(int (*handler)(u32 id));
 extern void register_dvfsrc_debug_handler(int (*handler)(u32 id));
 extern int mtk_dvfsrc_query_debug_info(u32 id);
@@ -33,22 +33,7 @@ extern int register_dvfsrc_debug_notifier(struct notifier_block *nb);
 extern int unregister_dvfsrc_debug_notifier(struct notifier_block *nb);
 extern void register_dvfsrc_ceiling_opp_handler(int (*handler)(u8 user, u8 freq_opp));
 extern int mtk_dvfsrc_set_ceiling_freq(u8 user, u8 ddr_opp);
-#else
-static inline void register_dvfsrc_opp_handler(int (*handler)(u32 id))
-{ }
-static inline void register_dvfsrc_debug_handler(int (*handler)(u32 id))
-{ }
-static inline int mtk_dvfsrc_query_debug_info(u32 id)
-{ return 0; }
-static inline int register_dvfsrc_debug_notifier(struct notifier_block *nb)
-{ return 0; }
-static inline int unregister_dvfsrc_debug_notifier(struct notifier_block *nb)
-{ return 0; }
-static inline void register_dvfsrc_ceiling_opp_handler(int (*handler)(u32 id))
-{ }
-static int mtk_dvfsrc_set_ceiling_freq(u8 user, u8 ddr_opp)
-{ return 0; }
-#endif /* CONFIG_MTK_DVFSRC */
+
 #endif
 
 extern int __init mtk_dvfsrc_met_init(void);

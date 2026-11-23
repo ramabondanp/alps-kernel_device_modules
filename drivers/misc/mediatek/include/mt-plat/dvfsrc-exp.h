@@ -30,18 +30,10 @@ static inline u32 dvfsrc_get_required_opp_peak_bw_legacy(struct device_node *np,
 { return 0; }
 #endif /* CONFIG_MTK_DVFSRC */
 
-#if IS_ENABLED(CONFIG_MTK_DVFSRC_HELPER)
+/* X6871 always builds dvfsrc-helper.ko out-of-tree. */
 extern int mtk_dvfsrc_query_opp_info(u32 id);
 extern int mtk_dvfsrc_vcore_uv_table(u32 opp);
 extern void mtk_dvfsrc_thernal_notify(u32 state);
-#else
-static inline int mtk_dvfsrc_query_opp_info(u32 id)
-{ return 0; }
-static inline int mtk_dvfsrc_vcore_uv_table(u32 opp)
-{ return 0; }
-static inline mtk_dvfsrc_thernal_notify(u32 state)
-{}
-#endif /* CONFIG_MTK_DVFSRC_HELPER */
 
 #if IS_ENABLED(CONFIG_MTK_DVFSRC_MET)
 /* for MET */

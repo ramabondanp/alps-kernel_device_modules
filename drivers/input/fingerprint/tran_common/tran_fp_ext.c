@@ -430,7 +430,7 @@ reg_vdd_put:
 				}
 				TRAN_FP_INFO("tran_fp_dev->hw_pwr_gpio= %d",tran_fp_dev->hw_pwr_gpio);
 				if (gpio_is_valid(tran_fp_dev->hw_pwr_gpio)) {
-					rc = devm_gpio_request(&tran_fp_dev->tran_fp_dev->dev,tran_fp_dev->hw_pwr_gpio,"tran_pwr_gpio");
+					rc = devm_gpio_request_one(&tran_fp_dev->tran_fp_dev->dev,tran_fp_dev->hw_pwr_gpio,GPIOF_OUT_INIT_LOW,"tran_pwr_gpio");
 					if (rc) {
 						TRAN_FP_ERROR("devm_gpio_request pwr_gpio failed! rc = %d",rc);
 						return -EFAULT;

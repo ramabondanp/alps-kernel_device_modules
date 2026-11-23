@@ -442,7 +442,7 @@ void print_cfs_rq_at_AEE(struct seq_file *m, int cpu, struct cfs_rq *cfs_rq)
 #endif
 
 	SEQ_printf_at_AEE(m, "  .%-30s: %d\n",
-			"nr_running", cfs_rq->nr_running);
+			"nr_running", cfs_rq->h_nr_runnable);
 	SEQ_printf_at_AEE(m, "  .%-30s: %ld\n", "load", cfs_rq->load.weight);
 #if IS_ENABLED(CONFIG_SMP)
 	SEQ_printf_at_AEE(m, "  .%-30s: %lu\n", "load_avg",

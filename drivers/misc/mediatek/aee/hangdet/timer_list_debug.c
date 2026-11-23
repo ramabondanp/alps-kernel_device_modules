@@ -19,6 +19,11 @@
 #include <mt-plat/mrdump.h>
 #include "hangdet.h"
 
+static enum hrtimer_restart debug_hrtimer_cb(struct hrtimer *timer)
+{
+	return HRTIMER_NORESTART;
+}
+
 static DEFINE_PER_CPU(struct hrtimer, debug_hrtimer);
 static DEFINE_PER_CPU(int, debug_hrtimer_ready) = -1;
 #define MAX_TIMER_LIST_FILE_SIZE SZ_128K
@@ -107,7 +112,7 @@ void percpu_debug_timer_init(void)
 {
 	struct hrtimer *hrtimer = this_cpu_ptr(&debug_hrtimer);
 
-	hrtimer_init(hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS_PINNED_HARD);
+	hrtimer_setup(hrtimer, debug_hrtimer_cb, CLOCK_MONOTONIC, HRTIMER_MODE_ABS_PINNED_HARD);
 	per_cpu(debug_hrtimer_ready, smp_processor_id()) = 1;
 }
 

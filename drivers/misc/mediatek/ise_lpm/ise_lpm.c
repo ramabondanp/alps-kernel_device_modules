@@ -110,7 +110,7 @@ static uint64_t ise_boot_cnt;
 static uint32_t ise_vote_dram_en;
  /* DRAM qos */
 static struct icc_path *ise_perf_path;
-static int ise_perf_num;
+static int __maybe_unused ise_perf_num;
 static uint32_t ise_perf_vote_bw;
 
 static void ise_power_on(void);

@@ -241,7 +241,7 @@ void hiber_check_uid_proc_status_debug(struct binder_proc *proc,
 						spin_lock(&btrans->lock);
 
 						if (btrans != NULL && btrans->to_thread == thread) {
-							need_reply = (int)(btrans->need_reply == 1);
+							need_reply = (int)(!btrans->is_async && !btrans->is_reply);
 							get_uid_pid(&from_pid, &from_uid, &to_pid, &to_uid, btrans);
 							spin_unlock(&btrans->lock);
 							hiber_report(type, from_pid, from_uid, to_pid, to_uid, "FROZEN_TRANS_THREAD",
@@ -259,7 +259,7 @@ void hiber_check_uid_proc_status_debug(struct binder_proc *proc,
 				spin_lock(&btrans->lock);
 
 				if (btrans->to_thread == thread) {
-					need_reply = (int)(btrans->need_reply == 1);
+					need_reply = (int)(!btrans->is_async && !btrans->is_reply);
 					get_uid_pid(&from_pid, &from_uid, &to_pid, &to_uid, btrans);
 					spin_unlock(&btrans->lock);
 					hiber_report(type, from_pid, from_uid, to_pid, to_uid, "FROZEN_TRANS_STACK",
@@ -281,7 +281,7 @@ void hiber_check_uid_proc_status_debug(struct binder_proc *proc,
 				spin_lock(&btrans->lock);
 
 				if (btrans != NULL && btrans->to_thread == thread) {
-					need_reply = (int)(btrans->need_reply == 1);
+					need_reply = (int)(!btrans->is_async && !btrans->is_reply);
 					get_uid_pid(&from_pid, &from_uid, &to_pid, &to_uid, btrans);
 					spin_unlock(&btrans->lock);
 					hiber_report(type, from_pid, from_uid, to_pid, to_uid, "FROZEN_TRANS_PROC",
@@ -390,7 +390,7 @@ void hiber_check_uid_proc_status_sync_debug(struct binder_proc *proc,
             if (btrans) {
                 spin_lock(&btrans->lock);
                 if (btrans->to_thread == thread) {
-                    need_reply = (int)(btrans->need_reply == 1);
+                    need_reply = (int)(!btrans->is_async && !btrans->is_reply);
                     get_uid_pid(&from_pid, &from_uid, &to_pid, &to_uid, btrans);
                     spin_unlock(&btrans->lock);
                     hiber_report(type, from_pid, from_uid, to_pid, to_uid,

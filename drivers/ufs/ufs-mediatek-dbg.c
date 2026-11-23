@@ -28,7 +28,6 @@
 #include <linux/tracepoint.h>
 #include <linux/phy/phy.h>
 #include <sched/sched.h>
-#include "governor.h"
 #include "ufshcd-priv.h"
 #include <ufs/ufshcd.h>
 #if IS_ENABLED(CONFIG_MTK_AEE_IPANIC)

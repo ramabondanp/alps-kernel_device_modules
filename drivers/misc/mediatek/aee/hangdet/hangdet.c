@@ -633,17 +633,6 @@ static void kwdt_time_sync(void)
 #if IS_ENABLED(CONFIG_ARM64)
 static int irq_to_ipi_type(int irq)
 {
-	struct irq_desc **ipi_desc = ipi_desc_get();
-	struct irq_desc *desc = irq_to_desc(irq);
-	int nr_ipi = nr_ipi_get();
-	int i = 0;
-
-	if (!ipi_desc || !desc)
-		return -1;
-
-	for (i = 0; i < nr_ipi; i++)
-		if (ipi_desc[i] == desc)
-			return i;
 	return -1;
 }
 #else
@@ -730,7 +719,7 @@ static void show_irq_info(char *addr)
 	log_hwt_irq_info(addr, "%s\n", msg);
 
 	/*record irq info*/
-	for (irq = 1; irq < min_t(int, nr_irqs, MAX_IRQ_NUM); irq++) {
+	for (irq = 1; irq < min_t(int, (int)irq_get_nr_irqs(), MAX_IRQ_NUM); irq++) {
 		index = 0;
 		memset(msg, 0, SZ_256);
 		desc = irq_to_desc(irq);
@@ -840,7 +829,7 @@ static void show_irq_count(void)
 		return;
 	if (toprgu_base)
 		iowrite32(WDT_RST_RELOAD, toprgu_base + WDT_RST);
-	for (irq = 0; irq < min_t(int, nr_irqs, MAX_IRQ_NUM); irq++) {
+	for (irq = 0; irq < min_t(int, (int)irq_get_nr_irqs(), MAX_IRQ_NUM); irq++) {
 		desc = irq_to_desc(irq);
 		if (desc && desc->kstat_irqs) {
 			 /*
@@ -852,7 +841,7 @@ static void show_irq_count(void)
 	}
 	mdelay(2000);
 	aee_sram_fiq_log("show irq count in 2s:\n");
-	for (irq = 0; irq < min_t(int, nr_irqs, MAX_IRQ_NUM); irq++) {
+	for (irq = 0; irq < min_t(int, (int)irq_get_nr_irqs(), MAX_IRQ_NUM); irq++) {
 		desc = irq_to_desc(irq);
 		if (!desc || !desc->kstat_irqs)
 			continue;
