@@ -2309,7 +2309,8 @@ rpm:
 	}
 
 	/* Start change power mode */
-	err = ufshcd_config_pwr_mode(hba, &pwr_info);
+	err = ufshcd_config_pwr_mode(hba, &pwr_info,
+				UFSHCD_PMC_POLICY_DONT_FORCE);
 	if (err) {
 		dev_err(hba->dev, "%s: Failed setting power mode, err = %d\n",
 				__func__, err);

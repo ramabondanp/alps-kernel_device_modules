@@ -139,7 +139,6 @@ define_mgk_ddk_ko(
     ]),
     includes = ["."],
     ko_deps = ["//kernel_device_modules-{}/drivers/misc/mediatek/cmdq/mailbox:mtk-cmdq-drv-ext".format(kernel_version),
-              "//kernel_device_modules-{}/drivers/iommu/arm/arm-smmu-v3:arm_smmu_v3".format(kernel_version),
               ],
     copts = ["-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include",],
     header_deps = [

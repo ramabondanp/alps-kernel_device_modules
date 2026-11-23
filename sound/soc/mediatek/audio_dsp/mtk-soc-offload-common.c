@@ -907,7 +907,7 @@ static int mtk_compr_send_query_tstamp(void)
 
 static int mtk_compr_offload_pointer(struct snd_soc_component *component,
 				     struct snd_compr_stream *stream,
-				     struct snd_compr_tstamp *tstamp)
+				     struct snd_compr_tstamp64 *tstamp)
 {
 	int ret = 0;
 	int data = 0;
