@@ -20,6 +20,8 @@ extern int mtk_vdec_lpw_limit;
 extern int mtk_vdec_lpw_timeout;
 extern int mtk_vdec_lpw_start;
 extern int mtk_vdec_lpw_start_limit;
+extern int mtk_vdec_work_debug_level;
+extern int mtk_vdec_work_infos_level;
 extern bool mtk_vdec_enable_dynll;
 
 /**

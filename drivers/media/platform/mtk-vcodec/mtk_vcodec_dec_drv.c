@@ -49,6 +49,8 @@ module_param(mtk_vdec_lpw_limit, int, 0644);
 module_param(mtk_vdec_lpw_timeout, int, 0644);
 module_param(mtk_vdec_lpw_start, int, 0644);
 module_param(mtk_vdec_lpw_start_limit, int, 0644);
+module_param(mtk_vdec_work_debug_level, int, 0644);
+module_param(mtk_vdec_work_infos_level, int, 0644);
 module_param(mtk_vdec_enable_dynll, bool, 0644);
 module_param(mtk_vdec_open_cgrp_delay, int, 0644);
 module_param(mtk_vdec_slc_enable, bool, 0644);
