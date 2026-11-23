@@ -19,6 +19,17 @@
 
 #include "arm-smmu-v3-common.h"
 
+/* Linux 6.18 removed enum iommu_dev_features from public iommu.h.  The MTK
+ * OOT SMMU glue still has feature callbacks in its private ops table; keep a
+ * local definition for compilation of diagnostic modules. */
+#ifndef IOMMU_DEV_FEAT_AUX
+enum iommu_dev_features {
+	IOMMU_DEV_FEAT_AUX,
+	IOMMU_DEV_FEAT_SVA,
+	IOMMU_DEV_FEAT_IOPF,
+};
+#endif
+
 struct arm_smmu_device;
 
 #define Q_IDX(llq, p)			((p) & ((1 << (llq)->max_n_shift) - 1))

@@ -865,17 +865,17 @@ static int mtk_gpio_get(struct gpio_chip *chip, unsigned int gpio)
 	return !!value;
 }
 
-static void mtk_gpio_set(struct gpio_chip *chip, unsigned int gpio, int value)
+static int mtk_gpio_set(struct gpio_chip *chip, unsigned int gpio, int value)
 {
 	struct mtk_pinctrl *hw = gpiochip_get_data(chip);
 	const struct mtk_pin_desc *desc;
 
 	if (gpio >= hw->soc->npins)
-		return;
+		return -EINVAL;
 
 	desc = (const struct mtk_pin_desc *)&hw->soc->pins[gpio];
 
-	(void)mtk_hw_set_value(hw, desc, PINCTRL_PIN_REG_DO, !!value);
+	return mtk_hw_set_value(hw, desc, PINCTRL_PIN_REG_DO, !!value);
 }
 
 static int mtk_gpio_direction_input(struct gpio_chip *chip, unsigned int gpio)
@@ -1573,14 +1573,14 @@ static int mt63xx_gpio_get(struct gpio_chip *chip, unsigned int gpio)
 	return !!value;
 }
 
-static void mt63xx_gpio_set(struct gpio_chip *chip, unsigned int gpio, int value)
+static int mt63xx_gpio_set(struct gpio_chip *chip, unsigned int gpio, int value)
 {
 	struct mtk_pinctrl *hw = gpiochip_get_data(chip);
 
 	if ((gpio >= hw->soc->npins) || (gpio < hw->soc->real_pin_start_idx))
-		return;
+		return -EINVAL;
 
-	(void)mt63xx_hw_set_value(hw, gpio, PINCTRL_PIN_REG_DO, !!value);
+	return mt63xx_hw_set_value(hw, gpio, PINCTRL_PIN_REG_DO, !!value);
 }
 
 static int mt63xx_gpio_direction_input(struct gpio_chip *chip, unsigned int gpio)

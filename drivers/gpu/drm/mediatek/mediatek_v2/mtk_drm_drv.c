@@ -10199,7 +10199,7 @@ static int mtk_drm_kms_init(struct drm_device *drm)
 
 	if (mtk_drm_helper_get_opt(private->helper_opt,
 			MTK_DRM_OPT_USE_M4U)) {
-		if (!iommu_present(&platform_bus_type)) {
+		if (!iommu_get_domain_for_dev(drm->dev)) {
 			DDPINFO("%s, iommu not ready\n", __func__);
 			return -EPROBE_DEFER;
 		}
