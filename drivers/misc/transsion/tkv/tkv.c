@@ -215,8 +215,7 @@ static int __init tkv_init(void)
 		return 0;
 	}
 
-	tkv_base = (unsigned long)ioremap_prot(g_tkv_base, TKV_REGION_SIZE,
-					       PAGE_KERNEL);
+	tkv_base = (unsigned long)ioremap_cache(g_tkv_base, TKV_REGION_SIZE);
 	if (!tkv_base) {
 		pr_info("tkv_base map fail\n");
 		return -ENOMEM;

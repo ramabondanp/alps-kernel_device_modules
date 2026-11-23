@@ -415,10 +415,12 @@ static int lookup_reserved_memory(void)
 	}
 
 #if IS_ENABLED(CONFIG_ARM64)
-	/* Remap as read-only Normal Memory */
-	pgprot_t prot = pgprot_writecombine(PAGE_KERNEL_RO);
-
-	info.vaddr = ioremap_prot(info.debug_buf_paddr, info.total_size, prot);
+	/*
+	 * 6.18 ioremap_prot() only accepts a pgprot_t taken from a user
+	 * mapping and returns NULL for kernel protections.  Use the
+	 * write-combine mapping, which matches the old attributes.
+	 */
+	info.vaddr = ioremap_wc(info.debug_buf_paddr, info.total_size);
 #else
 	/*
 	 * In case ARM32 does not support ioremap_prot, we maintain backward compatibility
@@ -426,7 +428,7 @@ static int lookup_reserved_memory(void)
 	 */
 	info.vaddr = ioremap(info.debug_buf_paddr, info.total_size);
 #endif
-	if (IS_ERR(info.vaddr)) {
+	if (!info.vaddr || IS_ERR(info.vaddr)) {
 		pr_notice("Fail to remap debug buf vaddr:%ld\n",
 			PTR_ERR(info.vaddr));
 		return -ENOMEM;
