@@ -2245,10 +2245,9 @@ static const struct iommu_ops mtk_iommu_ops = {
 	}
 };
 
-static int mtk_iommu_hw_init(const struct mtk_iommu_data *data)
+static int mtk_iommu_hw_program(const struct mtk_iommu_data *data)
 {
 	u32 regval;
-	int i;
 
 	if (data->plat_data->m4u_plat == M4U_MT8173) {
 		regval = F_MMU_PREFETCH_RT_REPLACE_MOD |
@@ -2309,6 +2308,17 @@ static int mtk_iommu_hw_init(const struct mtk_iommu_data *data)
 		mtk_iommu_sec_bk_init_by_atf(data->plat_data->iommu_type,
 				data->plat_data->iommu_id);
 #endif
+
+	return 0;
+}
+
+static int mtk_iommu_hw_init(const struct mtk_iommu_data *data)
+{
+	int i, ret;
+
+	ret = mtk_iommu_hw_program(data);
+	if (ret)
+		return ret;
 
 	for (i = IOMMU_BK0; i < IOMMU_BK_NUM; i++) {
 		struct device *dev;
@@ -3285,6 +3295,15 @@ static int mtk_iommu_hw_suspend(struct device *dev)
 	struct mtk_iommu_suspend_reg *reg = &data->reg;
 	void __iomem *base = data->base;
 
+	if (data->plat_data->iommu_type == APU_IOMMU &&
+	    data->plat_data->iommu_id < APU_IOMMU_NUM) {
+		unsigned long flags;
+
+		spin_lock_irqsave(&data->tlb_lock, flags);
+		apu_pm_sta[data->plat_data->iommu_id] = POWER_OFF_STA;
+		spin_unlock_irqrestore(&data->tlb_lock, flags);
+	}
+
 	if (MTK_IOMMU_HAS_FLAG(data->plat_data, PM_OPS_SKIP))
 		return 0;
 
@@ -3336,8 +3355,34 @@ static int mtk_iommu_hw_resume(struct device *dev)
 	int ret;
 
 	if (MTK_IOMMU_HAS_FLAG(data->plat_data, PM_OPS_SKIP)) {
-		if (data->plat_data->iommu_type == APU_IOMMU)
+		/*
+		 * APU IOMMUs lose their register state while the RCX power
+		 * domain is off. 6.18 attaches APU devices before apu_top
+		 * wakes RCX, so the stage-1 programming was dropped. Replay
+		 * it on the runtime resume issued right after RCX powers on.
+		 */
+		if (data->plat_data->iommu_type == APU_IOMMU &&
+		    data->plat_data->iommu_id < APU_IOMMU_NUM) {
+			unsigned long flags;
+			u32 ttbr;
+
+			if (m4u_dom) {
+				ttbr = m4u_dom->cfg.arm_v7s_cfg.ttbr;
+				if (readl_relaxed(base + REG_MMU_PT_BASE_ADDR) != ttbr) {
+					ret = mtk_iommu_hw_program(data);
+					if (ret)
+						return ret;
+					writel(ttbr, base + REG_MMU_PT_BASE_ADDR);
+				}
+
+				spin_lock_irqsave(&data->tlb_lock, flags);
+				if (readl_relaxed(base + REG_MMU_PT_BASE_ADDR) == ttbr)
+					apu_pm_sta[data->plat_data->iommu_id] =
+						POWER_ON_STA;
+				spin_unlock_irqrestore(&data->tlb_lock, flags);
+			}
 			mtk_iommu_tlb_flush(data, false);
+		}
 		return 0;
 	}
 
