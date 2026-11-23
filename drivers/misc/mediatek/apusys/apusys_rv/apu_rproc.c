@@ -99,6 +99,7 @@ static int __apu_run(struct rproc *rproc)
 			apu_regdump();
 		apu->bypass_pwr_off_chk = true;
 		apusys_rv_aee_warn("APUSYS_RV", "APUSYS_RV_TIMEOUT");
+		ret = -ETIMEDOUT;
 		goto stop;
 	}
 	if (ret == -ERESTARTSYS)
@@ -117,6 +118,21 @@ stop:
 		return -EINVAL;
 	}
 	hw_ops->stop(apu);
+
+	/*
+	 * A failed firmware boot leaves RCX and both APU IOMMUs powered, so
+	 * their translation faults can pin a CPU in the hardirq handler
+	 * forever. Undo the power_on() done at the top of this function.
+	 * Fast on/off platforms never called it here, so leave them alone.
+	 */
+	if ((apu->platdata->flags & F_FAST_ON_OFF) == 0 && hw_ops->power_off) {
+		int pret = hw_ops->power_off(apu);
+
+		if (pret)
+			dev_info(dev,
+				 "APU power off after run failure failed: %d\n",
+				 pret);
+	}
 
 	return ret;
 }
