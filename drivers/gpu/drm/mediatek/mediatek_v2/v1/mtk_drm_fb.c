@@ -5,6 +5,7 @@
 
 #include <drm/drm_crtc_helper.h>
 #include <drm/drm_fb_helper.h>
+#include <drm/drm_fourcc.h>
 #include <drm/drm_framebuffer.h>
 #include <drm/drm_gem.h>
 #include <drm/drm_modeset_helper.h>
@@ -123,6 +124,7 @@ static const struct drm_framebuffer_funcs mtk_drm_fb_funcs = {
 
 static struct mtk_drm_fb *
 mtk_drm_framebuffer_init(struct drm_device *dev,
+			 const struct drm_format_info *info,
 			 const struct drm_mode_fb_cmd2 *mode,
 			 struct drm_gem_object *obj)
 {
@@ -133,7 +135,7 @@ mtk_drm_framebuffer_init(struct drm_device *dev,
 	if (!mtk_fb)
 		return ERR_PTR(-ENOMEM);
 
-	drm_helper_mode_fill_fb_struct(dev, &mtk_fb->base, mode);
+	drm_helper_mode_fill_fb_struct(dev, &mtk_fb->base, info, mode);
 
 	mtk_fb->gem_obj = obj;
 
@@ -153,8 +155,9 @@ mtk_drm_framebuffer_create(struct drm_device *dev,
 			   struct drm_gem_object *obj)
 {
 	struct mtk_drm_fb *mtk_fb;
+	const struct drm_format_info *info = drm_get_format_info(dev, mode);
 
-	mtk_fb = mtk_drm_framebuffer_init(dev, mode, obj);
+	mtk_fb = mtk_drm_framebuffer_init(dev, info, mode, obj);
 	if (IS_ERR(mtk_fb))
 		return ERR_CAST(mtk_fb);
 
@@ -200,6 +203,7 @@ int mtk_fb_wait(struct drm_framebuffer *fb)
 
 struct drm_framebuffer *
 mtk_drm_mode_fb_create(struct drm_device *dev, struct drm_file *file,
+		       const struct drm_format_info *info,
 		       const struct drm_mode_fb_cmd2 *cmd)
 {
 	struct mtk_drm_fb *mtk_fb = NULL;
@@ -244,7 +248,7 @@ mtk_drm_mode_fb_create(struct drm_device *dev, struct drm_file *file,
 	}
 
 fb_init:
-	mtk_fb = mtk_drm_framebuffer_init(dev, cmd, gem);
+	mtk_fb = mtk_drm_framebuffer_init(dev, info, cmd, gem);
 	if (IS_ERR(mtk_fb)) {
 		ret = PTR_ERR(mtk_fb);
 		goto unreference;

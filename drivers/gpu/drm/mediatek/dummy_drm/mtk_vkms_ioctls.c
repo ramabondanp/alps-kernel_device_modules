@@ -579,13 +579,14 @@ mtk_drm_framebuffer_init(struct drm_device *dev,
 			 struct drm_gem_object *obj)
 {
 	struct mtk_drm_fb *mtk_fb;
+	const struct drm_format_info *info = drm_get_format_info(dev, mode);
 	int ret;
 
 	mtk_fb = kzalloc(sizeof(*mtk_fb), GFP_KERNEL);
 	if (!mtk_fb)
 		return ERR_PTR(-ENOMEM);
 
-	drm_helper_mode_fill_fb_struct(dev, &mtk_fb->base, mode);
+	drm_helper_mode_fill_fb_struct(dev, &mtk_fb->base, info, mode);
 
 	mtk_fb->gem_obj = obj;
 
@@ -601,6 +602,7 @@ mtk_drm_framebuffer_init(struct drm_device *dev,
 
 struct drm_framebuffer *
 mtk_drm_mode_fb_create(struct drm_device *dev, struct drm_file *file,
+		       const struct drm_format_info *info,
 		       const struct drm_mode_fb_cmd2 *cmd)
 {
 	struct mtk_drm_fb *mtk_fb = NULL;

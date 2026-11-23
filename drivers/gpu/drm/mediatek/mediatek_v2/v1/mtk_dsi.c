@@ -5600,11 +5600,8 @@ static void mtk_output_dsi_enable(struct mtk_dsi *dsi,
 
 	if (dsi->panel) {
 		DDP_PROFILE("[PROFILE] %s panel init start\n", __func__);
-		if (((!dsi->doze_enabled && !dsi->pending_switch) || force_lcm_update)
-			&& drm_panel_prepare(dsi->panel)) {
-			DDPPR_ERR("failed to prepare the panel\n");
-			goto out;
-		}
+		if ((!dsi->doze_enabled && !dsi->pending_switch) || force_lcm_update)
+			drm_panel_prepare(dsi->panel);
 		/*
 		 * for cmd v2 interface: panel init need to use callback
 		 * and drm_panel_prepare no need
@@ -5727,10 +5724,8 @@ static void mtk_output_dsi_enable(struct mtk_dsi *dsi,
 		mtk_dsi_start(dsi);
 
 	if (dsi->panel) {
-		if (!dsi->pending_switch && drm_panel_enable(dsi->panel)) {
-			DDPPR_ERR("failed to enable the panel\n");
-			goto err_dsi_power_off;
-		}
+		if (!dsi->pending_switch)
+			drm_panel_enable(dsi->panel);
 
 		/* Suspend to Doze */
 		if (mtk_dsi_doze_status_change(dsi)) {
@@ -5863,10 +5858,7 @@ static void mtk_output_dsi_disable(struct mtk_dsi *dsi, struct cmdq_pkt *cmdq_ha
 
 	/* 1. If not doze mode, turn off backlight */
 	if (dsi->panel && ((!new_doze_state && !skip_panel_switch) || force_lcm_update)) {
-		if (drm_panel_disable(dsi->panel)) {
-			DRM_ERROR("failed to disable the panel\n");
-			return;
-		}
+		drm_panel_disable(dsi->panel);
 	}
 	dsi->pending_switch = skip_panel_switch;
 
@@ -5931,8 +5923,7 @@ SKIP_WAIT_FRAME_DONE:
 				dsi->ext->funcs->panel_deinit(dsi->panel);
 				CRTC_MMP_MARK(crtc_idx, dsi_suspend, 2, 2);
 			}
-			if (drm_panel_unprepare(dsi->panel))
-				DRM_ERROR("failed to unprepare the panel\n");
+			drm_panel_unprepare(dsi->panel);
 			CRTC_MMP_MARK(crtc_idx, dsi_suspend, 2, 3);
 		} else if (new_doze_state && !dsi->doze_enabled) {
 			mtk_output_en_doze_switch(dsi);
@@ -16261,8 +16252,7 @@ int Panel_Master_dsi_config_entry(struct drm_crtc *crtc,
 			name, config_value);
 	} else if (!strcmp(name, "PM_DRIVER_IC_RESET") && (!config_value)) {
 		if (dsi->panel) {
-			if (drm_panel_prepare(dsi->panel))
-				DDPPR_ERR("failed to enable the panel\n");
+			drm_panel_prepare(dsi->panel);
 		}
 	}
 	/* enable esd check */

@@ -995,7 +995,7 @@ struct dma_buf *get_dmabuf_from_file(struct file *file)
 	 */
 	if (!get_kernel_nofault(tmp_file, file) &&
 	    mtk_is_dma_buf_file(file) &&
-	    atomic_long_inc_not_zero(&file->f_count))
+	    file_ref_get(&file->f_ref))
 		return (struct dma_buf *)file->private_data;
 
 	return ERR_PTR(-EINVAL);

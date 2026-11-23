@@ -5283,7 +5283,7 @@ static const struct drm_connector_funcs mtk_dp_connector_funcs = {
 };
 
 static enum drm_mode_status mtk_dp_connector_mode_valid(struct drm_connector *connector,
-							struct drm_display_mode *mode)
+							const struct drm_display_mode *mode)
 {
 	DP_FUNC("Htt:%d, Vtt:%d, Hact:%d, Vact:%d, fps:%d, clk:%d\n",
 		mode->htotal, mode->vtotal,

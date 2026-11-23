@@ -3139,7 +3139,7 @@ static int mtk_hdmi_conn_get_modes(struct drm_connector *conn)
 }
 
 static enum drm_mode_status mtk_hdmi_conn_mode_valid(struct drm_connector *conn,
-	struct drm_display_mode *mode)
+	const struct drm_display_mode *mode)
 {
 	HDMI_LOG("xres:%d, yres:%d, refresh:%d, intl:%d, clock:%d, vic:%d\n",
 		mode->hdisplay, mode->vdisplay, drm_mode_vrefresh(mode),

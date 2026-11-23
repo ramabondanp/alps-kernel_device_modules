@@ -3958,7 +3958,7 @@ void mtk_dp_enable_4k60(int enable)
 }
 
 static enum drm_mode_status mtk_dp_conn_mode_valid(struct drm_connector *conn,
-		struct drm_display_mode *mode)
+		const struct drm_display_mode *mode)
 {
 	int plat_limit_array = ARRAY_SIZE(dp_plat_limit);
 	int i;
