@@ -205,7 +205,6 @@ config REGULATOR_MT6688
 
 config DEVICE_MODULES_REGULATOR_MTK_DVFSRC
 	tristate "MediaTek DVFSRC regulator driver"
-	depends on MTK_DVFSRC
 	help
 	  Say y here to control regulator by DVFSRC (dynamic voltage
 	  and frequency scaling resource collector).

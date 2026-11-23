@@ -583,7 +583,7 @@ EXPORT_SYMBOL(get_adsp_aee_buffer);
 
 #if IS_ENABLED(CONFIG_MTK_AUDIODSP_DEBUG_SUPPORT)
 static ssize_t adsp_dump_show(struct file *filep, struct kobject *kobj,
-				struct bin_attribute *attr,
+				const struct bin_attribute *attr,
 				char *buf, loff_t offset, size_t size)
 {
 	ssize_t n = 0;
@@ -610,7 +610,7 @@ static ssize_t adsp_dump_show(struct file *filep, struct kobject *kobj,
 }
 
 static ssize_t adsp_dump_ke_show(struct file *filep, struct kobject *kobj,
-				struct bin_attribute *attr,
+				const struct bin_attribute *attr,
 				char *buf, loff_t offset, size_t size)
 {
 	unsigned long tmp[2];
@@ -643,7 +643,7 @@ static ssize_t adsp_dump_ke_show(struct file *filep, struct kobject *kobj,
 }
 
 static ssize_t adsp_dump_log_show(struct file *filep, struct kobject *kobj,
-				struct bin_attribute *attr,
+				const struct bin_attribute *attr,
 				char *buf, loff_t offset, size_t size)
 {
 	ssize_t n = 0;
@@ -708,7 +708,7 @@ static inline ssize_t suppress_ee_store(struct device *dev,
 DEVICE_ATTR_WO(suppress_ee);
 #endif
 
-static struct bin_attribute *adsp_excep_bin_attrs[] = {
+static const struct bin_attribute *adsp_excep_bin_attrs[] = {
 #if IS_ENABLED(CONFIG_MTK_AUDIODSP_DEBUG_SUPPORT)
 	&bin_attr_adsp_dump,
 	&bin_attr_adsp_dump_ke,

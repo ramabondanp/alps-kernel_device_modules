@@ -54,6 +54,19 @@ static struct ufs_hba *ufshba[HOST_CNT];
 
 #if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 #include <mt-plat/aee.h>
+
+enum ufs_trace_str_t {
+	UFS_CMD_SEND,
+	UFS_CMD_COMP,
+	UFS_DEV_COMP,
+	UFS_QUERY_SEND,
+	UFS_QUERY_COMP,
+	UFS_QUERY_ERR,
+	UFS_TM_SEND,
+	UFS_TM_COMP,
+	UFS_TM_ERR
+};
+
 #endif
 
 extern void mt_irq_dump_status(unsigned int irq);
@@ -501,7 +514,7 @@ static void probe_android_vh_ufs_send_tm_command(void *data, struct ufs_hba *hba
 	u8 tm_func;
 	int ptr, lun, task_tag;
 	enum cmd_hist_event event = CMD_UNKNOWN;
-	enum ufs_trace_str_t _str_t = str_t;
+	int _str_t = str_t;
 	struct utp_task_req_desc *d = &hba->utmrdl_base_addr[tag];
 	struct cmd_hist_struct *cmd_hist;
 	struct ufs_mtk_dbg *mdbg = ufshcd_to_dbg(hba);
@@ -611,7 +624,7 @@ static void probe_android_vh_ufs_compl_command(void *data, struct ufs_hba *hba,
 
 static void probe_ufshcd_command(void *data, struct scsi_device *sdev,
 				 struct ufs_hba *hba,
-				 enum ufs_trace_str_t str_t, unsigned int tag,
+				 int str_t, unsigned int tag,
 				 u32 doorbell, u32 hwq_id, int transfer_len,
 				 u32 intr, u64 lba, u8 opcode, u8 group_id)
 {
@@ -666,7 +679,7 @@ static void probe_ufshcd_command(void *data, struct scsi_device *sdev,
 }
 
 static void probe_ufshcd_uic_command(void *data, struct ufs_hba *hba,
-				     enum ufs_trace_str_t str_t, u32 cmd,
+				     int str_t, u32 cmd,
 				     u32 arg1, u32 arg2, u32 arg3)
 {
 	int ptr, ptr_cur;
@@ -1923,14 +1936,12 @@ static void lookup_tracepoints(struct tracepoint *tp, void *ignore)
 
 static void ufs_mtk_scsi_unblock_requests(struct ufs_hba *hba)
 {
-	if (atomic_dec_and_test(&hba->scsi_block_reqs_cnt))
-		scsi_unblock_requests(hba->host);
+	scsi_unblock_requests(hba->host);
 }
 
 static void ufs_mtk_scsi_block_requests(struct ufs_hba *hba)
 {
-	if (atomic_inc_return(&hba->scsi_block_reqs_cnt) == 1)
-		scsi_block_requests(hba->host);
+	scsi_block_requests(hba->host);
 }
 
 static u32 ufs_mtk_pending_cmds(struct ufs_hba *hba)

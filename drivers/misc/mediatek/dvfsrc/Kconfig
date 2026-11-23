@@ -1,6 +1,5 @@
 config MTK_DVFSRC_HELPER
 	tristate "MTK DVFSRC Helper debugging Support"
-	depends on MTK_DVFSRC
 	help
 	  This kernel config can be used to debug dvfsrc (dynamic voltage
 	  and frequency scaling resource collector) for Mediatek vcore_dvfs.
