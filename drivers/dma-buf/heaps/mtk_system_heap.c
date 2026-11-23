@@ -34,6 +34,7 @@
 #include "mtk_heap.h"
 #include "mtk_page_pool.h"
 #include "mtk-smmu-v3.h"
+MODULE_IMPORT_NS(DMA_BUF_HEAP);
 
 #define MAP_FAILED_DUMP_RS_INTERVAL	(2 * HZ)
 #define MAP_FAILED_DUMP_RS_BURST	(1)

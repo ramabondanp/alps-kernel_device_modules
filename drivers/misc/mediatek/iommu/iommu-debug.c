@@ -11,7 +11,7 @@
 #include <linux/bitfield.h>
 #include <linux/bits.h>
 #include <linux/iova.h>
-#include "io-pgtable-arm.h"
+#include "io-pgtable-arm-compat.h"
 #include <linux/of.h>
 #include <linux/platform_device.h>
 #include <linux/of_platform.h>

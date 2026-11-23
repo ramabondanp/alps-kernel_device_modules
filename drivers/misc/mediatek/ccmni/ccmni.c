@@ -259,7 +259,12 @@ static inline unsigned int napi_gro_list_flush(struct ccmni_instance *ccmni)
 	napi = ccmni->napi;
 	rx_count = napi->gro.rx_count;
 
-	gro_flush_normal(&napi->gro, false);
+	napi_gro_flush(napi, false);
+	if (napi->gro.rx_count) {
+		netif_receive_skb_list(&napi->gro.rx_list);
+		INIT_LIST_HEAD(&napi->gro.rx_list);
+		napi->gro.rx_count = 0;
+	}
 
 	return rx_count;
 }

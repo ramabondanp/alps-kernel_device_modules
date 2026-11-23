@@ -142,6 +142,7 @@ define_mgk_ddk_ko(
         "mtk-smmu-ela.h",
     ]) + [
         "//common:drivers/iommu/io-pgtable-arm.h",
+        "io-pgtable-arm-compat.h",
     ],
     includes = ["."],
     copts = [
