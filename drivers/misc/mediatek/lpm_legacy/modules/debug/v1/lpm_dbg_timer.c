@@ -53,7 +53,7 @@ void lpm_timer_stop(struct lpm_timer *timer)
 {
 	if (!timer)
 		return;
-	del_timer_sync(&timer->tm);
+	timer_delete_sync(&timer->tm);
 }
 
 int lpm_timer_start(struct lpm_timer *timer)

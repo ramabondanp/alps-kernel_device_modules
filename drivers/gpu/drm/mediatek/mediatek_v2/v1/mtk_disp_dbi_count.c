@@ -328,7 +328,7 @@ int mtk_dbi_count_create_timer(struct drm_crtc *crtc, void *data, bool need_lock
 	if (need_lock)
 		DBI_SPIN_LOCK(&dbi_timer->lock, __func__, __LINE__, flags);
 	if (dbi_timer->enable)
-		del_timer(timer);
+		timer_delete(timer);
 	if (update_sec) {
 		sec = *(unsigned int *)data;
 		dbi_timer->sec = sec;
@@ -361,7 +361,7 @@ int mtk_dbi_count_delete_timer(struct drm_crtc *crtc, bool need_lock, bool mark_
 	if (need_lock)
 		DBI_SPIN_LOCK(&dbi_timer->lock, __func__, __LINE__, flags);
 	if (mtk_crtc->dbi_data.dbi_timer.enable) {
-		del_timer(timer);
+		timer_delete(timer);
 		dbi_timer->active =  0;
 		dbi_timer->enable = 0;
 		if(mark_suspend)

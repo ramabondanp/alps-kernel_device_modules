@@ -244,7 +244,7 @@ static ssize_t enable_proc_write(struct file *file,
 			}
 		} else {
 			if (swpm_timer.function != NULL)
-				del_timer(&swpm_timer);
+				timer_delete(&swpm_timer);
 		}
 		swpm_unlock(&swpm_mutex);
 	} else {

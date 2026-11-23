@@ -2672,7 +2672,7 @@ static int mtk_nanohub_remove(struct platform_device *pdev)
 {
 	struct mtk_nanohub_device *device = mtk_nanohub_dev;
 
-	del_timer_sync(&device->sync_time_timer);
+	timer_delete_sync(&device->sync_time_timer);
 	hf_manager_destroy(device->hf_dev.manager);
 	unregister_pm_notifier(&mtk_nanohub_pm_notifier_func);
 	mtk_nanohub_delete_attr(pdev->dev.driver);

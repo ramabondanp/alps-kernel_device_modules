@@ -204,7 +204,7 @@ static void ufs_mtk_rpmb_purge_tmr_update(struct ufs_hba *hba, bool activate)
 	} else if (!activate && host->purge_active) {
 		host->purge_active = false;
 		ufshcd_rpm_put(hba);
-		del_timer(&host->purge_timer);
+		timer_delete(&host->purge_timer);
 		dev_info(hba->dev, "wl rpm put -");
 	} else if (activate && host->purge_active) {
 		/* Simply refresh timer */

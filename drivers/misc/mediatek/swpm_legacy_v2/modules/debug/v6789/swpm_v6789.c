@@ -1084,7 +1084,7 @@ void swpm_set_periodic(unsigned int enable)
 					   &swpm_get_core_temp_work,
 					   swpm_log_interval_ms);
 	} else {
-		del_timer(&swpm_timer);
+		timer_delete(&swpm_timer);
 		cancel_delayed_work(&swpm_get_core_temp_work);
 	}
 }
@@ -1206,7 +1206,7 @@ void swpm_v6789_exit(void)
 {
 	swpm_lock(&swpm_mutex);
 
-	del_timer_sync(&swpm_timer);
+	timer_delete_sync(&swpm_timer);
 	cancel_delayed_work_sync(&swpm_get_core_temp_work);
 	cancel_delayed_work_sync(&swpm_init_retry_work);
 

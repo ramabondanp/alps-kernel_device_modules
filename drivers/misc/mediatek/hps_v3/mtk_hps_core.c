@@ -342,7 +342,7 @@ int hps_core_deinit(void)
 	hps_warn("HPS: core deinit!\n");
 	if (hps_ctxt.periodical_by == HPS_PERIODICAL_BY_TIMER) {
 		/*deinit timer */
-		del_timer_sync(&hps_ctxt.tmr_list);
+		timer_delete_sync(&hps_ctxt.tmr_list);
 	} else if (hps_ctxt.periodical_by == HPS_PERIODICAL_BY_HR_TIMER) {
 		/*deinit timer */
 		r = hrtimer_cancel(&hps_ctxt.hr_timer);
@@ -360,7 +360,7 @@ int hps_del_timer(void)
 		hps_cancel_time = hps_get_current_time_ms();
 	if (hps_ctxt.periodical_by == HPS_PERIODICAL_BY_TIMER) {
 		/*deinit timer */
-		del_timer_sync(&hps_ctxt.tmr_list);
+		timer_delete_sync(&hps_ctxt.tmr_list);
 	} else if (hps_ctxt.periodical_by == HPS_PERIODICAL_BY_HR_TIMER) {
 		hrtimer_cancel(&hps_ctxt.hr_timer);
 	}

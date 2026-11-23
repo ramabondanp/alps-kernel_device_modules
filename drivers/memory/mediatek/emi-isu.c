@@ -544,7 +544,7 @@ static int emiisu_probe(struct platform_device *pdev)
 
 static void emiisu_remove(struct platform_device *pdev)
 {
-	del_timer(&check_isu_timer);
+	timer_delete(&check_isu_timer);
 
 	sysfs_remove_bin_file(&pdev->dev.kobj, &emi_isu_buf_attr);
 

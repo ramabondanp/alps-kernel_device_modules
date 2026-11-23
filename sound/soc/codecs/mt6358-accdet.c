@@ -860,7 +860,7 @@ static void send_status_event(u32 cable_type, u32 status)
 		 * it check AB=00(because keep to press key) then disable
 		 * micbias, it will cause key no response
 		 */
-		del_timer_sync(&micbias_timer);
+		timer_delete_sync(&micbias_timer);
 		break;
 	case LINE_OUT_DEVICE:
 		if (status)
@@ -1166,7 +1166,7 @@ static void eint_work_callback(struct work_struct *work)
 		accdet->eint_sync_flag = false;
 		accdet->thing_in_flag = false;
 		mutex_unlock(&accdet->res_lock);
-		del_timer_sync(&micbias_timer);
+		timer_delete_sync(&micbias_timer);
 
 		/* disable accdet_sw_en=0
 		 */
@@ -2051,7 +2051,7 @@ void mt6358_accdet_late_init(unsigned long data)
 {
 	pr_info("%s()  now init accdet!\n", __func__);
 	if (atomic_cmpxchg(&accdet_first, 1, 0)) {
-		del_timer_sync(&accdet_init_timer);
+		timer_delete_sync(&accdet_init_timer);
 		accdet_init();
 		accdet_init_debounce();
 		accdet_init_once();

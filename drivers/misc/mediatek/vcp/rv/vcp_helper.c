@@ -787,7 +787,7 @@ static void vcp_A_set_ready(void)
 {
 	pr_debug("[VCP] %s()\n", __func__);
 #if VCP_BOOT_TIME_OUT_MONITOR
-	del_timer(&vcp_ready_timer[VCP_A_ID].tl);
+	timer_delete(&vcp_ready_timer[VCP_A_ID].tl);
 #endif
 	vcp_A_notify_work.flags = 1;
 	vcp_schedule_work(&vcp_A_notify_work);
@@ -1225,7 +1225,7 @@ int vcp_disable_pm_clk(enum feature_id id)
 		wait_vcp_ready_to_reboot();
 
 #if VCP_BOOT_TIME_OUT_MONITOR
-		del_timer(&vcp_ready_timer[VCP_A_ID].tl);
+		timer_delete(&vcp_ready_timer[VCP_A_ID].tl);
 #endif
 		vcp_wait_core_stop_timeout(1);
 
@@ -1298,7 +1298,7 @@ static int vcp_pm_event(struct notifier_block *notifier
 				flush_workqueue(vcp_logger_workqueue);
 #endif
 #if VCP_BOOT_TIME_OUT_MONITOR
-				del_timer(&vcp_ready_timer[VCP_A_ID].tl);
+				timer_delete(&vcp_ready_timer[VCP_A_ID].tl);
 #endif
 				vcp_wait_core_stop_timeout(1);
 				vcp_disable_dapc();
@@ -1333,7 +1333,7 @@ static int vcp_pm_event(struct notifier_block *notifier
 				flush_workqueue(vcp_logger_workqueue);
 #endif
 #if VCP_BOOT_TIME_OUT_MONITOR
-				del_timer(&vcp_ready_timer[VCP_A_ID].tl);
+				timer_delete(&vcp_ready_timer[VCP_A_ID].tl);
 #endif
 
 				vcp_wait_awake_count();
@@ -3999,7 +3999,7 @@ static void __exit vcp_exit(void)
 
 #if VCP_BOOT_TIME_OUT_MONITOR
 	for (i = 0; i < VCP_CORE_TOTAL ; i++)
-		del_timer(&vcp_ready_timer[i].tl);
+		timer_delete(&vcp_ready_timer[i].tl);
 #endif
 	platform_driver_unregister(&mtk_vcp_io_acp_codec);
 	platform_driver_unregister(&mtk_vcp_io_acp_venc);

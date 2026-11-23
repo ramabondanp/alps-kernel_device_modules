@@ -668,6 +668,6 @@ void swpm_v6991_ext_init(void)
 
 void swpm_v6991_ext_exit(void)
 {
-	del_timer_sync(&swpm_sp_timer);
+	timer_delete_sync(&swpm_sp_timer);
 }
 

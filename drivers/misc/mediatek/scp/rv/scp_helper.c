@@ -873,7 +873,7 @@ static void scp_A_set_ready(void)
 {
 	pr_debug("[SCP] %s()\n", __func__);
 #if SCP_BOOT_TIME_OUT_MONITOR
-	del_timer(&scp_ready_timer[SCP_A_ID].tl);
+	timer_delete(&scp_ready_timer[SCP_A_ID].tl);
 #endif
 	scp_A_notify_work.flags = 1;
 	scp_schedule_work(&scp_A_notify_work);
@@ -3609,7 +3609,7 @@ static void __exit scp_exit(void)
 
 #if SCP_BOOT_TIME_OUT_MONITOR
 	for (i = 0; i < SCP_CORE_TOTAL ; i++)
-		del_timer(&scp_ready_timer[i].tl);
+		timer_delete(&scp_ready_timer[i].tl);
 #endif
 }
 

@@ -3203,7 +3203,7 @@ static int therm_intf_probe(struct platform_device *pdev)
 
 static void therm_intf_remove(struct platform_device *pdev)
 {
-	del_timer_sync(&thrmal_task_timer);
+	timer_delete_sync(&thrmal_task_timer);
 	if (thrmal_task_wq){
 		flush_workqueue(thrmal_task_wq);
 		destroy_workqueue(thrmal_task_wq);

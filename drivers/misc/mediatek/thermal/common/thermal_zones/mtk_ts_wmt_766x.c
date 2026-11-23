@@ -1969,7 +1969,7 @@ static void __exit wmt_tm_deinit(void)
 		return;
 
 	mtkTTimer_unregister("mtktswmt");
-	del_timer(&wmt_stats_timer);
+	timer_delete(&wmt_stats_timer);
 }
 
 /* EXPORT_SYMBOL(wifi_in_soc_throttle_enable); */

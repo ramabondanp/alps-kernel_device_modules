@@ -537,7 +537,7 @@ static void ise_lpm_send_wq(enum ise_lpm_wq_cmd cmd)
 static void ise_lpm_timeout(struct timer_list *t)
 {
 	ise_lpm_send_wq(ISE_LPM_FREERUN);
-	del_timer(&ise_lpm_timer);
+	timer_delete(&ise_lpm_timer);
 	ise_lpm_timer_active = false;
 }
 
@@ -745,10 +745,10 @@ static void ise_lpm_remove(struct platform_device *pdev)
 	pr_notice("%s ise-wakelock %d\n", __func__, ise_wakelock_en);
 
 	if (ise_lpm_timer_active)
-		del_timer_sync(&ise_lpm_timer);
+		timer_delete_sync(&ise_lpm_timer);
 
 	mutex_lock(&mutex_ise_lpm);
-	del_timer_sync(&ise_lpm_pd_timer);
+	timer_delete_sync(&ise_lpm_pd_timer);
 	mutex_unlock(&mutex_ise_lpm);
 
 	if (ise_doorbell_va)

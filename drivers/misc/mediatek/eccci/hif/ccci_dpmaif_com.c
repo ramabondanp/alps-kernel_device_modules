@@ -2895,7 +2895,7 @@ static int dpmaif_stop(unsigned char hif_id)
 
 #if DPMAIF_TRAFFIC_MONITOR_INTERVAL
 	/* stop debug mechnism */
-	del_timer(&g_dpmaif_ctrl->traffic_monitor);
+	timer_delete(&g_dpmaif_ctrl->traffic_monitor);
 #endif
 
 	dpmaif_disable_all_irq();

@@ -1210,7 +1210,7 @@ int pt_psy_event(struct notifier_block *nb, unsigned long event, void *v)
 			mod_timer(&lbat_data->notify_timer, jiffies);
 		} else if (soc < 0 || soc > 1) {
 			if (timer_pending(&lbat_data->notify_timer))
-				del_timer_sync(&lbat_data->notify_timer);
+				timer_delete_sync(&lbat_data->notify_timer);
 		}
 	}
 

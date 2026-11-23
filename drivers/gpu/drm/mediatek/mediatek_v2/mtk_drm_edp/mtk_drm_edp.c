@@ -3213,7 +3213,7 @@ static void mtk_edp_remove(struct platform_device *pdev)
 	pm_runtime_put(&pdev->dev);
 	pm_runtime_disable(&pdev->dev);
 	if (mtk_edp->data->bridge_type != DRM_MODE_CONNECTOR_eDP)
-		del_timer_sync(&mtk_edp->debounce_timer);
+		timer_delete_sync(&mtk_edp->debounce_timer);
 	platform_device_unregister(mtk_edp->phy_dev);
 	if (mtk_edp->audio_pdev)
 		platform_device_unregister(mtk_edp->audio_pdev);

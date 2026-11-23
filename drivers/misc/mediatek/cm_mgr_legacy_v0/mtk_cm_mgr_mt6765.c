@@ -1207,7 +1207,7 @@ cm_mgr_opp_end:
 					USE_TIMER_CHECK_TIME;
 				mod_timer(&cm_mgr_timer, expires);
 			} else {
-				del_timer(&cm_mgr_timer);
+				timer_delete(&cm_mgr_timer);
 			}
 		}
 #endif /* USE_TIMER_CHECK */

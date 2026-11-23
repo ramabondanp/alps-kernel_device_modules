@@ -447,7 +447,7 @@ static void scp_A_set_ready(void)
 	pr_debug("[SCP] %s()\n", __func__);
 	scp_timeout_times = 0;
 #if SCP_BOOT_TIME_OUT_MONITOR
-	del_timer(&(scp_ready_timer[SCP_A_ID].tl));
+	timer_delete(&(scp_ready_timer[SCP_A_ID].tl));
 #endif
 #if SCP_RECOVERY_SUPPORT
 	atomic_set(&scp_reset_status, RESET_STATUS_STOP);
@@ -2056,7 +2056,7 @@ static void __exit scp_exit(void)
 
 #if SCP_BOOT_TIME_OUT_MONITOR
 	for (i = 0; i < SCP_CORE_TOTAL ; i++)
-		del_timer(&(scp_ready_timer[i].tl));
+		timer_delete(&(scp_ready_timer[i].tl));
 #endif
 
 	scp_excep_cleanup();

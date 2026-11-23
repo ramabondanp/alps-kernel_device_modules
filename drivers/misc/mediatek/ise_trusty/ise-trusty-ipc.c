@@ -1384,7 +1384,7 @@ static int tipc_release(struct inode *inode, struct file *filp)
 	}
 
 	mutex_lock(&dn->timer_lock);
-	del_timer(&dn->tipc_timer);
+	timer_delete(&dn->tipc_timer);
 	mutex_unlock(&dn->timer_lock);
 
 	dn_shutdown(dn);

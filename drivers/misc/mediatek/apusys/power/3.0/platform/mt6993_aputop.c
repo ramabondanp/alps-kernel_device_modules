@@ -452,7 +452,7 @@ static int mt6993_update_bounds(void)
 #if TIMER_RDY
 	// Reset the timer
 	if (limit_timer_active)
-		del_timer(&limit_timer);
+		timer_delete(&limit_timer);
 
 	if (new_upper_limit > global_lower_limit) {
 		last_upper_limit = new_upper_limit;
@@ -1349,7 +1349,7 @@ static int mt6993_apu_top_rm(struct platform_device *pdev)
 	mt6993_apu_top_procfs_exit();
 
 #if TIMER_RDY
-	del_timer(&limit_timer);
+	timer_delete(&limit_timer);
 #endif
 
 	return 0;

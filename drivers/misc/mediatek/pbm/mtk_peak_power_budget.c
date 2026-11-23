@@ -1884,7 +1884,7 @@ static void bat_handler(struct work_struct *work)
 	if (temp != last_temp || soc != last_soc || uisoc != last_uisoc || pb.combo0_uisoc != last_combo0_uisoc
 		|| aging_stage != last_aging_stage) {
 		if (timer_pending(&ppb_dbg_timer)) {
-			del_timer_sync(&ppb_dbg_timer);
+			timer_delete_sync(&ppb_dbg_timer);
 			if (pb.version == 2)
 				ppb_print_dbg_log(NULL);
 			if (pb.version == 3)

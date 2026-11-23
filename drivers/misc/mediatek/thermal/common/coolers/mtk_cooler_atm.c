@@ -3784,7 +3784,7 @@ void  mtk_cooler_atm_exit(void)
 #if KRTATM_TIMER == KRTATM_HR
 	hrtimer_cancel(&atm_hrtimer);
 #elif KRTATM_SCH == KRTATM_NORMAL
-	del_timer(&atm_timer);
+	timer_delete(&atm_timer);
 #endif
 
 	if (krtatm_thread_handle)

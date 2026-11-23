@@ -193,7 +193,7 @@ static void apu_qos_timer_end(void)
 
 	if (qos_timer_exist) {
 		qos_timer_exist = false;
-		del_timer_sync(&counter->qos_timer);
+		timer_delete_sync(&counter->qos_timer);
 	}
 
 	LOG_DEBUG("-\n");

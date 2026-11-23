@@ -16934,7 +16934,7 @@ static void mtk_dsi_remove(struct platform_device *pdev)
 	component_del(&pdev->dev, &mtk_dsi_component_ops);
 
 	mtk_ddp_comp_pm_disable(&dsi->ddp_comp);
-	del_timer(&hrt_issue_timer);
+	timer_delete(&hrt_issue_timer);
 }
 
 struct platform_driver mtk_dsi_driver = {

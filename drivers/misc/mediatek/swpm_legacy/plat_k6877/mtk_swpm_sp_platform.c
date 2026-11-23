@@ -483,6 +483,6 @@ void swpm_sp_init(phys_addr_t ref_addr,
 
 void swpm_sp_exit(void)
 {
-	del_timer(&swpm_sp_timer);
+	timer_delete(&swpm_sp_timer);
 }
 MODULE_LICENSE("GPL");

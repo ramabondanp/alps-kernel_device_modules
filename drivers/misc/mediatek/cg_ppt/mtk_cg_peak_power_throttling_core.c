@@ -703,7 +703,7 @@ static void defer_timer_init(void)
 static void defer_timer_deinit(void)
 {
 	// Remove the deferrable timer
-	del_timer(&g_defer_timer);
+	timer_delete(&g_defer_timer);
 }
 
 

@@ -1951,7 +1951,7 @@ static void cldma_irq_work_cb(struct md_cd_ctrl *md_ctrl)
 				& (1 << i)) {
 #ifdef ENABLE_CLDMA_TIMER
 				md_ctrl->txq[i].timeout_end = local_clock();
-				ret = del_timer(&md_ctrl->txq[i].timeout_timer);
+				ret = timer_delete(&md_ctrl->txq[i].timeout_timer);
 				CCCI_DEBUG_LOG(0, TAG,
 					"qno%d del_timer %d ptr=0x%p\n",
 					i, ret,
@@ -2093,7 +2093,7 @@ static int cldma_stop(unsigned char hif_id)
 	/* stop timer */
 #ifdef ENABLE_CLDMA_TIMER
 	for (qno = 0; qno < CLDMA_TXQ_NUM; qno++)
-		del_timer(&md_ctrl->txq[qno].timeout_timer);
+		timer_delete(&md_ctrl->txq[qno].timeout_timer);
 #endif
 
 	spin_unlock_irqrestore(&md_ctrl->cldma_timeout_lock,

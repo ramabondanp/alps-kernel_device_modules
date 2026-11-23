@@ -1025,7 +1025,7 @@ b_host:
 			musb->xceiv->otg->state = OTG_STATE_B_HOST;
 			hcd->self.is_b_host = 1;
 			musb->ignore_disconnect = 0;
-			del_timer(&musb->otg_timer);
+			timer_delete(&musb->otg_timer);
 
 #if IS_ENABLED(CONFIG_USBIF_COMPLIANCE)
 			/* Enable OTG 2.0 Function for signal and interrupt */
@@ -1162,7 +1162,7 @@ b_host:
 				break;
 			case OTG_STATE_A_PERIPHERAL:
 				musb->ignore_disconnect = 0;
-				del_timer(&musb->otg_timer);
+				timer_delete(&musb->otg_timer);
 				musb_g_reset(musb);
 				break;
 			case OTG_STATE_B_WAIT_ACON:
@@ -3766,7 +3766,7 @@ static void mt_usb_try_idle(struct musb *musb, unsigned long timeout)
 				== OTG_STATE_A_WAIT_BCON))) {
 		DBG(0, "%s active, deleting timer\n",
 			otg_state_string(musb->xceiv->otg->state));
-		del_timer(&musb->idle_timer);
+		timer_delete(&musb->idle_timer);
 		last_timer = jiffies;
 		return;
 	}
@@ -4538,7 +4538,7 @@ err_phy_init:
 static int mt_usb_exit(struct musb *musb)
 {
 #if IS_ENABLED(CONFIG_MTK_BASE_POWER)
-	del_timer_sync(&musb->idle_timer);
+	timer_delete_sync(&musb->idle_timer);
 #endif
 #ifndef FPGA_PLATFORM
 	if (reg_vusb) {

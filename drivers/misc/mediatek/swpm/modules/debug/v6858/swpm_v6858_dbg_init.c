@@ -79,7 +79,7 @@ static ssize_t enable_write(char *FromUser, size_t sz, void *priv)
 				msecs_to_jiffies(swpm_log_interval_ms));
 		} else {
 			if (!dram_bw_timer_start)
-				del_timer(&swpm_timer);
+				timer_delete(&swpm_timer);
 		}
 		swpm_unlock(&swpm_mutex);
 		ret = sz;
@@ -671,7 +671,7 @@ static ssize_t dram_bw_write(char *FromUser, size_t sz, void *priv)
 		if (!enable) {
 			if (!swpm_status) {
 				swpm_lock(&swpm_mutex);
-				del_timer(&swpm_timer);
+				timer_delete(&swpm_timer);
 				swpm_unlock(&swpm_mutex);
 			}
 

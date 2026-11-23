@@ -1626,7 +1626,7 @@ static void eint_work_callback(struct work_struct *work)
 		accdet->thing_in_flag = false;
 		mutex_unlock(&accdet->res_lock);
 		if (accdet_dts.moisture_detect_mode != 0x5)
-			del_timer_sync(&micbias_timer);
+			timer_delete_sync(&micbias_timer);
 
 		/* disable accdet_sw_en=0
 		 */
@@ -2801,7 +2801,7 @@ void mt6338_accdet_late_init(unsigned long data)
 {
 	pr_info("%s()  now init accdet!\n", __func__);
 	if (atomic_cmpxchg(&accdet_first, 1, 0)) {
-		del_timer_sync(&accdet_init_timer);
+		timer_delete_sync(&accdet_init_timer);
 		accdet_init();
 		accdet_init_debounce();
 		accdet_init_once();

@@ -821,7 +821,7 @@ void mtktspa_exit(void)
 
 	mtkTTimer_unregister("mtktspa");
 #if Feature_Thro_update
-	del_timer(&pa_stats_timer);
+	timer_delete(&pa_stats_timer);
 #endif
 }
 //module_init(mtktspa_init);

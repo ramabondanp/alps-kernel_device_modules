@@ -389,7 +389,7 @@ static void ise_lpm_send_wq(enum ise_lpm_wq_cmd cmd)
 static void ise_lpm_timeout(struct timer_list *t)
 {
 	ise_lpm_send_wq(ISE_LPM_FREERUN);
-	del_timer(&ise_lpm_timer);
+	timer_delete(&ise_lpm_timer);
 }
 
 static void ise_lpm_pwr_off_cb(struct timer_list *t)

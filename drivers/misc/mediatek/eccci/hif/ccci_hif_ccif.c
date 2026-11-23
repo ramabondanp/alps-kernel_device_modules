@@ -966,7 +966,7 @@ static void md_ccif_reset_queue(unsigned char hif_id, unsigned char for_start)
 		mod_timer(&ccif_ctrl->traffic_monitor,
 			jiffies + CCIF_TRAFFIC_MONITOR_INTERVAL * HZ);
 	else
-		del_timer(&ccif_ctrl->traffic_monitor);
+		timer_delete(&ccif_ctrl->traffic_monitor);
 }
 
 static int md_ccif_send_data(unsigned char hif_id, int channel_id)

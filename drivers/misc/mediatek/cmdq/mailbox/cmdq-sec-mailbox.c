@@ -666,7 +666,7 @@ static bool cmdq_sec_irq_handler(
 			CMDQ_SEC_SHARED_THR_CNT_OFFSET +
 			thread->idx * sizeof(s32));
 		spin_unlock_irqrestore(&thread->chan->lock, flags);
-		del_timer(&thread->timeout);
+		timer_delete(&thread->timeout);
 		return true;
 	}
 
@@ -1679,7 +1679,7 @@ task_err_callback:
 			__raw_writel(0, cmdq->shared_mem->va +
 				CMDQ_SEC_SHARED_THR_CNT_OFFSET +
 				task->thread->idx * sizeof(s32));
-			del_timer(&task->thread->timeout);
+			timer_delete(&task->thread->timeout);
 		}
 
 		/*cmdq_util_aee("CMDQ",

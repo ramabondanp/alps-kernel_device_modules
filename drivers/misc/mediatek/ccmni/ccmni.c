@@ -1058,7 +1058,7 @@ static int ccmni_napi_poll(struct napi_struct *napi, int budget)
 	struct ccmni_instance *ccmni =
 		(struct ccmni_instance *)netdev_priv(napi->dev);
 
-	del_timer(ccmni->timer);
+	timer_delete(ccmni->timer);
 	return 0;
 #endif
 }

@@ -105,7 +105,7 @@ static void mtk_vcodec_alive_checker_deinit(struct mtk_vcodec_ctx *ctx, bool is_
 	/* Only support vdec check alive now */
 	if (mtk_vcodec_is_vcp(MTK_INST_DECODER) && ctx->type == MTK_INST_DECODER) {
 		if (dev->vdec_dvfs_params.has_timer && is_last) {
-			del_timer_sync(&dev->vdec_dvfs_params.vdec_active_checker);
+			timer_delete_sync(&dev->vdec_dvfs_params.vdec_active_checker);
 			flush_workqueue(dev->check_alive_workqueue);
 			dev->vdec_dvfs_params.has_timer = 0;
 			mtk_vcodec_dvfs_qos_log(false, "[%d][VDVFS][VDEC] deinit vdec alive checker...",

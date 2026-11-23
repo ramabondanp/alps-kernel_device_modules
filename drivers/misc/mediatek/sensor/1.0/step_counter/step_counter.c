@@ -341,7 +341,7 @@ static int step_c_enable_data(int enable)
 		if (true == cxt->is_polling_run) {
 			if (false == cxt->step_c_ctl.is_report_input_direct) {
 				cxt->is_polling_run = false;
-				del_timer_sync(&cxt->timer);
+				timer_delete_sync(&cxt->timer);
 				cancel_work_sync(&cxt->report);
 				cxt->drv_data.counter = STEP_C_INVALID_VALUE;
 			}
@@ -380,7 +380,7 @@ static int floor_c_enable_data(int enable)
 		if (true == cxt->is_polling_run) {
 			if (false == cxt->step_c_ctl.is_report_input_direct) {
 				cxt->is_polling_run = false;
-				del_timer_sync(&cxt->timer);
+				timer_delete_sync(&cxt->timer);
 				cancel_work_sync(&cxt->report);
 				cxt->drv_data.floor_counter =
 					STEP_C_INVALID_VALUE;

@@ -649,7 +649,7 @@ void cmdq_vcp_enable(bool en)
 	mutex_lock(&vcp.vcp_mutex);
 	if (en) {
 		if (atomic_inc_return(&vcp.vcp_usage) == 1)
-			del_timer(&vcp.vcp_timer);
+			timer_delete(&vcp.vcp_timer);
 		if (atomic_read(&vcp.vcp_power) <= 0) {
 #ifndef CMDQ_SKIP_BY_CMDQ_BUILT
 #if IS_ENABLED(CONFIG_MTK_TINYSYS_VCP_SUPPORT)

@@ -345,7 +345,7 @@ static int als_enable_and_batch(void)
 		if (cxt->als_ctl.is_report_input_direct == false &&
 		    cxt->is_als_polling_run == true) {
 			smp_mb(); /* for memory barrier */
-			del_timer_sync(&cxt->timer_als);
+			timer_delete_sync(&cxt->timer_als);
 			smp_mb(); /* for memory barrier */
 			cancel_work_sync(&cxt->report_als);
 			cxt->drv_data.als_data.values[0] = ALSPS_INVALID_VALUE;
@@ -648,7 +648,7 @@ static int ps_enable_and_batch(void)
  *		if (cxt->ps_ctl.is_report_input_direct == false
  *			&& cxt->is_ps_polling_run == true) {
  *			smp_mb();// for memory barrier
- *			del_timer_sync(&cxt->timer_ps);
+ *			timer_delete_sync(&cxt->timer_ps);
  *			smp_mb();// for memory barrier
  *			cancel_work_sync(&cxt->report_ps);
  *			cxt->drv_data.ps_data.values[0] = ALSPS_INVALID_VALUE;
@@ -972,7 +972,7 @@ int ps_report_interrupt_data(int value)
 		if (value != ALSPS_INVALID_VALUE) {
 			cxt->is_get_valid_ps_data_after_enable = true;
 			smp_mb(); /*for memory barriier*/
-			del_timer_sync(&cxt->timer_ps);
+			timer_delete_sync(&cxt->timer_ps);
 			smp_mb(); /*for memory barriier*/
 			cancel_work_sync(&cxt->report_ps);
 		}
