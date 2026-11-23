@@ -32,7 +32,7 @@ static ssize_t mt6358_codec_sysfs_read(struct file *filep, struct kobject *kobj,
 				       const struct bin_attribute *attr,
 				       char *buf, loff_t offset, size_t size);
 static ssize_t mt6358_codec_sysfs_write(struct file *filp, struct kobject *kobj,
-					struct bin_attribute *bin_attr,
+					const struct bin_attribute *bin_attr,
 					char *buf, loff_t off, size_t count);
 
 int mt6358_set_codec_ops(struct snd_soc_component *cmpnt,
@@ -7657,7 +7657,7 @@ static ssize_t mt6358_codec_sysfs_read(struct file *filep, struct kobject *kobj,
 }
 
 static ssize_t mt6358_codec_sysfs_write(struct file *filp, struct kobject *kobj,
-					struct bin_attribute *bin_attr,
+					const struct bin_attribute *bin_attr,
 					char *buf, loff_t off, size_t count)
 {
 	struct mt6358_priv *priv = (struct mt6358_priv *)bin_attr->private;

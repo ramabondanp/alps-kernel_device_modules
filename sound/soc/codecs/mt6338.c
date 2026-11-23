@@ -52,7 +52,7 @@ static ssize_t mt6338_codec_sysfs_read(struct file *filep, struct kobject *kobj,
 				       const struct bin_attribute *attr,
 				       char *buf, loff_t offset, size_t size);
 static ssize_t mt6338_codec_sysfs_write(struct file *filp, struct kobject *kobj,
-					struct bin_attribute *bin_attr,
+					const struct bin_attribute *bin_attr,
 					char *buf, loff_t off, size_t count);
 
 static void keylock_set(struct mt6338_priv *priv);
@@ -20609,7 +20609,7 @@ static ssize_t mt6338_debugfs_read(struct file *file, char __user *buf,
 }
 
 static ssize_t mt6338_codec_sysfs_write(struct file *filp, struct kobject *kobj,
-					struct bin_attribute *bin_attr,
+					const struct bin_attribute *bin_attr,
 					char *buf, loff_t off, size_t count)
 {
 	struct mt6338_priv *priv = (struct mt6338_priv *)bin_attr->private;

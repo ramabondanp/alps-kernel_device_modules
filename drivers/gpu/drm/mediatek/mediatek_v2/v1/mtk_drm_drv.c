@@ -225,7 +225,7 @@ void mtk_aod_scp_ipi_init(struct mtk_aod_scp_cb *cb)
 EXPORT_SYMBOL(mtk_aod_scp_ipi_init);
 
 static ssize_t read_disp_plat_dbg_buf(struct file *filp, struct kobject *kobj,
-	struct bin_attribute *bin_attr, char *buff, loff_t pos, size_t count)
+	const struct bin_attribute *bin_attr, char *buff, loff_t pos, size_t count)
 {
 	ssize_t bytes = 0, ret;
 
