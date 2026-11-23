@@ -16,6 +16,8 @@
 
 static DEFINE_IDA(rpmb_ida);
 
+u16 rpmb_mtk_get_rw_size(struct rpmb_dev *rdev);
+
 /**
  * rpmb_mtk_dev_get - increase rpmb device ref counter
  *
@@ -312,7 +314,7 @@ static void rpmb_dev_release(struct device *dev)
 {
 	struct rpmb_dev *rdev = to_rpmb_dev(dev);
 
-	ida_simple_remove(&rpmb_ida, rdev->id);
+	ida_free(&rpmb_ida, rdev->id);
 	kfree(rdev);
 }
 
@@ -421,7 +423,7 @@ static ssize_t type_show(struct device *dev,
 static DEVICE_ATTR_RO(type);
 
 static ssize_t id_read(struct file *file, struct kobject *kobj,
-		       struct bin_attribute *attr, char *buf,
+		       const struct bin_attribute *attr, char *buf,
 		       loff_t off, size_t count)
 {
 	struct device *dev = kobj_to_dev(kobj);
@@ -450,7 +452,7 @@ static struct attribute *rpmb_attrs[] = {
 	NULL,
 };
 
-static struct bin_attribute *rpmb_bin_attributes[] = {
+static const struct bin_attribute *rpmb_bin_attributes[] = {
 	&bin_attr_id,
 	NULL,
 };
@@ -522,7 +524,7 @@ struct rpmb_dev *rpmb_mtk_dev_register(struct device *dev,
 	if (!rdev)
 		return ERR_PTR(-ENOMEM);
 
-	id = ida_simple_get(&rpmb_ida, 0, 0, GFP_KERNEL);
+	id = ida_alloc_min(&rpmb_ida, 0, GFP_KERNEL);
 	if (id < 0) {
 		ret = id;
 		goto exit;
@@ -555,7 +557,7 @@ struct rpmb_dev *rpmb_mtk_dev_register(struct device *dev,
 
 exit:
 	if (id >= 0)
-		ida_simple_remove(&rpmb_ida, id);
+		ida_free(&rpmb_ida, id);
 	kfree(rdev);
 	return ERR_PTR(ret);
 }

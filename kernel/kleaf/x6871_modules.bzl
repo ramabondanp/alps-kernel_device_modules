@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0
 # Authoritative out-of-tree module target allowlist for Infinix GT 20 Pro (X6871 / MT6895).
-# Covers all 413 out-of-tree runtime targets (488 total runtime .ko across vendor_boot,
-# vendor_dlkm, and odm_dlkm together with 16 in-tree GKI modules; 429 unique basenames).
+# Covers all 412 out-of-tree runtime targets (487 total runtime .ko across vendor_boot,
+# vendor_dlkm, and odm_dlkm together with 16 in-tree GKI modules; 428 unique basenames).
+# mkp.ko (MediaTek Kernel Protection) is intentionally excluded for 6.18.
 
 load("@mgk_info//:kernel_version.bzl",
      "kernel_version",
@@ -172,7 +173,6 @@ x6871_runtime_modules = {
     "//kernel_device_modules-{}/drivers/misc/mediatek/mdp:cmdq_helper_inf".format(kernel_version): True,
     "//kernel_device_modules-{}/drivers/misc/mediatek/mdp:mdp_drv_mt6895".format(kernel_version): True,
     "//kernel_device_modules-{}/drivers/misc/mediatek/mdpm:mtk_mdpm".format(kernel_version): True,
-    "//kernel_device_modules-{}/drivers/misc/mediatek/mkp:mkp".format(kernel_version): True,
     "//kernel_device_modules-{}/drivers/misc/mediatek/mm_monitor:mm-monitor-platform-mt6895".format(kernel_version): True,
     "//kernel_device_modules-{}/drivers/misc/mediatek/mm_monitor:mtk-mm-monitor-controller".format(kernel_version): True,
     "//kernel_device_modules-{}/drivers/misc/mediatek/mmdebug:mtk-mmdebug-vcp-stub".format(kernel_version): True,

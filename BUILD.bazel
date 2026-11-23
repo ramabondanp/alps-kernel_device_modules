@@ -4,8 +4,52 @@ package(
     ],
 )
 
-load("//build/kernel/kleaf:kernel.bzl", "ddk_headers")
+load("//build/kernel/kleaf:kernel.bzl", "ddk_headers", "kernel_build_config")
 load("//build/bazel_mgk_rules:mgk.bzl", "define_mgk")
+load("@mgk_info//:dict.bzl", "DEFCONFIG_OVERLAYS")
+
+_x6871_overlays = [
+    "kernel/configs/" + o
+    for o in DEFCONFIG_OVERLAYS.split(" ")
+    if o
+]
+
+# main-kernel-2026 applies post_defconfig_fragments in an unspecified order.
+# Concatenate the device configs into one file so X6871.config always wins.
+kernel_build_config(
+    name = "x6871_fragments_user",
+    srcs = [
+        # do not sort
+        "//common:arch/arm64/configs/gki_defconfig",
+        "arch/arm64/configs/mgk_64_k618_defconfig",
+    ] + _x6871_overlays + [
+        "kernel/configs/sign.config",
+    ],
+)
+
+kernel_build_config(
+    name = "x6871_fragments_eng",
+    srcs = [
+        # do not sort
+        "//common:arch/arm64/configs/gki_defconfig",
+        "arch/arm64/configs/mgk_64_k618_defconfig",
+    ] + _x6871_overlays + [
+        "kernel/configs/sign.config",
+        "kernel/configs/eng.config",
+    ],
+)
+
+kernel_build_config(
+    name = "x6871_fragments_userdebug",
+    srcs = [
+        # do not sort
+        "//common:arch/arm64/configs/gki_defconfig",
+        "arch/arm64/configs/mgk_64_k618_defconfig",
+    ] + _x6871_overlays + [
+        "kernel/configs/sign.config",
+        "kernel/configs/userdebug.config",
+    ],
+)
 
 ddk_headers(
     name = "headers",
@@ -16,9 +60,9 @@ ddk_headers(
     ],
     visibility = ["//visibility:public"],
 )
-mgk_kmi_symbol_list = "//kernel-6.12:gki/aarch64/symbols/mtk"
-mgk_additional_kmi_symbol_lists = ["//kernel-6.12:aarch64_additional_kmi_symbol_lists"]
-KMI_white_list = ["//kernel_device_modules-6.12:KMI_white_list"]
+mgk_kmi_symbol_list = "//common:gki/aarch64/symbols/mtk"
+mgk_additional_kmi_symbol_lists = ["//common:aarch64_additional_kmi_symbol_lists"]
+KMI_white_list = ["//kernel_device_modules-6.18:KMI_white_list"]
 
 filegroup(
     name = "mgk_configs",
@@ -27,7 +71,7 @@ filegroup(
         "kernel/configs/**",
         "**/Kconfig",
         "drivers/cpufreq/Kconfig.*",
-    ]) + [
+    ], allow_empty = True) + [
         "Kconfig.ext",
         # FIXME
         "Makefile.ext",
@@ -41,14 +85,14 @@ filegroup(
         "include/dtc/**",
     ]),
 )
-load("//kernel_device_modules-6.12:kernel/kleaf/ack_headers.bzl","ack_headers")
+load("//kernel_device_modules-6.18:kernel/kleaf/ack_headers.bzl","ack_headers")
 filegroup(
     name = "mtk_use_gki_unsafe_headers",
     srcs = ack_headers,
 )
 
-# mgk_64_k612
-load("//kernel_device_modules-6.12:kernel/kleaf/mgk_64.bzl",
+# mgk_64_k618
+load("//kernel_device_modules-6.18:kernel/kleaf/mgk_64.bzl",
      "mgk_64_defconfig",
      "mgk_64_kleaf_modules",
      "mgk_64_kleaf_eng_modules",
@@ -79,7 +123,7 @@ load("//kernel_device_modules-6.12:kernel/kleaf/mgk_64.bzl",
 )
 
 define_mgk(
-    name = "mgk_64_k612",
+    name = "mgk_64_k618",
     defconfig = mgk_64_defconfig,
     kleaf_modules = mgk_64_kleaf_modules,
     kleaf_eng_modules = mgk_64_kleaf_eng_modules,

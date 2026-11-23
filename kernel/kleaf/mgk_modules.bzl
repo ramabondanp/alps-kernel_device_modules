@@ -1,6 +1,7 @@
-load("//kernel-6.12:modules.bzl", "get_gki_modules_list", "get_kunit_modules_list")
+load("//kernel_device_modules-6.18:kernel/kleaf/gki_modules_6.18.bzl",
+     "GKI_MODULES", "KUNIT_MODULES")
 
-COMMON_GKI_MODULES_LIST = get_gki_modules_list("arm64") + get_kunit_modules_list("arm64")
+COMMON_GKI_MODULES_LIST = GKI_MODULES + KUNIT_MODULES
 
 mgk_module_outs = COMMON_GKI_MODULES_LIST
 
@@ -32,11 +33,11 @@ mgk_module_ext_outs = [
     "drivers/mmc/core/pwrseq_simple.ko",
 ]
 
+# 6.18 get_gki_modules_list() returns a select(), so membership tests are not
+# possible at load time. pstore_blk was removed from gki_defconfig 6.18 and
+# pstore_zone is not in the GKI module list.
 _PSTORE_EXTRA_OUTS = [
-    m for m in [
-        "fs/pstore/pstore_blk.ko",
-        "fs/pstore/pstore_zone.ko",
-    ] if m not in COMMON_GKI_MODULES_LIST
+    "fs/pstore/pstore_zone.ko",
 ]
 
 mgk_module_eng_outs = mgk_module_ext_outs + _PSTORE_EXTRA_OUTS

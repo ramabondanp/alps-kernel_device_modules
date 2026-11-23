@@ -29,6 +29,6 @@ define_mgk_ddk_ko(
     ],
     includes = ["."],
     ko_deps = [
-        "//kernel_device_modules-6.12/sound/soc/transsion/fs1599:snd-soc-fs1599",
+        "//kernel_device_modules-6.18/sound/soc/transsion/fs1599:snd-soc-fs1599",
     ],
 )
