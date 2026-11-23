@@ -75,8 +75,7 @@ static void _ufs_mtk_clk_scale(struct ufs_hba *hba, bool scale_up);
 static const struct ufs_dev_quirk ufs_mtk_dev_fixups[] = {
 	{ .wmanufacturerid = UFS_ANY_VENDOR,
 	  .model = UFS_ANY_MODEL,
-	  .quirk = UFS_DEVICE_QUIRK_DELAY_AFTER_LPM |
-		UFS_DEVICE_QUIRK_DELAY_BEFORE_LPM },
+	  .quirk = UFS_DEVICE_QUIRK_DELAY_BEFORE_LPM },
 	{ .wmanufacturerid = UFS_VENDOR_SKHYNIX,
 	  .model = "H9HQ21AFAMZDAR",
 	  .quirk = UFS_DEVICE_QUIRK_SUPPORT_EXTENDED_FEATURES },
@@ -2004,8 +2003,7 @@ static int ufs_mtk_pre_pwr_change(struct ufs_hba *hba,
 
 static int ufs_mtk_pwr_change_notify(struct ufs_hba *hba,
 				     enum ufs_notify_change_status stage,
-				     struct ufs_pa_layer_attr *dev_max_params,
-				     struct ufs_pa_layer_attr *dev_req_params)
+				     struct ufs_pa_layer_attr *final_params)
 {
 	int ret = 0;
 	static u32 reg;
@@ -2016,8 +2014,8 @@ static int ufs_mtk_pwr_change_notify(struct ufs_hba *hba,
 			reg = ufshcd_readl(hba, REG_AUTO_HIBERNATE_IDLE_TIMER);
 			ufs_mtk_auto_hibern8_disable(hba);
 		}
-		ret = ufs_mtk_pre_pwr_change(hba, dev_max_params,
-					     dev_req_params);
+		ret = ufs_mtk_pre_pwr_change(hba, final_params,
+					     final_params);
 		break;
 	case POST_CHANGE:
 		if (ufshcd_is_auto_hibern8_supported(hba))
@@ -2164,14 +2162,12 @@ static int ufs_mtk_device_reset(struct ufs_hba *hba)
 
 static void ufs_mtk_scsi_unblock_requests(struct ufs_hba *hba)
 {
-	if (atomic_dec_and_test(&hba->scsi_block_reqs_cnt))
-		scsi_unblock_requests(hba->host);
+	scsi_unblock_requests(hba->host);
 }
 
 static void ufs_mtk_scsi_block_requests(struct ufs_hba *hba)
 {
-	if (atomic_inc_return(&hba->scsi_block_reqs_cnt) == 1)
-		scsi_block_requests(hba->host);
+	scsi_block_requests(hba->host);
 }
 
 static u32 ufs_mtk_pending_cmds(struct ufs_hba *hba)
@@ -2830,14 +2826,13 @@ static void ufs_mtk_fixup_dev_quirks(struct ufs_hba *hba)
 		host->caps |= UFS_MTK_CAP_BROKEN_VCC | UFS_MTK_CAP_ALLOW_VCCQX_LPM;
 
 	if (ufs_mtk_is_broken_vcc(hba) && hba->vreg_info.vcc &&
-	    (hba->dev_quirks & UFS_DEVICE_QUIRK_DELAY_AFTER_LPM)) {
+	    (hba->dev_quirks & UFS_DEVICE_QUIRK_DELAY_BEFORE_LPM)) {
 		hba->vreg_info.vcc->always_on = true;
 		/*
 		 * VCC will be kept always-on thus we don't
 		 * need any delay during regulator operations
 		 */
-		hba->dev_quirks &= ~(UFS_DEVICE_QUIRK_DELAY_BEFORE_LPM |
-			UFS_DEVICE_QUIRK_DELAY_AFTER_LPM);
+		hba->dev_quirks &= ~UFS_DEVICE_QUIRK_DELAY_BEFORE_LPM;
 	}
 
 	ufs_mtk_vreg_fix_vcc(hba);
