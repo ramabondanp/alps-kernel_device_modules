@@ -2392,7 +2392,7 @@ static int vidioc_try_decoder_cmd(struct file *file, void *priv,
 static int vidioc_decoder_cmd(struct file *file, void *priv,
 	struct v4l2_decoder_cmd *cmd)
 {
-	struct mtk_vcodec_ctx *ctx = fh_to_ctx(priv);
+	struct mtk_vcodec_ctx *ctx = fh_to_ctx(file->private_data);
 	struct vb2_queue *src_vq, *dst_vq;
 	int ret;
 
@@ -2455,7 +2455,7 @@ static int vidioc_decoder_cmd(struct file *file, void *priv,
 
 static int vidioc_vdec_reqbufs(struct file *file, void *priv, struct v4l2_requestbuffers *rb)
 {
-	struct mtk_vcodec_ctx *ctx = fh_to_ctx(priv);
+	struct mtk_vcodec_ctx *ctx = fh_to_ctx(file->private_data);
 	struct vb2_queue *vq = v4l2_m2m_get_vq(ctx->m2m_ctx, rb->type);
 	bool cap_req_0 = false;
 	int ret;
@@ -2483,7 +2483,7 @@ static int vidioc_vdec_reqbufs(struct file *file, void *priv, struct v4l2_reques
 
 static int vidioc_vdec_qbuf(struct file *file, void *priv, struct v4l2_buffer *buf)
 {
-	struct mtk_vcodec_ctx *ctx = fh_to_ctx(priv);
+	struct mtk_vcodec_ctx *ctx = fh_to_ctx(file->private_data);
 	struct vb2_queue *vq;
 	struct vb2_buffer *vb;
 	struct mtk_video_dec_buf *mtkbuf;
@@ -2580,7 +2580,7 @@ static int vidioc_vdec_dqbuf(struct file *file, void *priv,
 	struct v4l2_buffer *buf)
 {
 	int ret = 0;
-	struct mtk_vcodec_ctx *ctx = fh_to_ctx(priv);
+	struct mtk_vcodec_ctx *ctx = fh_to_ctx(file->private_data);
 	struct vb2_queue *vq;
 	struct vb2_buffer *vb;
 	struct mtk_video_dec_buf *mtkbuf;
@@ -2795,7 +2795,7 @@ static int vidioc_try_fmt_vid_cap_mplane(struct file *file, void *priv,
 	struct v4l2_format *f)
 {
 	struct mtk_video_fmt *fmt;
-	struct mtk_vcodec_ctx *ctx = fh_to_ctx(priv);
+	struct mtk_vcodec_ctx *ctx = fh_to_ctx(file->private_data);
 
 	if (IS_ERR_OR_NULL(f)) {
 		mtk_v4l2_err("fail to get v4l2_format");
@@ -2819,7 +2819,7 @@ static int vidioc_try_fmt_vid_out_mplane(struct file *file, void *priv,
 {
 	struct v4l2_pix_format_mplane *pix_fmt_mp = &f->fmt.pix_mp;
 	struct mtk_video_fmt *fmt;
-	struct mtk_vcodec_ctx *ctx = fh_to_ctx(priv);
+	struct mtk_vcodec_ctx *ctx = fh_to_ctx(file->private_data);
 
 	if (IS_ERR_OR_NULL(f)) {
 		mtk_v4l2_err("fail to get v4l2_format");
@@ -2846,7 +2846,7 @@ static int vidioc_try_fmt_vid_out_mplane(struct file *file, void *priv,
 static int vidioc_vdec_g_selection(struct file *file, void *priv,
 	struct v4l2_selection *s)
 {
-	struct mtk_vcodec_ctx *ctx = fh_to_ctx(priv);
+	struct mtk_vcodec_ctx *ctx = fh_to_ctx(file->private_data);
 	struct mtk_q_data *q_data;
 
 	if (s->type != V4L2_BUF_TYPE_VIDEO_CAPTURE)
@@ -2898,7 +2898,7 @@ static int vidioc_vdec_g_selection(struct file *file, void *priv,
 static int vidioc_vdec_s_selection(struct file *file, void *priv,
 	struct v4l2_selection *s)
 {
-	struct mtk_vcodec_ctx *ctx = fh_to_ctx(priv);
+	struct mtk_vcodec_ctx *ctx = fh_to_ctx(file->private_data);
 
 	if (s->type != V4L2_BUF_TYPE_VIDEO_CAPTURE)
 		return -EINVAL;
@@ -2917,7 +2917,7 @@ static int vidioc_vdec_s_selection(struct file *file, void *priv,
 static int vidioc_g_parm(struct file *file, void *priv,
 			 struct v4l2_streamparm *parm)
 {
-	struct mtk_vcodec_ctx *ctx = fh_to_ctx(priv);
+	struct mtk_vcodec_ctx *ctx = fh_to_ctx(file->private_data);
 	struct v4l2_captureparm *cp = &parm->parm.capture;
 
 	if (parm->type != V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE)
@@ -2944,7 +2944,7 @@ static int vidioc_g_parm(struct file *file, void *priv,
 static int vidioc_vdec_s_fmt(struct file *file, void *priv,
 							 struct v4l2_format *f)
 {
-	struct mtk_vcodec_ctx *ctx = fh_to_ctx(priv);
+	struct mtk_vcodec_ctx *ctx = fh_to_ctx(file->private_data);
 	struct v4l2_pix_format_mplane *pix_mp;
 	struct mtk_q_data *q_data;
 	int ret = 0;
@@ -3017,7 +3017,7 @@ static int vidioc_vdec_s_fmt(struct file *file, void *priv,
 static int vidioc_enum_frameintervals(struct file *file, void *priv,
 	struct v4l2_frmivalenum *fival)
 {
-	struct mtk_vcodec_ctx *ctx = fh_to_ctx(priv);
+	struct mtk_vcodec_ctx *ctx = fh_to_ctx(file->private_data);
 
 	if (fival->index != 0)
 		return -EINVAL;
@@ -3135,7 +3135,7 @@ static int vidioc_enum_fmt(struct mtk_vcodec_ctx *ctx, struct v4l2_fmtdesc *f,
 static int vidioc_vdec_enum_fmt_vid_cap_mplane(struct file *file, void *priv,
 	struct v4l2_fmtdesc *f)
 {
-	struct mtk_vcodec_ctx *ctx = fh_to_ctx(priv);
+	struct mtk_vcodec_ctx *ctx = fh_to_ctx(file->private_data);
 
 	return vidioc_enum_fmt(ctx, f, false);
 }
@@ -3143,7 +3143,7 @@ static int vidioc_vdec_enum_fmt_vid_cap_mplane(struct file *file, void *priv,
 static int vidioc_vdec_enum_fmt_vid_out_mplane(struct file *file, void *priv,
 	struct v4l2_fmtdesc *f)
 {
-	struct mtk_vcodec_ctx *ctx = fh_to_ctx(priv);
+	struct mtk_vcodec_ctx *ctx = fh_to_ctx(file->private_data);
 
 	return vidioc_enum_fmt(ctx, f, true);
 }
@@ -3151,7 +3151,7 @@ static int vidioc_vdec_enum_fmt_vid_out_mplane(struct file *file, void *priv,
 static int vidioc_vdec_g_fmt(struct file *file, void *priv,
 							 struct v4l2_format *f)
 {
-	struct mtk_vcodec_ctx *ctx = fh_to_ctx(priv);
+	struct mtk_vcodec_ctx *ctx = fh_to_ctx(file->private_data);
 	struct v4l2_pix_format_mplane *pix_mp = &f->fmt.pix_mp;
 	struct vb2_queue *vq;
 	struct mtk_q_data *q_data;
