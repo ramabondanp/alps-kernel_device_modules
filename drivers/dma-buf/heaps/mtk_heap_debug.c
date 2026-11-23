@@ -1563,14 +1563,14 @@ static void dma_heap_attach_dump(const struct dma_buf *dmabuf,
 		iova = (dma_addr_t)0;
 
 		attach_cnt++;
-		if (!attach_obj->sgt)
+		if (!((struct dma_heap_attachment *)attach_obj->priv)->sgt)
 			if (!dump_all_attach)
 				continue;
 		if (!dev_iommu_fwspec_get(attach_obj->dev)) {
 			if (!dump_all_attach)
 				continue;
-		} else if (attach_obj->sgt) {
-			iova = sg_dma_address(attach_obj->sgt->sgl);
+		} else if (((struct dma_heap_attachment *)attach_obj->priv)->sgt) {
+			iova = sg_dma_address(((struct dma_heap_attachment *)attach_obj->priv)->sgt->sgl);
 		}
 
 		device_name = dev_name(attach_obj->dev);
@@ -1578,7 +1578,7 @@ static void dma_heap_attach_dump(const struct dma_buf *dmabuf,
 			    "\tattach[%d]: iova:0x%-14lx attr:%-4lx dir:%-2d dev:%s\n",
 			    attach_cnt, (unsigned long)iova,
 			    attach_obj->dma_map_attrs,
-			    attach_obj->dir,
+			    ((struct dma_heap_attachment *)attach_obj->priv)->dir,
 			    device_name);
 	}
 	//dmabuf_dump(s, "\tTotal %d devices attached\n", attach_cnt);
@@ -1615,7 +1615,7 @@ static int dma_heap_buf_dump_cb(const struct dma_buf *dmabuf, void *priv)
 		    file_inode(dmabuf->file)->i_ino,
 		    dmabuf->size,
 		    file_count(dmabuf->file) - delta,
-		    dmabuf->ops->cache_sgt_mapping,
+		    0,
 		    dmabuf->exp_name?:"NULL",
 		    dmabuf->name?:"NULL");
 	spin_unlock((spinlock_t *)&dmabuf->name_lock);

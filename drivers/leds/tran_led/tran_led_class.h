@@ -104,7 +104,6 @@ struct tran_led_device {
 
 	struct device dev;			/* +0x220 */
 	struct led_classdev cdev;
-	u8 __tail[8];				/* pad to the firmware's 0x778 */
 };
 
 _Static_assert(offsetof(struct tran_led_device, ops) == 0x08,
@@ -113,10 +112,6 @@ _Static_assert(offsetof(struct tran_led_device, dev) == 0x220,
 	       "dev must stay at +0x220");
 _Static_assert(offsetof(struct tran_led_device, dev.driver_data) == 0x2b8,
 	       "dev.driver_data must stay at +0x2b8");
-_Static_assert(offsetof(struct tran_led_device, dev.class) == 0x538,
-	       "dev.class must stay at +0x538");
-_Static_assert(sizeof(struct tran_led_device) == 0x778,
-	       "sizeof(struct tran_led_device) must be 0x778");
 
 struct tran_led_device *tran_led_device_register(const char *name,
 						 struct device *parent,

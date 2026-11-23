@@ -138,7 +138,7 @@ void mrdump_arch_show_regs(const struct pt_regs *regs)
 	pr_info("sp : %016llx\n", sp);
 
 	if (system_uses_irq_prio_masking())
-		pr_info("pmr_save: %08llx\n", regs->pmr_save);
+		pr_info("pmr_save: %08llx\n", regs->pmr);
 
 	i = top_reg;
 

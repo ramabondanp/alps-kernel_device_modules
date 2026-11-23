@@ -62,6 +62,10 @@ struct cpufreq_mtk {
 	long sb_ch;
 };
 
+#ifndef CPUFREQ_ETERNAL
+#define CPUFREQ_ETERNAL (~0U)
+#endif
+
 static const u16 cpufreq_mtk_offsets[REG_ARRAY_SIZE] = {
 	[REG_FREQ_LUT_TABLE]	= 0x0,
 	[REG_FREQ_ENABLE]	= 0x84,
@@ -353,7 +357,6 @@ static struct cpufreq_driver cpufreq_mtk_hw_driver = {
 	.fast_switch	= mtk_cpufreq_hw_fast_switch,
 	.ready		= mtk_cpufreq_ready,
 	.name		= "mtk-cpufreq-hw",
-	.attr		= cpufreq_generic_attr,
 };
 
 static int mtk_cpu_create_freq_table(struct platform_device *pdev,

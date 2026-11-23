@@ -87,6 +87,8 @@ struct mtk_heap_priv_info {
 struct dma_heap_attachment {
 	struct device *dev;
 	struct sg_table *table;
+	struct sg_table *sgt;
+	enum dma_data_direction dir;
 	struct list_head list;
 	bool mapped;
 
@@ -203,15 +205,15 @@ static void __maybe_unused dmabuf_release_check(const struct dma_buf *dmabuf)
 			iova = (dma_addr_t)0;
 
 			attach_cnt++;
-			if (attach_obj->sgt && dev_iommu_fwspec_get(attach_obj->dev))
-				iova = sg_dma_address(attach_obj->sgt->sgl);
+			if (((struct dma_heap_attachment *)attach_obj->priv)->sgt && dev_iommu_fwspec_get(attach_obj->dev))
+				iova = sg_dma_address(((struct dma_heap_attachment *)attach_obj->priv)->sgt->sgl);
 
 			device_name = dev_name(attach_obj->dev);
 			dmabuf_dump(NULL,
 				    "attach[%d]: iova:0x%-12lx attr:%-4lx dir:%-2d dev:%s\n",
 				    attach_cnt, (unsigned long)iova,
 				    attach_obj->dma_map_attrs,
-				    attach_obj->dir,
+				    ((struct dma_heap_attachment *)attach_obj->priv)->dir,
 				    device_name);
 		}
 		dmabuf_dump(NULL, "Total %d devices attached\n\n", attach_cnt);

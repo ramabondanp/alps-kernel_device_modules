@@ -388,6 +388,8 @@ static int system_heap_attach(struct dma_buf *dmabuf,
 	a->dev = attachment->dev;
 	INIT_LIST_HEAD(&a->list);
 	a->mapped = false;
+	a->sgt = NULL;
+	a->dir = DMA_NONE;
 	a->uncached = buffer->uncached;
 	a->ssid = SMMU_NO_SSID;
 	attachment->priv = a;
@@ -471,6 +473,8 @@ static struct sg_table *mtk_mm_heap_map_dma_buf(struct dma_buf_attachment *attac
 		}
 
 		a->mapped = true;
+		a->sgt = table;
+		a->dir = direction;
 
 		if (!(attr & DMA_ATTR_SKIP_CPU_SYNC))
 			dma_sync_sgtable_for_device(attachment->dev, table, direction);
@@ -512,6 +516,8 @@ static struct sg_table *mtk_mm_heap_map_dma_buf(struct dma_buf_attachment *attac
 	}
 	mutex_unlock(&buffer->map_lock);
 	a->mapped = true;
+	a->sgt = table;
+	a->dir = direction;
 
 	tm2 = sched_clock();
 	if (tm2 - tm1 > RUN_TIMEOUT_TO_LOG)
@@ -545,6 +551,8 @@ static struct sg_table *system_heap_map_dma_buf(struct dma_buf_attachment *attac
 	}
 
 	a->mapped = true;
+	a->sgt = table;
+	a->dir = direction;
 	return table;
 }
 
@@ -1138,7 +1146,6 @@ static int mtk_mm_heap_dma_buf_end_cpu_access_partial(struct dma_buf *dmabuf,
 
 static const struct dma_buf_ops mtk_mm_heap_buf_ops = {
 	/* 1 attachment can only map 1 iova */
-	.cache_sgt_mapping = 1,
 	.attach = system_heap_attach,
 	.detach = system_heap_detach,
 	.map_dma_buf = mtk_mm_heap_map_dma_buf,
@@ -1157,7 +1164,6 @@ static const struct dma_buf_ops mtk_mm_heap_buf_ops = {
 
 static const struct dma_buf_ops system_heap_buf_ops = {
 	/* 1 attachment can only map 1 iova */
-	.cache_sgt_mapping = 1,
 	.attach = system_heap_attach,
 	.detach = system_heap_detach,
 	.map_dma_buf = system_heap_map_dma_buf,
@@ -1173,7 +1179,6 @@ static const struct dma_buf_ops system_heap_buf_ops = {
 
 static const struct dma_buf_ops mtk_slc_heap_buf_ops = {
 	/* 1 attachment can only map 1 iova */
-	.cache_sgt_mapping = 1,
 	.attach = system_heap_attach,
 	.detach = system_heap_detach,
 	.map_dma_buf = system_heap_map_dma_buf,
@@ -1428,7 +1433,7 @@ static struct dma_buf *mtk_slc_heap_allocate(struct dma_heap *heap,
 				       &mtk_slc_heap_buf_ops);
 }
 
-static long mtk_get_pool_size(struct dma_heap *heap)
+static long __maybe_unused mtk_get_pool_size(struct dma_heap *heap)
 {
 	struct mtk_heap_priv_info *heap_priv;
 
@@ -1441,12 +1446,10 @@ static long mtk_get_pool_size(struct dma_heap *heap)
 
 static const struct dma_heap_ops system_heap_ops = {
 	.allocate = system_heap_allocate,
-	.get_pool_size = mtk_get_pool_size,
 };
 
 static const struct dma_heap_ops mtk_mm_heap_ops = {
 	.allocate = mtk_mm_heap_allocate,
-	.get_pool_size = mtk_get_pool_size,
 };
 
 static const struct dma_heap_ops mtk_slc_heap_ops = {
