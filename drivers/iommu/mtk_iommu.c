@@ -932,6 +932,22 @@ static struct mtk_iommu_domain *to_mtk_domain(struct iommu_domain *dom)
 	return container_of(dom, struct mtk_iommu_domain, domain);
 }
 
+static int mtk_iommu_hypmmu_tab_id(const struct mtk_iommu_domain *dom)
+{
+	const struct mtk_iommu_plat_data *plat = dom->data->plat_data;
+
+	/*
+	 * On MT6895, both multimedia IOMMUs share one hardware table.
+	 * A legacy DT client can be the first to attach to a shared DMA
+	 * domain despite carrying a table tag for a different IOMMU.
+	 * Invalidate the actual hardware table, not the client's tag.
+	 */
+	if (plat->m4u_plat == M4U_MT6895 && plat->iommu_type == MM_IOMMU)
+		return plat->tab_id;
+
+	return dom->tab_id;
+}
+
 static bool mtk_iommu_check_pm_domain(struct mtk_iommu_data *data)
 {
 	if (MTK_IOMMU_HAS_FLAG(data->plat_data, PM_DOMAIN_SKIP))
@@ -1820,6 +1836,9 @@ static int mtk_iommu_attach_device(struct iommu_domain *domain,
 		pr_info("%s, set mtk_iommu_domain, data:(%d,%d), tab_id:%d\n",
 			__func__, data->plat_data->iommu_type,
 			data->plat_data->iommu_id, dom->tab_id);
+		if (hypmmu_type2_en && mtk_iommu_hypmmu_tab_id(dom) != dom->tab_id)
+			dev_info(dev, "Type-2 domain %d uses IOMMU table %d (DT tag %d)\n",
+				 domid, mtk_iommu_hypmmu_tab_id(dom), dom->tab_id);
 	}
 
 	if (!data->m4u_dom) { /* Initialize the M4U HW */
@@ -1998,7 +2017,8 @@ static void mtk_iommu_iotlb_sync(struct iommu_domain *domain,
 		if (ret)
 			pr_warn("%s failed\n", __func__);
 	} else {
-		ret = iova_secure_inv(gather->start, length, dom->tab_id);
+		ret = iova_secure_inv(gather->start, length,
+				      mtk_iommu_hypmmu_tab_id(dom));
 		if (ret)
 			pr_warn("%s failed\n", __func__);
 	}
@@ -2029,7 +2049,7 @@ static int mtk_iommu_sync_map(struct iommu_domain *domain, unsigned long iova,
 		if (ret)
 			pr_warn("%s failed\n", __func__);
 	} else {
-		ret = iova_secure_inv(iova, size, dom->tab_id);
+		ret = iova_secure_inv(iova, size, mtk_iommu_hypmmu_tab_id(dom));
 		if (ret)
 			pr_warn("%s failed\n", __func__);
 	}
