@@ -3963,6 +3963,7 @@ static enum drm_mode_status mtk_dp_conn_mode_valid(struct drm_connector *conn,
 	int plat_limit_array = ARRAY_SIZE(dp_plat_limit);
 	int i;
 	struct mtk_dp *mtk_dp = mtk_dp_ctx_from_conn(conn);
+	unsigned int mode_clock = mode->clock;
 	unsigned int bandwidth = mtk_dp->training_info.ubLinkLaneCount *
 		mtk_dp->training_info.ubLinkRate * 27000 * 8 / 24;
 
@@ -3977,23 +3978,21 @@ static enum drm_mode_status mtk_dp_conn_mode_valid(struct drm_connector *conn,
 	if (fakecablein == true)
 		bandwidth = dp_plat_limit[0].clock;
 
+	if (mode_clock == 0)
+		mode_clock = mode->htotal * mode->vtotal * drm_mode_vrefresh(mode);
+
 	DPTXMSG("Hde:%d,Vde:%d,fps:%d,clk:%d,bandwidth:%d,4k60:%d\n",
-		mode->hdisplay, mode->vdisplay, drm_mode_vrefresh(mode), mode->clock,
+		mode->hdisplay, mode->vdisplay, drm_mode_vrefresh(mode), mode_clock,
 		bandwidth, dp_plat_limit[0].valid);
 
-
-	if (mode->clock > (dp_plat_limit[0].clock + 50000))
+	if (mode_clock > (dp_plat_limit[0].clock + 50000))
 		return MODE_CLOCK_HIGH;
-	if (mode->clock < (dp_plat_limit[plat_limit_array-1].clock - 5000))
+	if (mode_clock < (dp_plat_limit[plat_limit_array-1].clock - 5000))
 		return MODE_CLOCK_LOW;
 
 	for (i = 0; i < plat_limit_array; i++) {
 		if (mode->hdisplay == 640 && mode->vdisplay == 480)
 			break;
-
-		if (mode->clock == 0)
-			mode->clock
-			= mode->htotal * mode->vtotal * drm_mode_vrefresh(mode);
 
 		if ((abs(dp_plat_limit[i].vrefresh - drm_mode_vrefresh(mode)) <= 1)
 			&& (mode->vdisplay == dp_plat_limit[i].vdisplay)
@@ -4013,7 +4012,7 @@ static enum drm_mode_status mtk_dp_conn_mode_valid(struct drm_connector *conn,
 	DPTXMSG("%s xres=%d, yres=%d, refresh=%d, clock=%d\n",
 			__func__, mode->hdisplay, mode->vdisplay,
 			drm_mode_vrefresh(mode),
-			mode->clock);
+			mode_clock);
 	if (0x1fff > 0 && mode->hdisplay > 0x1fff)
 		return MODE_VIRTUAL_X;
 	if (0x1fff > 0 && mode->vdisplay > 0x1fff)

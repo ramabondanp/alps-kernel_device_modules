@@ -48,6 +48,7 @@
 #include <hang_detect.h>
 #endif
 #include <mt-plat/mrdump.h>
+MODULE_IMPORT_NS("DMA_BUF_HEAP");
 
 #ifndef __pa_nodebug
 #define __pa_nodebug __pa

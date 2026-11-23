@@ -579,7 +579,7 @@ mtk_drm_framebuffer_init(struct drm_device *dev,
 			 struct drm_gem_object *obj)
 {
 	struct mtk_drm_fb *mtk_fb;
-	const struct drm_format_info *info = drm_get_format_info(dev, mode);
+	const struct drm_format_info *info = drm_get_format_info(dev, mode->pixel_format, mode->modifier[0]);
 	int ret;
 
 	mtk_fb = kzalloc(sizeof(*mtk_fb), GFP_KERNEL);

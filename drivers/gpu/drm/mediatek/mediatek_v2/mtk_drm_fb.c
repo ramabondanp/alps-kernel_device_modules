@@ -155,7 +155,7 @@ mtk_drm_framebuffer_create(struct drm_device *dev,
 			   struct drm_gem_object *obj)
 {
 	struct mtk_drm_fb *mtk_fb;
-	const struct drm_format_info *info = drm_get_format_info(dev, mode);
+	const struct drm_format_info *info = drm_get_format_info(dev, mode->pixel_format, mode->modifier[0]);
 
 	mtk_fb = mtk_drm_framebuffer_init(dev, info, mode, obj);
 	if (IS_ERR(mtk_fb))

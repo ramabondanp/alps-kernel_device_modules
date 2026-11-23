@@ -224,6 +224,7 @@ int mtk_drm_gem_dumb_create(struct drm_file *file_priv, struct drm_device *dev,
 			    struct drm_mode_create_dumb *args);
 struct drm_framebuffer *
 mtk_drm_mode_fb_create(struct drm_device *dev, struct drm_file *file,
+			 const struct drm_format_info *info,
 		       const struct drm_mode_fb_cmd2 *cmd);
 void mtk_drm_gem_free_object(struct drm_gem_object *obj);
 struct sg_table *mtk_gem_prime_get_sg_table(struct drm_gem_object *obj);
