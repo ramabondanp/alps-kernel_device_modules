@@ -1228,8 +1228,7 @@ static int vidioc_enum_fmt_vid_out_mplane(struct file *file, void *priv,
 static int vidioc_venc_querycap(struct file *file, void *priv,
 				struct v4l2_capability *cap)
 {
-	struct mtk_vcodec_ctx *ctx = fh_to_ctx(priv);
-	struct mtk_vcodec_dev *dev = ctx->dev;
+	struct mtk_vcodec_dev *dev = video_drvdata(file);
 
 	strscpy(cap->driver, MTK_VCODEC_ENC_NAME, sizeof(cap->driver));
 	strscpy(cap->bus_info, dev->platform, sizeof(cap->bus_info));

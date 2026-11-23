@@ -2669,8 +2669,7 @@ static int vidioc_vdec_dqbuf(struct file *file, void *priv,
 static int vidioc_vdec_querycap(struct file *file, void *priv,
 	struct v4l2_capability *cap)
 {
-	struct mtk_vcodec_ctx *ctx = fh_to_ctx(priv);
-	struct mtk_vcodec_dev *dev = ctx->dev;
+	struct mtk_vcodec_dev *dev = video_drvdata(file);
 
 	strscpy(cap->driver, MTK_VCODEC_DEC_NAME, sizeof(cap->driver));
 	strscpy(cap->bus_info, dev->platform, sizeof(cap->bus_info));
