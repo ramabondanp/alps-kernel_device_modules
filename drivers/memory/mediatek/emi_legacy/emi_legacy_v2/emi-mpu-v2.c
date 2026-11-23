@@ -132,6 +132,10 @@ static void emimpu_vio_dump(struct work_struct *work)
 }
 static DECLARE_WORK(emimpu_work, emimpu_vio_dump);
 
+/* Keep a violation storm from flooding the console and hiding the boot log. */
+#define EMIMPU_DBG_LIMIT 16
+static atomic_t emimpu_dbg_count = ATOMIC_INIT(0);
+
 static irqreturn_t emimpu_violation_irq(int irq, void *dev_id)
 {
 	struct emi_mpu *mpu = (struct emi_mpu *)dev_id;
@@ -143,12 +147,14 @@ static irqreturn_t emimpu_violation_irq(int irq, void *dev_id)
 	ssize_t msg_len;
 	int nr_vio;
 	bool violation, miu_violation;
+	bool show;
 	irqreturn_t irqret;
 	const unsigned int hp_mask = 0x600000;
 	char md_str[MTK_EMI_MAX_CMD_LEN + 13] = {'\0'};
 
 	nr_vio = 0;
 	msg_len = 0;
+	show = atomic_inc_return(&emimpu_dbg_count) <= EMIMPU_DBG_LIMIT;
 
 	for (emi_id = 0; emi_id < mpu->emi_cen_cnt; emi_id++) {
 		violation = false;
@@ -209,6 +215,35 @@ static irqreturn_t emimpu_violation_irq(int irq, void *dev_id)
 		}
 
 		nr_vio++;
+
+		if (show) {
+			unsigned int axid = 0;
+
+			if (mpu->dump_cnt >= 3) {
+				axid = ((dump_reg[2].value >> 8) & 0x7) << 18;
+				axid |= ((dump_reg[0].value >> 3) & 0x1fff) << 5;
+				axid |= (dump_reg[2].value >> 12) & 0xf;
+			}
+			pr_err("[EMIMPU] emi%d comm=%s:%d emi=%x,%x,%x axid=%x\n",
+			       emi_id, current->comm, task_pid_nr(current),
+			       mpu->dump_cnt >= 3 ? dump_reg[0].value : 0,
+			       mpu->dump_cnt >= 3 ? dump_reg[1].value : 0,
+			       mpu->dump_cnt >= 3 ? dump_reg[2].value : 0,
+			       axid);
+			if (miu_violation) {
+				char miu_buf[160];
+				int miu_len = 0;
+
+				miu_buf[0] = '\0';
+				for (i = 0; i < mpu->miumpu_dump_cnt && i < 10; i++)
+					miu_len += scnprintf(miu_buf + miu_len,
+						sizeof(miu_buf) - miu_len,
+						" %x=%x",
+						miumpu_dump_reg[i].offset,
+						miumpu_dump_reg[i].value);
+				pr_err("[EMIMPU] miu:%s\n", miu_buf);
+			}
+		}
 
 		if (miu_violation) {
 			/* Dump MIUMPU violation info */
@@ -274,9 +309,11 @@ clear_violation:
 	}
 
 	if (nr_vio) {
-		pr_info("%s: %s", __func__, mpu->vio_msg);
-		mpu->in_msg_dump = 1;
-		schedule_work(&emimpu_work);
+		if (show) {
+			pr_info("%s: %s", __func__, mpu->vio_msg);
+			mpu->in_msg_dump = 1;
+			schedule_work(&emimpu_work);
+		}
 	}
 
 	return IRQ_HANDLED;
