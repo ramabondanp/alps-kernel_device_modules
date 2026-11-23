@@ -653,7 +653,7 @@ int pe4_hal_get_vbat(struct chg_alg_device *alg)
 
 	if (IS_ERR_OR_NULL(bat1_psy)) {
 		pr_notice("%s retry to get pe4->bat1_psy\n", __func__);
-		bat1_psy = devm_power_supply_get_by_phandle(&pe4->pdev->dev, "gauge");
+		bat1_psy = devm_power_supply_get_by_reference(&pe4->pdev->dev, "gauge");
 		pe4->bat1_psy = bat1_psy;
 	}
 
@@ -717,7 +717,7 @@ int pe4_hal_get_ibat(struct chg_alg_device *alg)
 
 	if (IS_ERR_OR_NULL(bat1_psy)) {
 		pr_notice("%s retry to get pe4->bat1_psy\n", __func__);
-		bat1_psy = devm_power_supply_get_by_phandle(&pe4->pdev->dev, "gauge");
+		bat1_psy = devm_power_supply_get_by_reference(&pe4->pdev->dev, "gauge");
 		pe4->bat1_psy = bat1_psy;
 	}
 

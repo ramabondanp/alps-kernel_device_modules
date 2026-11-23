@@ -115,7 +115,7 @@ int get_battery_voltage(struct mtk_charger *info)
 
 	if (bat_psy == NULL || IS_ERR(bat_psy)) {
 		chr_err("%s retry to get bat_psy\n", __func__);
-		bat_psy = devm_power_supply_get_by_phandle(&info->pdev->dev, "gauge");
+		bat_psy = devm_power_supply_get_by_reference(&info->pdev->dev, "gauge");
 		info->bat_psy = bat_psy;
 	}
 
@@ -149,7 +149,7 @@ int get_cs_side_battery_voltage(struct mtk_charger *info, int *vbat)
 
 	if (bat_psy == NULL || IS_ERR(bat_psy)) {
 		chr_debug("%s retry to get bat_psy\n", __func__);
-		bat_psy = devm_power_supply_get_by_phandle(&info->pdev->dev, "gauge2");
+		bat_psy = devm_power_supply_get_by_reference(&info->pdev->dev, "gauge2");
 		info->bat2_psy = bat_psy;
 	}
 
@@ -185,7 +185,7 @@ int get_battery_temperature(struct mtk_charger *info)
 
 	if (bat_psy == NULL || IS_ERR(bat_psy)) {
 		chr_err("%s retry to get bat_psy\n", __func__);
-		bat_psy = devm_power_supply_get_by_phandle(&info->pdev->dev, "gauge");
+		bat_psy = devm_power_supply_get_by_reference(&info->pdev->dev, "gauge");
 		info->bat_psy = bat_psy;
 	}
 
@@ -216,7 +216,7 @@ int get_battery_current(struct mtk_charger *info)
 
 	if (bat_psy == NULL || IS_ERR(bat_psy)) {
 		chr_err("%s retry to get bat_psy\n", __func__);
-		bat_psy = devm_power_supply_get_by_phandle(&info->pdev->dev, "gauge");
+		bat_psy = devm_power_supply_get_by_reference(&info->pdev->dev, "gauge");
 		info->bat_psy = bat_psy;
 	}
 
@@ -247,7 +247,7 @@ int get_cs_side_battery_current(struct mtk_charger *info, int *ibat)
 
 	if (bat_psy == NULL || IS_ERR(bat_psy)) {
 		chr_debug("%s retry to get bat_psy\n", __func__);
-		bat_psy = devm_power_supply_get_by_phandle(&info->pdev->dev, "gauge2");
+		bat_psy = devm_power_supply_get_by_reference(&info->pdev->dev, "gauge2");
 		info->bat2_psy = bat_psy;
 	}
 

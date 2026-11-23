@@ -410,7 +410,7 @@ static int tran_usb_extcon_probe(struct platform_device *pdev)
 	if (!extcon->extcon_wq)
 		return -ENOMEM;
 
-	extcon->usb_psy = devm_power_supply_get_by_phandle(dev, "charger");
+	extcon->usb_psy = devm_power_supply_get_by_reference(dev, "charger");
 	if (IS_ERR_OR_NULL(extcon->usb_psy)) {
 		extcon->usb_psy = power_supply_get_by_name("primary_chg");
 		if (!extcon->usb_psy)

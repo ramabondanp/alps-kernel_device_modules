@@ -628,7 +628,7 @@ static void tcpc_event_init_work(struct work_struct *work)
 
 	tcpci_lock_typec(tcpc);
 #if CONFIG_USB_PD_WAIT_BC12
-	tcpc->chg_psy = devm_power_supply_get_by_phandle(
+	tcpc->chg_psy = devm_power_supply_get_by_reference(
 		tcpc->dev.parent, "charger");
 	if (IS_ERR_OR_NULL(tcpc->chg_psy)) {
 		tcpci_unlock_typec(tcpc);

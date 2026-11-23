@@ -56,7 +56,7 @@ int mbraink_v6989_battery_init(struct device *dev)
 
 	if (drv_data.bat1_psy == NULL) {
 		pr_info("%s get phandle from bat1_psy\n", __func__);
-		drv_data.bat1_psy = devm_power_supply_get_by_phandle(dev, "gauge");
+		drv_data.bat1_psy = devm_power_supply_get_by_reference(dev, "gauge");
 		if (drv_data.bat1_psy == NULL || IS_ERR(drv_data.bat1_psy))
 			pr_info("%s Couldn't get bat1_psy\n", __func__);
 	}

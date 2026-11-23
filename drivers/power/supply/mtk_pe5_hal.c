@@ -284,7 +284,7 @@ int pe50_hal_init_hardware(struct chg_alg_device *alg, const char **support_ta,
 		data->is_dvchg_exist[PE50_DVCHG_SLAVE] = true;
 	chg_alg_dev_set_drv_hal_data(alg, hal);
 	hal->dev = info->dev;
-	hal->bat_psy = devm_power_supply_get_by_phandle(hal->dev, "gauge");
+	hal->bat_psy = devm_power_supply_get_by_reference(hal->dev, "gauge");
 	if (IS_ERR_OR_NULL(hal->bat_psy)) {
 		ret = IS_ERR(hal->bat_psy) ? PTR_ERR(hal->bat_psy) : -ENODEV;
 		PE50_ERR("get bat_psy fail(%d)\n", ret);

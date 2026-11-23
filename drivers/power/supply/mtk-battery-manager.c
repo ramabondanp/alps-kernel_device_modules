@@ -1287,7 +1287,7 @@ static int bs_psy_get_property(struct power_supply *psy,
 		break;
 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
 		if (IS_ERR_OR_NULL(bs_data->chg_psy)) {
-			bs_data->chg_psy = devm_power_supply_get_by_phandle(
+			bs_data->chg_psy = devm_power_supply_get_by_reference(
 				bm->dev, "charger");
 			pr_err("%s retry to get chg_psy\n", __func__);
 		}
@@ -1388,7 +1388,7 @@ static void mtk_battery_external_power_changed(struct power_supply *psy)
 	}
 
 	if (IS_ERR_OR_NULL(chg_psy)) {
-		chg_psy = devm_power_supply_get_by_phandle(bm->dev,
+		chg_psy = devm_power_supply_get_by_reference(bm->dev,
 						       "charger");
 		pr_err("%s retry to get chg_psy\n", __func__);
 		bs_data->chg_psy = chg_psy;
@@ -1965,7 +1965,7 @@ static int mtk_bm_probe(struct platform_device *pdev)
 	bm_custom_init_from_header(bm);
 	bm_custom_init_from_dts(pdev, bm);
 
-	psy = devm_power_supply_get_by_phandle(&pdev->dev,
+	psy = devm_power_supply_get_by_reference(&pdev->dev,
 								 "gauge1");
 
 	if (psy == NULL || IS_ERR(psy)) {
@@ -1980,7 +1980,7 @@ static int mtk_bm_probe(struct platform_device *pdev)
 		} else
 			pr_err("[%s]gauge1 is not rdy\n", __func__);
 	}
-	psy = devm_power_supply_get_by_phandle(&pdev->dev,
+	psy = devm_power_supply_get_by_reference(&pdev->dev,
 								 "gauge2");
 
 	if (psy == NULL || IS_ERR(psy)) {
@@ -2046,7 +2046,7 @@ static int mtk_bm_probe(struct platform_device *pdev)
 
 	kthread_run(battery_manager_routine_thread, bm, "battery_manager_thread");
 
-	bm->bs_data.chg_psy = devm_power_supply_get_by_phandle(&pdev->dev, "charger");
+	bm->bs_data.chg_psy = devm_power_supply_get_by_reference(&pdev->dev, "charger");
 	if (IS_ERR_OR_NULL(bm->bs_data.chg_psy))
 		pr_err("[%s]Fail to get chg_psy!\n", __func__);
 

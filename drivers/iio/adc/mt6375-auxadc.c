@@ -368,7 +368,7 @@ static int check_gauge_psy(struct mt6375_priv *priv)
 
 	psy = power_supply_get_by_name("mtk-gauge");
 	if (!psy) {
-		psy = power_supply_get_by_phandle(priv->dev->of_node, "gauge");
+		psy = power_supply_get_by_reference(of_fwnode_handle(priv->dev->of_node), "gauge");
 		if (IS_ERR_OR_NULL(psy))
 			return -ENODEV;
 	}
@@ -645,7 +645,7 @@ static int mt6375_auxadc_handle_vbat0(struct mt6375_priv *priv, bool is_vbat0)
 	}
 
 	/* Notify gauge & charger */
-	chg_psy = devm_power_supply_get_by_phandle(priv->dev, "charger");
+	chg_psy = devm_power_supply_get_by_reference(priv->dev, "charger");
 	if (IS_ERR_OR_NULL(chg_psy))
 		return PTR_ERR(chg_psy);
 

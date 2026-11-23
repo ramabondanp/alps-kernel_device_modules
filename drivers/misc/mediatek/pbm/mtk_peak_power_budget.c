@@ -1790,7 +1790,7 @@ static void bat_handler(struct work_struct *work)
 
 	psy_mtk = power_supply_get_by_name("mtk-gauge");
 	if (!psy_mtk || IS_ERR(psy_mtk)) {
-		psy_mtk = devm_power_supply_get_by_phandle(pb.dev, "gauge");
+		psy_mtk = devm_power_supply_get_by_reference(pb.dev, "gauge");
 		if (!psy_mtk || IS_ERR(psy_mtk)) {
 			pr_info("psy_mtk can't get from mtk-gauge and phandle %p\n", psy_mtk);
 			return;

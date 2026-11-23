@@ -333,7 +333,7 @@ static int mtk_ctd_probe(struct platform_device *pdev)
 		if (ret >= sizeof(name))
 			dev_notice(mci->dev, "bc12-psy name is truncated\n");
 
-		mci->bc12_psy[i] = devm_power_supply_get_by_phandle(mci->dev,
+		mci->bc12_psy[i] = devm_power_supply_get_by_reference(mci->dev,
 								    name);
 		if (IS_ERR_OR_NULL(mci->bc12_psy[i])) {
 			dev_notice(mci->dev, "Failed to get %s\n", name);

@@ -361,7 +361,7 @@ static int mtk_chr_det_probe(struct platform_device *pdev)
 
 	check_boot_mode(info, &pdev->dev);
 
-	info->bc12_psy = devm_power_supply_get_by_phandle(&pdev->dev, "bc12");
+	info->bc12_psy = devm_power_supply_get_by_reference(&pdev->dev, "bc12");
 	if (IS_ERR_OR_NULL(info->bc12_psy)) {
 		pr_notice("Failed to get bc12 psy\n");
 		info->bc12_psy = power_supply_get_by_name("charger");

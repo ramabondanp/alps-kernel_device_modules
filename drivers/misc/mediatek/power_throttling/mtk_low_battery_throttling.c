@@ -1143,7 +1143,7 @@ static void __used pt_set_shutdown_condition(void)
 
 	bat_psy = power_supply_get_by_name("mtk-gauge");
 	if (!bat_psy || IS_ERR(bat_psy)) {
-		bat_psy = devm_power_supply_get_by_phandle(lbat_data->dev, "gauge");
+		bat_psy = devm_power_supply_get_by_reference(lbat_data->dev, "gauge");
 		if (!bat_psy || IS_ERR(bat_psy)) {
 			pr_info("%s psy is not rdy\n", __func__);
 			return;

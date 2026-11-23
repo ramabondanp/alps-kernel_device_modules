@@ -1535,7 +1535,7 @@ static int mt6379_get_gauge_ibat_ua(struct mt6379_charger_data *cdata, int *ibat
 	int ret;
 
 	if (IS_ERR_OR_NULL(bat))
-		bat = devm_power_supply_get_by_phandle(dev, "gauge");
+		bat = devm_power_supply_get_by_reference(dev, "gauge");
 
 	if (IS_ERR_OR_NULL(bat)) {
 		dev_info(dev, "%s, Failed to get gauge psy\n", __func__);

@@ -3751,7 +3751,7 @@ static int mt6379_get_vbat_mon_rpt(struct mt6379_priv *priv, int *vbat)
 	struct power_supply *psy;
 	int ret, tmp = 0;
 
-	psy = power_supply_get_by_phandle(priv->dev->of_node, "charger");
+	psy = power_supply_get_by_reference(of_fwnode_handle(priv->dev->of_node), "charger");
 	if (psy) {
 		ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_CALIBRATE, &val);
 		if (ret >= 0)

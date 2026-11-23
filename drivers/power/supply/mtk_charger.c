@@ -4103,7 +4103,7 @@ static int mtk_charger_probe(struct platform_device *pdev)
 		chr_err("%s: devm power fail to get bc12_psy\n", __func__);
 #endif
 
-	info->bat_psy = devm_power_supply_get_by_phandle(&pdev->dev,
+	info->bat_psy = devm_power_supply_get_by_reference(&pdev->dev,
 		"gauge");
 	if (IS_ERR_OR_NULL(info->bat_psy))
 		chr_err("%s: devm power fail to get bat_psy\n", __func__);
