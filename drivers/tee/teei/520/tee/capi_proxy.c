@@ -153,8 +153,8 @@ static int alloc_capi_session(void)
 	int retVal = 0;
 
 	mutex_lock(&proxy_array_mutex);
-	retVal = ida_simple_get(&capi_session_ida, 0,
-			MAX_CAPI_SESSIONS, GFP_KERNEL);
+	retVal = ida_alloc_range(&capi_session_ida, 0,
+			MAX_CAPI_SESSIONS - 1, GFP_KERNEL);
 	mutex_unlock(&proxy_array_mutex);
 
 	return retVal;
@@ -163,7 +163,7 @@ static int alloc_capi_session(void)
 static void free_capi_session(int id)
 {
 	mutex_lock(&proxy_array_mutex);
-	ida_simple_remove(&capi_session_ida, id);
+	ida_free(&capi_session_ida, id);
 	memset(&capi_session[id], 0, sizeof(struct TEEC_Session));
 	mutex_unlock(&proxy_array_mutex);
 }
@@ -173,7 +173,7 @@ static int alloc_capi_shm(void)
 	int retVal = 0;
 
 	mutex_lock(&proxy_array_mutex);
-	retVal = ida_simple_get(&capi_shm_ida, 0, MAX_CAPI_SHMS, GFP_KERNEL);
+	retVal = ida_alloc_range(&capi_shm_ida, 0, MAX_CAPI_SHMS - 1, GFP_KERNEL);
 	mutex_unlock(&proxy_array_mutex);
 
 	return retVal;
@@ -182,7 +182,7 @@ static int alloc_capi_shm(void)
 static void free_capi_shm(int id)
 {
 	mutex_lock(&proxy_array_mutex);
-	ida_simple_remove(&capi_shm_ida, id);
+	ida_free(&capi_shm_ida, id);
 	memset(&capi_shm[id], 0, sizeof(struct TEEC_SharedMemory));
 	mutex_unlock(&proxy_array_mutex);
 }

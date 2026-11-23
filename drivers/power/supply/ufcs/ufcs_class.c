@@ -1933,8 +1933,7 @@ struct ufcs_port *ufcs_register_port(struct device *dev, struct ufcs_dev *ufcs)
 	mutex_init(&port->lock);
 	kthread_init_work(&port->state_machine, ufcs_state_machine_work);
 	kthread_init_work(&port->event_work, ufcs_event_handler);
-	hrtimer_init(&port->state_machine_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	port->state_machine_timer.function = state_machine_timer_handler;
+	hrtimer_setup(&port->state_machine_timer, state_machine_timer_handler, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 
 	spin_lock_init(&port->ufcs_event_lock);
 	init_completion(&port->tx_complete);

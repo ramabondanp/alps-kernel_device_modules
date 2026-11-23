@@ -60,9 +60,7 @@ static int __init test_init(void)
 {
 	INIT_WORK(&test_sensor.test_work, test_work_func);
 	test_sensor.workqueue = create_singlethread_workqueue(test_sensor.name);
-	hrtimer_init(&test_sensor.test_timer,
-			CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	test_sensor.test_timer.function = test_timer_func;
+	hrtimer_setup(&test_sensor.test_timer, test_timer_func, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	hrtimer_start(&test_sensor.test_timer,
 			ns_to_ktime(10000000000), HRTIMER_MODE_REL);
 	return 0;

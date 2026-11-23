@@ -23,6 +23,7 @@
  *
  ****************************************************************************/
 #include <linux/netdevice.h>
+#include <net/gro.h>
 #include <linux/etherdevice.h>
 #include <linux/ip.h>
 #include <linux/of.h>
@@ -256,14 +257,9 @@ static inline unsigned int napi_gro_list_flush(struct ccmni_instance *ccmni)
 	unsigned int rx_count;
 
 	napi = ccmni->napi;
-	rx_count = napi->rx_count;
+	rx_count = napi->gro.rx_count;
 
-	napi_gro_flush(napi, false);
-	if (napi->rx_count) {
-		netif_receive_skb_list(&napi->rx_list);
-		INIT_LIST_HEAD(&napi->rx_list);
-		napi->rx_count = 0;
-	}
+	gro_flush_normal(&napi->gro, false);
 
 	return rx_count;
 }

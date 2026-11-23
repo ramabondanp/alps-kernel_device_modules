@@ -44,7 +44,7 @@ static int arch_counter_get_width(void)
 	return clamp_val(ilog2(min_cycles - 1) + 1, 56, 64);
 }
 
-static u64 adsp_ts_tick_read(const struct cyclecounter *cc)
+static u64 adsp_ts_tick_read(struct cyclecounter *cc)
 {
 	return arch_timer_read_counter();
 }
@@ -103,9 +103,7 @@ int adsp_timesync_init(void)
 			 sched_clock());
 
 	/* init refresh hr_timer */
-	hrtimer_init(&timesync_ctrl.timer,
-		     CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	timesync_ctrl.timer.function = adsp_timesync_refresh;
+	hrtimer_setup(&timesync_ctrl.timer, adsp_timesync_refresh, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	timesync_ctrl.period_ms = TIMESYNC_WRAP_TIME_MS;
 
 	pr_info("%s(), done, arch_timer_freq: %u MHz",

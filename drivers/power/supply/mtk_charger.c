@@ -3342,8 +3342,7 @@ static int charger_pm_event(struct notifier_block *notifier,
 }
 #endif /* CONFIG_PM */
 
-static enum alarmtimer_restart
-	mtk_charger_alarm_timer_func(struct alarm *alarm, ktime_t now)
+static void mtk_charger_alarm_timer_func(struct alarm *alarm, ktime_t now)
 {
 	struct mtk_charger *info =
 	container_of(alarm, struct mtk_charger, charger_timer);
@@ -3354,7 +3353,7 @@ static enum alarmtimer_restart
 		__pm_stay_awake(info->charger_wakelock);
 	}
 
-	return ALARMTIMER_NORESTART;
+	return;
 }
 
 static void mtk_charger_init_timer(struct mtk_charger *info)

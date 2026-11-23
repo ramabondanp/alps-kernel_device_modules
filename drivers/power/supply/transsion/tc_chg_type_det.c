@@ -1213,8 +1213,7 @@ static void tc_parse_dt(struct tc_detect *tcd)
 	pr_info("dtsi defined bc12_retry_interval:%d\n", tcd->bc12_retry_interval);
 }
 
-static enum alarmtimer_restart
-	tc_detect_bc12_retry_timer_func(struct alarm *alarm, ktime_t now)
+static void tc_detect_bc12_retry_timer_func(struct alarm *alarm, ktime_t now)
 {
 	struct tc_detect *tcd =
 		container_of(alarm, struct tc_detect, bc12_retry_timer);
@@ -1223,7 +1222,7 @@ static enum alarmtimer_restart
 
 	pr_info("run bc12_retry_timer func\n");
 
-	return ALARMTIMER_NORESTART;
+	return;
 }
 
 static void tc_detect_start_bc12_retry_timer(struct tc_detect *tcd)

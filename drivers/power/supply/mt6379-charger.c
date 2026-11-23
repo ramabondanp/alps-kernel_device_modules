@@ -3045,12 +3045,12 @@ static void mt6379_fsw_control_func(struct work_struct *work)
 	mt6379_fsw_control(cdata);
 }
 
-static enum alarmtimer_restart mt6379_chg_alarm_call(struct alarm *alarm, ktime_t now)
+static void mt6379_chg_alarm_call(struct alarm *alarm, ktime_t now)
 {
 	struct mt6379_charger_data *cdata = container_of(alarm, struct mt6379_charger_data , alarm);
 
 	schedule_work(&cdata->fsw_control_work);
-	return ALARMTIMER_NORESTART;
+	return;
 }
 
 static void mt6379_charger_check_pwr_rdy(struct mt6379_charger_data *cdata)

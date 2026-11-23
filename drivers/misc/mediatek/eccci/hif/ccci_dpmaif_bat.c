@@ -1309,8 +1309,7 @@ int ccci_dpmaif_bat_init(struct device *dev)
 		"[%s] g_skb_tbl_cnt: %u; g_frg_tbl_cnt: %u\n",
 		__func__, g_skb_tbl_cnt, g_frg_tbl_cnt);
 
-	hrtimer_init(&g_dpmaif_ctrl->bat_alloc_done_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	g_dpmaif_ctrl->bat_alloc_done_timer.function = dpmaif_bat_alloc_timer_action;
+	hrtimer_setup(&g_dpmaif_ctrl->bat_alloc_done_timer, dpmaif_bat_alloc_timer_action, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 
 	return 0;
 }

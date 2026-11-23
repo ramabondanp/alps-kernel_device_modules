@@ -502,8 +502,7 @@ int __init lpm_model_suspend_init(void)
 	}
 
 	for (i = 0; i < CPU_NUMBER; i++) {
-		hrtimer_init(&lpm_hrtimer[i], CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-		lpm_hrtimer[i].function = lpm_hrtimer_timeout;
+		hrtimer_setup(&lpm_hrtimer[i], lpm_hrtimer_timeout, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	}
 #endif /* CONFIG_PM */
 

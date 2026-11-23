@@ -2981,15 +2981,14 @@ static inline void hvbp_wakeup_algo_thread(struct hvbp_algo_data *data)
 	wake_up_interruptible(&data->wq);
 }
 
-static enum alarmtimer_restart
-hvbp_algo_timer_cb(struct alarm *alarm, ktime_t now)
+static void hvbp_algo_timer_cb(struct alarm *alarm, ktime_t now)
 {
 	struct hvbp_algo_data *data =
 		container_of(alarm, struct hvbp_algo_data, timer);
 
 	HVBP_DBG("++\n");
 	hvbp_wakeup_algo_thread(data);
-	return ALARMTIMER_NORESTART;
+	return;
 }
 
 /*

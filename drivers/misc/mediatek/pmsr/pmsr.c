@@ -365,7 +365,7 @@ static int pmsr_procfs_init(void)
 
 static enum hrtimer_restart pmsr_timer_handle(struct hrtimer *timer)
 {
-	hrtimer_forward(timer, timer->base->get_time(),
+	hrtimer_forward(timer, hrtimer_cb_get_time(timer),
 			ns_to_ktime(timer_window_len * NSEC_PER_USEC));
 
 	return HRTIMER_RESTART;

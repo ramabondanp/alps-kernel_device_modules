@@ -317,9 +317,7 @@ int hf_manager_create(struct hf_device *device)
 	clear_bit(HF_MANAGER_IO_READY, &manager->flags);
 
 	if (device->device_poll == HF_DEVICE_IO_POLLING) {
-		hrtimer_init(&manager->io_poll_timer,
-			CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-		manager->io_poll_timer.function = hf_manager_io_poll;
+		hrtimer_setup(&manager->io_poll_timer, hf_manager_io_poll, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	} else if (device->device_poll == HF_DEVICE_IO_INTERRUPT) {
 		manager->interrupt = hf_manager_io_interrupt;
 	}

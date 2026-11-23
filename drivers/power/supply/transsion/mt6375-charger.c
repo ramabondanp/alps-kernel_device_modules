@@ -3534,7 +3534,7 @@ static int mt6375_chg_init_psy(struct mt6375_chg_data *ddata)
 	//struct mt6375_chg_platform_data *pdata = dev_get_platdata(ddata->dev);
 	struct power_supply_config cfg = {
 		.drv_data = ddata,
-		.of_node = ddata->dev->of_node,
+		.fwnode = of_fwnode_handle(ddata->dev->of_node),
 		.supplied_to = mt6375_psy_supplied_to,
 		.num_supplicants = ARRAY_SIZE(mt6375_psy_supplied_to),
 	};

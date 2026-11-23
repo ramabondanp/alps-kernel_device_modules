@@ -518,7 +518,7 @@ MODULE_DEVICE_TABLE(trusty_smc, trusty_smc_of_match);
 
 static struct platform_driver trusty_smc_driver = {
 	.probe = trusty_smc_probe,
-	.remove_new = trusty_smc_remove,
+	.remove = trusty_smc_remove,
 	.driver	= {
 #ifdef MTK_ADAPTED
 		.name = "google-trusty-smc",

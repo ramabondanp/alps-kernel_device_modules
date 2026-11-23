@@ -3311,15 +3311,14 @@ static inline void pe5p_wakeup_algo_thread(struct pe5p_algo_data *data)
 	wake_up_interruptible(&data->wq);
 }
 
-static enum alarmtimer_restart
-pe5p_algo_timer_cb(struct alarm *alarm, ktime_t now)
+static void pe5p_algo_timer_cb(struct alarm *alarm, ktime_t now)
 {
 	struct pe5p_algo_data *data =
 		container_of(alarm, struct pe5p_algo_data, timer);
 
 	PE5P_DBG("++\n");
 	pe5p_wakeup_algo_thread(data);
-	return ALARMTIMER_NORESTART;
+	return;
 }
 
 /*

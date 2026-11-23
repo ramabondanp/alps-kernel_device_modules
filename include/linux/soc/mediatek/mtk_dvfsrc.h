@@ -22,17 +22,8 @@
 #define MTK_DVFSRC_CMD_DRAM_LEVEL_QUERY	2
 #define MTK_DVFSRC_CMD_CURR_LEVEL_QUERY	3
 
-#if IS_ENABLED(CONFIG_MTK_DVFSRC)
+/* X6871 always builds mtk-dvfsrc.ko out-of-tree. */
 void mtk_dvfsrc_send_request(const struct device *dev, u32 cmd, u64 data);
 int mtk_dvfsrc_query_info(const struct device *dev, u32 cmd, int *data);
-#else
-static inline void mtk_dvfsrc_send_request(const struct device *dev, u32 cmd,
-					   u64 data)
-{ }
-static inline int mtk_dvfsrc_query_info(const struct device *dev, u32 cmd,
-					int *data)
-{ return -ENODEV; }
-
-#endif /* CONFIG_MTK_DVFSRC */
 
 #endif

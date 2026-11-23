@@ -650,7 +650,7 @@ MODULE_DEVICE_TABLE(trusty, trusty_test_of_match);
 
 static struct platform_driver trusty_irq_driver = {
 	.probe = trusty_irq_probe,
-	.remove_new = trusty_irq_remove,
+	.remove = trusty_irq_remove,
 	.driver	= {
 #ifdef MTK_ADAPTED
 		.name = "google-trusty-irq",

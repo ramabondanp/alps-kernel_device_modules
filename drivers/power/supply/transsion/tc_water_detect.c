@@ -512,8 +512,7 @@ static void wd_thread_hrtimer_init(struct water_detect_info *info)
 {
 	pr_info("%s\n", __func__);
 
-	hrtimer_init(&info->wd_hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	info->wd_hrtimer.function = wd_hrtimer_func;
+	hrtimer_setup(&info->wd_hrtimer, wd_hrtimer_func, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 }
 
 static void wd_gpio_init(struct water_detect_info *info)

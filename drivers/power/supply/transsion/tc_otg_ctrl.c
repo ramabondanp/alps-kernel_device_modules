@@ -1000,8 +1000,7 @@ static int tc_otg_probe(struct platform_device *pdev)
 	INIT_DELAYED_WORK(&info->init_dwork, tc_otg_init_work);
 	schedule_delayed_work(&info->init_dwork, 0);
 
-	hrtimer_init(&info->otg_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	info->otg_timer.function = tc_otg_timer_callback;
+	hrtimer_setup(&info->otg_timer, tc_otg_timer_callback, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	INIT_WORK(&info->otg_work, tc_otg_work_func);
 	if (info->pd_reverse_chg_support) {
 		info->tc_otg_enable = TC_OTG_FILE_TRANS;

@@ -1284,7 +1284,7 @@ MODULE_DEVICE_TABLE(of, mtk_dvo_of_ids);
 
 struct platform_driver mtk_dvo_driver = {
 	.probe = mtk_dvo_probe,
-	.remove_new = mtk_dvo_remove,
+	.remove = mtk_dvo_remove,
 	.driver = {
 		.name = "mediatek-dvo",
 		.of_match_table = mtk_dvo_of_ids,

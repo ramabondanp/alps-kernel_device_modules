@@ -1681,8 +1681,7 @@ static int dpmaif_txq_sw_init(struct dpmaif_tx_queue *txq)
 
 	init_waitqueue_head(&txq->txq_done_wait);
 	atomic_set(&txq->txq_done, 0);
-	hrtimer_init(&txq->txq_done_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	txq->txq_done_timer.function = txq_done_timer_action;
+	hrtimer_setup(&txq->txq_done_timer, txq_done_timer_action, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	txq->txq_done_thread = NULL;
 
 	spin_lock_init(&txq->txq_lock);

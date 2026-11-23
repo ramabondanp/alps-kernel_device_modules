@@ -896,8 +896,7 @@ static int ts_scp_probe(struct platform_device *pdev)
         sched_setscheduler_nocheck(dev->task_cmd, SCHED_FIFO, &param);
 
         /* init after scp reset timer */
-        hrtimer_init(&dev->after_scp_reset_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-        dev->after_scp_reset_timer.function = ts_after_scp_reset_timer_func;
+        hrtimer_setup(&dev->after_scp_reset_timer, ts_after_scp_reset_timer_func, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 
         atomic_set(&dev->scp_crash_num_from_boot, 0);
         atomic_set(&dev->scp_crash_num, 0);

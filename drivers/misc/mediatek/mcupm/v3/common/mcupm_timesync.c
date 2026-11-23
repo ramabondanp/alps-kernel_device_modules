@@ -117,7 +117,7 @@ static void mcupm_ts_update(int suspended, u64 tick, u64 ts)
 	mb();
 }
 
-static u64 timesync_tick_read(const struct cyclecounter *cc)
+static u64 timesync_tick_read(struct cyclecounter *cc)
 {
 	return arch_timer_read_counter();
 }

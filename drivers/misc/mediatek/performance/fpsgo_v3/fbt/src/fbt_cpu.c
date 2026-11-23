@@ -3650,8 +3650,7 @@ static inline void fbt_init_jerk(struct fbt_jerk *jerk, int id)
 {
 	jerk->id = id;
 
-	hrtimer_init(&jerk->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	jerk->timer.function = &fbt_jerk_tfn;
+	hrtimer_setup(&jerk->timer, &fbt_jerk_tfn, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	INIT_WORK(&jerk->work, fbt_do_jerk);
 }
 
@@ -3669,8 +3668,7 @@ static enum hrtimer_restart fbt_sjerk_tfn(struct hrtimer *timer)
 
 static void fbt_init_sjerk(void)
 {
-	hrtimer_init(&sjerk.timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	sjerk.timer.function = &fbt_sjerk_tfn;
+	hrtimer_setup(&sjerk.timer, &fbt_sjerk_tfn, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	INIT_WORK(&sjerk.work, fbt_do_sjerk);
 }
 

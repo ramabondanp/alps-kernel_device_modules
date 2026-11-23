@@ -150,8 +150,7 @@ void loom_init_jerk(struct loom_jerk *jerk, int id)
 {
 	jerk->id = id;
 
-	hrtimer_init(&jerk->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	jerk->timer.function = &loom_jerk_tfn;
+	hrtimer_setup(&jerk->timer, &loom_jerk_tfn, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	INIT_WORK(&jerk->work, loom_do_jerk);
 }
 

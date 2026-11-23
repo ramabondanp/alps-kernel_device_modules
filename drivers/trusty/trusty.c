@@ -1140,7 +1140,7 @@ MODULE_DEVICE_TABLE(trusty, trusty_of_match);
 
 static struct platform_driver trusty_driver = {
 	.probe = trusty_probe,
-	.remove_new = trusty_remove,
+	.remove = trusty_remove,
 	.driver	= {
 #ifdef MTK_ADAPTED
 		.name = "google-trusty-core",

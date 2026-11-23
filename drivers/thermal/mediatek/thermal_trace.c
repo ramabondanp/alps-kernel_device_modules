@@ -531,8 +531,7 @@ static int __init thermal_trace_init(void)
 	mutex_init(&thermal_trace_data.lock);
 	mutex_init(&thermal_info_data.lock);
 	INIT_DELAYED_WORK(&thermal_info_data.poll_queue, thermal_info_work);
-	hrtimer_init(&thermal_trace_data.trace_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	thermal_trace_data.trace_timer.function = thermal_trace_work;
+	hrtimer_setup(&thermal_trace_data.trace_timer, thermal_trace_work, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	thermal_trace_data.hr_period = 1000000; /* 1ms */
 
 	ret = sysfs_create_group(kernel_kobj, &thermal_trace_attr_group);

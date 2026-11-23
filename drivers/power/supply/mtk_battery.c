@@ -3250,8 +3250,7 @@ void fg_drv_thread_hrtimer_init(struct mtk_battery *gm)
 	ktime_t ktime;
 
 	ktime = ktime_set(10, 0);
-	hrtimer_init(&gm->fg_hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	gm->fg_hrtimer.function = fg_drv_thread_hrtimer_func;
+	hrtimer_setup(&gm->fg_hrtimer, fg_drv_thread_hrtimer_func, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	hrtimer_start(&gm->fg_hrtimer, ktime, HRTIMER_MODE_REL);
 }
 
@@ -3268,7 +3267,7 @@ static void tracking_timer_work_handler(struct work_struct *data)
 	wakeup_fg_algo(gm, FG_INTR_FG_TIME);
 }
 
-static enum alarmtimer_restart tracking_timer_callback(
+static void tracking_timer_callback(
 	struct alarm *alarm, ktime_t now)
 {
 	struct mtk_battery *gm;
@@ -3277,7 +3276,7 @@ static enum alarmtimer_restart tracking_timer_callback(
 		struct mtk_battery, tracking_timer);
 	bm_debug(gm, "[%s] into\n", __func__);
 	schedule_work(&gm->tracking_timer_work);
-	return ALARMTIMER_NORESTART;
+	return;
 }
 
 static void one_percent_timer_work_handler(struct work_struct *data)
@@ -3290,7 +3289,7 @@ static void one_percent_timer_work_handler(struct work_struct *data)
 	wakeup_fg_algo_cmd(gm, FG_INTR_FG_TIME, 0, 1);
 }
 
-static enum alarmtimer_restart one_percent_timer_callback(
+static void one_percent_timer_callback(
 	struct alarm *alarm, ktime_t now)
 {
 	struct mtk_battery *gm;
@@ -3299,7 +3298,7 @@ static enum alarmtimer_restart one_percent_timer_callback(
 		struct mtk_battery, one_percent_timer);
 	bm_debug(gm, "[%s] into\n", __func__);
 	schedule_work(&gm->one_percent_timer_work);
-	return ALARMTIMER_NORESTART;
+	return;
 }
 
 static void sw_uisoc_timer_work_handler(struct work_struct *data)
@@ -3316,7 +3315,7 @@ static void sw_uisoc_timer_work_handler(struct work_struct *data)
 		wakeup_fg_algo(gm, FG_INTR_BAT_INT2_LT);
 }
 
-static enum alarmtimer_restart sw_uisoc_timer_callback(
+static void sw_uisoc_timer_callback(
 	struct alarm *alarm, ktime_t now)
 {
 	struct mtk_battery *gm;
@@ -3325,7 +3324,7 @@ static enum alarmtimer_restart sw_uisoc_timer_callback(
 		struct mtk_battery, sw_uisoc_timer);
 	bm_debug(gm, "[%s] into\n", __func__);
 	schedule_work(&gm->sw_uisoc_timer_work);
-	return ALARMTIMER_NORESTART;
+	return;
 }
 
 int battery_psy_init(struct platform_device *pdev)

@@ -1638,7 +1638,7 @@ void _wake_up_cs_allowchgB(struct max1720x_priv *info)
 	wake_up_interruptible(&info->wait_que);
 }
 
-static enum alarmtimer_restart cs_alarm_timer_func(struct alarm *alarm, ktime_t now)
+static void cs_alarm_timer_func(struct alarm *alarm, ktime_t now)
 {
 	struct max1720x_priv *info = container_of(alarm, struct max1720x_priv, cs_timer);
 
@@ -1650,7 +1650,7 @@ static enum alarmtimer_restart cs_alarm_timer_func(struct alarm *alarm, ktime_t 
 		__pm_stay_awake(info->cs_wakelock);
 	}
 
-	return ALARMTIMER_NORESTART;
+	return;
 }
 
 static void cs_start_timer(struct max1720x_priv *info)

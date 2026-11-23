@@ -584,7 +584,7 @@ MODULE_DEVICE_TABLE(trusty, trusty_test_of_match);
 
 static struct platform_driver trusty_test_driver = {
 	.probe = trusty_test_probe,
-	.remove_new = trusty_test_remove,
+	.remove = trusty_test_remove,
 	.driver = {
 #ifdef MTK_ADAPTED
 		.name = "google-trusty-test",

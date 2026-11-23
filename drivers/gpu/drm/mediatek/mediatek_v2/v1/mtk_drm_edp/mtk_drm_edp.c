@@ -3316,7 +3316,7 @@ MODULE_DEVICE_TABLE(of, mtk_edp_of_match);
 
 static struct platform_driver mtk_edp_driver = {
 	.probe = mtk_edp_probe,
-	.remove_new = mtk_edp_remove,
+	.remove = mtk_edp_remove,
 	.driver = {
 		.name = "mediatek-drm-edp",
 		.of_match_table = mtk_edp_of_match,

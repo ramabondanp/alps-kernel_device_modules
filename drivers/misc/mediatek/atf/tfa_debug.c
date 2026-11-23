@@ -418,7 +418,7 @@ static int lookup_reserved_memory(void)
 	/* Remap as read-only Normal Memory */
 	pgprot_t prot = pgprot_writecombine(PAGE_KERNEL_RO);
 
-	info.vaddr = ioremap_prot(info.debug_buf_paddr, info.total_size, pgprot_val(prot));
+	info.vaddr = ioremap_prot(info.debug_buf_paddr, info.total_size, prot);
 #else
 	/*
 	 * In case ARM32 does not support ioremap_prot, we maintain backward compatibility

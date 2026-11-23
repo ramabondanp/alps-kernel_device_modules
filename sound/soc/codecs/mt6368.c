@@ -5015,7 +5015,7 @@ static struct bin_attribute codec_dev_attr_reg = {
 	.write = mt6368_codec_sysfs_write,
 };
 
-static struct bin_attribute *mtk_codec_bin_attrs[] = {
+static const struct bin_attribute *mtk_codec_bin_attrs[] = {
 	&codec_dev_attr_reg,
 	NULL,
 };

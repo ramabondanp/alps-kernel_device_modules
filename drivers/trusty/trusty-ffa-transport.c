@@ -450,7 +450,7 @@ MODULE_DEVICE_TABLE(trusty_ffa, trusty_ffa_of_match);
 
 static struct platform_driver trusty_ffa_platform_driver = {
 	.probe = trusty_ffa_platform_probe,
-	.remove_new = trusty_ffa_platform_remove,
+	.remove = trusty_ffa_platform_remove,
 	.driver	= {
 #ifdef MTK_ADAPTED
 		.name = "google-trusty-ffa",

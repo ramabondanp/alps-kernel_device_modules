@@ -985,9 +985,7 @@ static int trusty_virtio_probe(struct platform_device *pdev)
 	INIT_LIST_HEAD(&tctx->vdev_list);
 #if IS_ENABLED(CONFIG_TRUSTY_VIRTIO_POLL_VQUEUES)
 	mutex_init(&tctx->vq_timer_lock);
-	hrtimer_init(&tctx->vq_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	tctx->vq_check_period_ms = default_vq_check_period_ms;
-	tctx->vq_timer.function = vq_timer_fn;
+	hrtimer_setup(&tctx->vq_timer, vq_timer_fn, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 #endif
 	INIT_WORK(&tctx->check_vqs, check_all_vqs);
 	INIT_WORK(&tctx->kick_vqs, kick_vqs);
@@ -1115,7 +1113,7 @@ MODULE_DEVICE_TABLE(of, trusty_of_match);
 
 static struct platform_driver trusty_virtio_driver = {
 	.probe = trusty_virtio_probe,
-	.remove_new = trusty_virtio_remove,
+	.remove = trusty_virtio_remove,
 	.driver = {
 #ifdef MTK_ADAPTED
 		.name = "google-trusty-virtio",

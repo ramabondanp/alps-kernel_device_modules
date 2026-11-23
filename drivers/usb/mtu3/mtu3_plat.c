@@ -2029,7 +2029,7 @@ MODULE_DEVICE_TABLE(of, mtu3_of_match);
 
 static struct platform_driver mtu3_driver = {
 	.probe = mtu3_probe,
-	.remove_new = mtu3_remove,
+	.remove = mtu3_remove,
 	.shutdown = mtu3_shutdown,
 	.driver = {
 		.name = MTU3_DRIVER_NAME,

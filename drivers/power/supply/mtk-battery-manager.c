@@ -524,7 +524,7 @@ static int bm_shutdown_event_handler(struct mtk_battery_manager *bm)
 
 }
 
-static enum alarmtimer_restart power_misc_kthread_bm_timer_func(
+static void power_misc_kthread_bm_timer_func(
 	struct alarm *alarm, ktime_t now)
 {
 	struct shutdown_controller *info =
@@ -536,10 +536,10 @@ static enum alarmtimer_restart power_misc_kthread_bm_timer_func(
 	info->timeout |= 0x1 << BATTERY_MANAGER;
 	spin_unlock_irqrestore(&info->slock, flags);
 	wake_up_power_misc(info);
-	return ALARMTIMER_NORESTART;
+	return;
 }
 
-static enum alarmtimer_restart power_misc_kthread_gm2_timer_func(
+static void power_misc_kthread_gm2_timer_func(
 	struct alarm *alarm, ktime_t now)
 {
 	struct shutdown_controller *info =
@@ -551,10 +551,10 @@ static enum alarmtimer_restart power_misc_kthread_gm2_timer_func(
 	info->timeout |= 0x1 << BATTERY_SLAVE;
 	spin_unlock_irqrestore(&info->slock, flags);
 	wake_up_power_misc(info);
-	return ALARMTIMER_NORESTART;
+	return;
 }
 
-static enum alarmtimer_restart power_misc_kthread_gm1_timer_func(
+static void power_misc_kthread_gm1_timer_func(
 	struct alarm *alarm, ktime_t now)
 {
 	struct shutdown_controller *info =
@@ -566,7 +566,7 @@ static enum alarmtimer_restart power_misc_kthread_gm1_timer_func(
 	info->timeout |= 0x1 << BATTERY_MAIN;
 	spin_unlock_irqrestore(&info->slock, flags);
 	wake_up_power_misc(info);
-	return ALARMTIMER_NORESTART;
+	return;
 }
 
 
@@ -877,8 +877,7 @@ void battery_manager_thread_hrtimer_init(struct mtk_battery_manager *bm)
 	ktime_t ktime;
 
 	ktime = ktime_set(10, 0);
-	hrtimer_init(&bm->bm_hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	bm->bm_hrtimer.function = battery_manager_thread_hrtimer_func;
+	hrtimer_setup(&bm->bm_hrtimer, battery_manager_thread_hrtimer_func, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	hrtimer_start(&bm->bm_hrtimer, ktime, HRTIMER_MODE_REL);
 }
 #endif
@@ -950,7 +949,7 @@ static int bm_pm_event(struct notifier_block *notifier,
 #endif /* CONFIG_PM */
 
 #ifdef BM_USE_ALARM_TIMER
-enum alarmtimer_restart battery_manager_thread_alarm_func(
+void battery_manager_thread_alarm_func(
 	struct alarm *alarm, ktime_t now)
 {
 	struct mtk_battery_manager *bm;
@@ -970,7 +969,7 @@ enum alarmtimer_restart battery_manager_thread_alarm_func(
 		spin_unlock_irqrestore(&bm->slock, flags);
 	}
 
-	return ALARMTIMER_NORESTART;
+	return;
 }
 
 void battery_manager_thread_alarm_init(struct mtk_battery_manager *bm)

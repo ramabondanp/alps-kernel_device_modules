@@ -3257,15 +3257,14 @@ static inline void pe50_wakeup_algo_thread(struct pe50_algo_data *data)
 	wake_up_interruptible(&data->wq);
 }
 
-static enum alarmtimer_restart
-pe50_algo_timer_cb(struct alarm *alarm, ktime_t now)
+static void pe50_algo_timer_cb(struct alarm *alarm, ktime_t now)
 {
 	struct pe50_algo_data *data =
 		container_of(alarm, struct pe50_algo_data, timer);
 
 	PE50_DBG("++\n");
 	pe50_wakeup_algo_thread(data);
-	return ALARMTIMER_NORESTART;
+	return;
 }
 
 static void pe50_algo_data_partial_reset(struct pe50_algo_info *info)

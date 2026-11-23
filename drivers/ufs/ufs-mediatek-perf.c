@@ -2205,8 +2205,7 @@ static int ufs_mtk_init(struct ufs_hba *hba)
 	host->ufs_wake_lock = wakeup_source_register(NULL, "ufs_wake_lock");
 
 #ifdef CONFIG_PM_SLEEP
-	hrtimer_init(&host->rq_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	host->rq_timer.function = rq_timer_fn;
+	hrtimer_setup(&host->rq_timer, rq_timer_fn, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 #endif
 
 	if (host->caps & UFS_MTK_CAP_DISABLE_MCQ || !ufs_host_mcq_support(hba))

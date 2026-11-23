@@ -677,10 +677,7 @@ void mdla_prof_init(int mode)
 		mdla_device->prof->id = i;
 		mdla_device->prof->timer_started = 0;
 
-		hrtimer_init(&mdla_device->prof->polling_pmu_timer,
-					CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-		mdla_device->prof->polling_pmu_timer.function
-					= mdla_prof_pmu_polling;
+		hrtimer_setup(&mdla_device->prof->polling_pmu_timer, mdla_prof_pmu_polling, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 
 		mutex_init(&mdla_device->prof->lock);
 	}

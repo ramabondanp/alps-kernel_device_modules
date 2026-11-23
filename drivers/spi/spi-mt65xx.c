@@ -1785,7 +1785,7 @@ static int mtk_spi_probe(struct platform_device *pdev)
 	int i, irq, ret, addr_bits;
 	const char *clk_type = NULL;
 
-	ctrl = spi_alloc_master(&pdev->dev, sizeof(*mdata));
+	ctrl = spi_alloc_host(&pdev->dev, sizeof(*mdata));
 	if (!ctrl) {
 		dev_err(&pdev->dev, "failed to alloc spi master\n");
 		return -ENOMEM;

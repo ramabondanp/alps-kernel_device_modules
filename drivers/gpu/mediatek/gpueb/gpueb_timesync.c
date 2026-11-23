@@ -131,7 +131,7 @@ void gpueb_timesync_update(void)
 }
 EXPORT_SYMBOL(gpueb_timesync_update);
 
-static u64 timesync_tick_read(const struct cyclecounter *cc)
+static u64 timesync_tick_read(struct cyclecounter *cc)
 {
 	return arch_timer_read_counter();
 }

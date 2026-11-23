@@ -12,8 +12,7 @@ struct baro_context *baro_context_obj /* = NULL*/;
 static void initTimer(struct hrtimer *timer,
 		      enum hrtimer_restart (*callback)(struct hrtimer *))
 {
-	hrtimer_init(timer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
-	timer->function = callback;
+	hrtimer_setup(timer, callback, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
 }
 
 static void startTimer(struct hrtimer *timer, int delay_ms, bool first)

@@ -348,8 +348,7 @@ static void ambient_info_init(struct ambient_info *info)
 	info->plug_in_time.tv_sec = -1;
 }
 
-static enum alarmtimer_restart
-	ambient_alarm_timer_func(struct alarm *alarm, ktime_t now)
+static void ambient_alarm_timer_func(struct alarm *alarm, ktime_t now)
 {
 	struct ambient_info *info =
 		container_of(alarm, struct ambient_info, ambient_alarm);
@@ -358,7 +357,7 @@ static enum alarmtimer_restart
 	schedule_work(&info->ambient_det_work);
 
 
-	return ALARMTIMER_NORESTART;
+	return;
 }
 
 static void ambient_init_alarm_timer(struct ambient_info *info)

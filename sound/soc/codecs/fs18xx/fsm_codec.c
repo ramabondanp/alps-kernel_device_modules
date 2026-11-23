@@ -610,8 +610,7 @@ static int fsm_codec_probe(struct snd_soc_codec *codec)
 		return -EINVAL;
 	}
 #ifdef FSM_USE_HRTIMER
-	hrtimer_init(&fsm_codec->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	fsm_codec->timer.function = fsm_timer_callback;
+	hrtimer_setup(&fsm_codec->timer, fsm_timer_callback, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	INIT_WORK(&fsm_codec->monitor_work, fsm_codec_monitor);
 	atomic_set(&fsm_codec->running, 0);
 #else

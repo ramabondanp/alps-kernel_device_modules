@@ -251,7 +251,7 @@ static int mtk_pinconf_set(struct pinctrl_dev *pctldev, unsigned int pin,
 		/* regard all non-zero value as enable */
 		err = mtk_hw_set_value(hw, desc, PINCTRL_PIN_REG_SR, !!arg);
 		break;
-	case PIN_CONFIG_OUTPUT:
+	case PIN_CONFIG_LEVEL:
 		err = mtk_hw_set_value(hw, desc, PINCTRL_PIN_REG_DO,
 				       arg);
 		if (err)
@@ -1388,7 +1388,7 @@ static int mt63xx_pinconf_set(struct pinctrl_dev *pctldev, unsigned int pin,
 		err = mt63xx_hw_set_value(hw, pin, PINCTRL_PIN_REG_DIR,
 				       MTK_INPUT);
 		break;
-	case PIN_CONFIG_OUTPUT:
+	case PIN_CONFIG_LEVEL:
 		err = mt63xx_hw_set_value(hw, pin, PINCTRL_PIN_REG_DIR,
 				       MTK_OUTPUT);
 		if (err)

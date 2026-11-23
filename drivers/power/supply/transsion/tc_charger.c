@@ -2719,8 +2719,7 @@ static int charger_pm_event(struct notifier_block *notifier,
 	return NOTIFY_DONE;
 }
 
-static enum alarmtimer_restart
-	tc_charger_alarm_timer_func(struct alarm *alarm, ktime_t now)
+static void tc_charger_alarm_timer_func(struct alarm *alarm, ktime_t now)
 {
 	struct tc_data *data =
 		container_of(alarm, struct tc_data, charger_timer);
@@ -2752,7 +2751,7 @@ static enum alarmtimer_restart
 			(long long)ktime_us_delta(time_p[7], time_p[6]),
 			(long long)ktime_us_delta(time_p[7], time_p[0]));
 
-	return ALARMTIMER_NORESTART;
+	return;
 }
 
 static void tc_charger_init_timer(struct tc_charger *info)
@@ -3635,7 +3634,7 @@ static int tc_charger_prop_init(struct tc_charger *info)
 	return 0;
 }
 
-static enum alarmtimer_restart tc_alarm_timer_long_life_rechg_func(struct alarm *alarm, ktime_t now)
+static void tc_alarm_timer_long_life_rechg_func(struct alarm *alarm, ktime_t now)
 {
 	struct tc_data *data = container_of(alarm, struct tc_data, long_life_rechg_timer);
 	struct tc_charger *info = data->info;
@@ -3646,7 +3645,7 @@ static enum alarmtimer_restart tc_alarm_timer_long_life_rechg_func(struct alarm 
 
 	tchr_info("%s: alarm recharger timer func run succ\n", __func__);
 
-	return ALARMTIMER_NORESTART;
+	return;
 }
 
 void tc_start_alarm_recharger_timer(struct tc_charger *info)
@@ -3689,8 +3688,7 @@ static void tc_init_long_life_recharger_timer(struct tc_charger *info)
 	tchr_err("%s: alarm recharger timer init\n", __func__);
 }
 
-static enum alarmtimer_restart
-	tc_alarm_timer_eoc_func(struct alarm *alarm, ktime_t now)
+static void tc_alarm_timer_eoc_func(struct alarm *alarm, ktime_t now)
 {
 	struct tc_data *data = container_of(alarm,
 		struct tc_data, dual_batt_eoc_timer);
@@ -3702,7 +3700,7 @@ static enum alarmtimer_restart
 
 	tchr_info("%s: alarm dual battery enable eoc func run succ\n", __func__);
 
-	return ALARMTIMER_NORESTART;
+	return;
 }
 
 void tc_start_dual_batt_eoc_timer(struct tc_charger *info)
@@ -3751,14 +3749,14 @@ void tc_wakeup_decimal_soc_report_thread(struct real_soc_decimal_data *data)
 	wake_up_interruptible(&data->decimal_wq);
 }
 
-static enum alarmtimer_restart tc_decimal_soc_report_timer_cb(struct alarm *alarm, ktime_t now)
+static void tc_decimal_soc_report_timer_cb(struct alarm *alarm, ktime_t now)
 {
 	struct real_soc_decimal_data *data = container_of(alarm,
 		struct real_soc_decimal_data, decimal_timer);
 
 	tc_wakeup_decimal_soc_report_thread(data);
 
-	return ALARMTIMER_NORESTART;
+	return;
 }
 
 static int tc_decimal_soc_report_thread(void *param)
@@ -3806,13 +3804,13 @@ out:
 	return 0;
 }
 
-static enum alarmtimer_restart tc_alarm_charge_decimal_timeout_func(struct alarm *alarm, ktime_t now)
+static void tc_alarm_charge_decimal_timeout_func(struct alarm *alarm, ktime_t now)
 {
 	struct tc_data *tdata = NULL;
 	union com_propval val = {0, };
 	struct real_soc_decimal_data *data = container_of(alarm, struct real_soc_decimal_data, charge_decimal_timeout_timer);
 	if (IS_ERR_OR_NULL(data))
-		return ALARMTIMER_NORESTART;
+		return;
 	tdata =  container_of(&data, struct tc_data, real_soc_data);
 
 	if (IS_ERR_OR_NULL(tdata->tran_batt_dev))
@@ -3826,7 +3824,7 @@ static enum alarmtimer_restart tc_alarm_charge_decimal_timeout_func(struct alarm
 
 	tchr_info("%s: run succ\n", __func__);
 
-	return ALARMTIMER_NORESTART;
+	return;
 }
 
 void tc_start_charge_decimal_timeout_alarm_timer(struct real_soc_decimal_data *data, u32 time_out)

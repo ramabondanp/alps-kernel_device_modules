@@ -939,8 +939,7 @@ static int aw22xxx_fw_init(struct aw22xxx *aw22xxx)
 
     atomic_set(&aw22xxx->soft_show_en, 0);
     atomic_set(&aw22xxx->lamp_init_done, 0);
-    hrtimer_init(&aw22xxx->fw_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-    aw22xxx->fw_timer.function = aw22xxx_fw_timer_func;
+    hrtimer_setup(&aw22xxx->fw_timer, aw22xxx_fw_timer_func, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
     INIT_WORK(&aw22xxx->fw_work, aw22xxx_fw_work_routine);
     INIT_WORK(&aw22xxx->cfg_work, aw22xxx_cfg_work_routine);
     hrtimer_start(&aw22xxx->fw_timer,

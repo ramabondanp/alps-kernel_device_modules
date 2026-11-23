@@ -702,12 +702,12 @@ static void auxadc_vbat0_poll_work(struct work_struct *work)
 	__pm_relax(priv->vbat0_ws);
 }
 
-static enum alarmtimer_restart vbat0_alarm_poll_func(struct alarm *alarm, ktime_t now)
+static void vbat0_alarm_poll_func(struct alarm *alarm, ktime_t now)
 {
 	struct mt6375_priv *priv = container_of(alarm, struct mt6375_priv, vbat0_alarm);
 
 	schedule_work(&priv->vbat0_work);
-	return ALARMTIMER_NORESTART;
+	return;
 }
 
 static int mt6375_auxadc_check_vbat_event(struct mt6375_priv *priv, u8 *status_buf)

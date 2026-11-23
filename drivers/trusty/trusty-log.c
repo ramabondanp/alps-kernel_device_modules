@@ -994,7 +994,7 @@ MODULE_DEVICE_TABLE(trusty, trusty_test_of_match);
 
 static struct platform_driver trusty_log_driver = {
 	.probe = trusty_log_probe,
-	.remove_new = trusty_log_remove,
+	.remove = trusty_log_remove,
 	.driver = {
 #ifdef MTK_ADAPTED
 		.name = "google-trusty-log",

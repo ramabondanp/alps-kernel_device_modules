@@ -560,9 +560,7 @@ int vpu_init_drv_met(void)
 	int i;
 
 	spin_lock_init(&vpu_drv->met_hrt.lock);
-	hrtimer_init(&vpu_drv->met_hrt.t,
-		CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	vpu_drv->met_hrt.t.function = vpu_met_pm_hrt_func;
+	hrtimer_setup(&vpu_drv->met_hrt.t, vpu_met_pm_hrt_func, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	refcount_set(&vpu_drv->met_hrt.ref.refcount, 0);
 
 	vpu_drv->ilog = 0;

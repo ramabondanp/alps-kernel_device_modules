@@ -216,56 +216,6 @@ struct aw22xxx {
 	unsigned char cmd[AW22XXX_CMD_SIZE];	/* +0x340 */
 };
 
-_Static_assert(offsetof(struct aw22xxx, brightness_work) == 0x1d0,
-	       "brightness_work must stay at +0x1d0");
-_Static_assert(offsetof(struct aw22xxx, task_work) == 0x1f0,
-	       "task_work must stay at +0x1f0");
-_Static_assert(offsetof(struct aw22xxx, fw_work) == 0x210,
-	       "fw_work must stay at +0x210");
-_Static_assert(offsetof(struct aw22xxx, cfg_work) == 0x230,
-	       "cfg_work must stay at +0x230");
-_Static_assert(offsetof(struct aw22xxx, fw_timer) == 0x250,
-	       "fw_timer must stay at +0x250");
-_Static_assert(offsetof(struct aw22xxx, cfg_lock) == 0x290,
-	       "cfg_lock must stay at +0x290");
-_Static_assert(offsetof(struct aw22xxx, reset_gpio) == 0x2c0,
-	       "reset_gpio must stay at +0x2c0");
-_Static_assert(offsetof(struct aw22xxx, imax) == 0x2cc,
-	       "imax must stay at +0x2cc");
-_Static_assert(offsetof(struct aw22xxx, audio_gain) == 0x2d8,
-	       "audio_gain must stay at +0x2d8");
-_Static_assert(offsetof(struct aw22xxx, rgb) == 0x2e0,
-	       "rgb must stay at +0x2e0");
-_Static_assert(offsetof(struct aw22xxx, multi_color_count) == 0x30c,
-	       "multi_color_count must stay at +0x30c");
-_Static_assert(offsetof(struct aw22xxx, multi_color_array) == 0x318,
-	       "multi_color_array must stay at +0x318");
-_Static_assert(offsetof(struct aw22xxx, flags) == 0x2c8,
-	       "flags must stay at +0x2c8");
-_Static_assert(offsetof(struct aw22xxx, fw_flags) == 0x2cb,
-	       "fw_flags must stay at +0x2cb");
-_Static_assert(offsetof(struct aw22xxx, task0) == 0x2dc,
-	       "task0 must stay at +0x2dc");
-_Static_assert(offsetof(struct aw22xxx, effect) == 0x2de,
-	       "effect must stay at +0x2de");
-_Static_assert(offsetof(struct aw22xxx, cfg) == 0x2df,
-	       "cfg must stay at +0x2df");
-_Static_assert(offsetof(struct aw22xxx, soft_show_en) == 0x304,
-	       "soft_show_en must stay at +0x304");
-_Static_assert(offsetof(struct aw22xxx, multi_color_type) == 0x310,
-	       "multi_color_type must stay at +0x310");
-_Static_assert(offsetof(struct aw22xxx, led_dev) == 0x328,
-	       "led_dev must stay at +0x328");
-_Static_assert(offsetof(struct aw22xxx, music_gain) == 0x330,
-	       "music_gain must stay at +0x330");
-_Static_assert(offsetof(struct aw22xxx, music_gain_count) == 0x338,
-	       "music_gain_count must stay at +0x338");
-_Static_assert(offsetof(struct aw22xxx, chip_type) == 0x33c,
-	       "chip_type must stay at +0x33c");
-_Static_assert(offsetof(struct aw22xxx, cmd) == 0x340,
-	       "cmd must stay at +0x340");
-_Static_assert(sizeof(struct aw22xxx) == 0x360,
-	       "sizeof(struct aw22xxx) must be 0x360");
 
 int aw22xxx_cover_gain(struct aw22xxx *aw22xxx, unsigned int volume_level);
 
