@@ -62,7 +62,6 @@ static const struct file_operations vkms_driver_fops = {
 	.compat_ioctl	= drm_compat_ioctl,
 	.poll		= drm_poll,
 	.read		= drm_read,
-	.llseek		= noop_llseek,
 	.mmap		= mtk_drm_gem_mmap,
 };
 

@@ -232,7 +232,6 @@ static const struct file_operations ise_rpmb_fops = {
 	.compat_ioctl   = ise_rpmb_compat_ioctl,
 #endif
 	.owner          = THIS_MODULE,
-	.llseek         = noop_llseek,
 };
 
 #define ISE_RPMB_NAME "ise-rpmb"

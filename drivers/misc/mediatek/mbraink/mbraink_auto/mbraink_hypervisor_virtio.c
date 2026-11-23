@@ -475,7 +475,6 @@ static const struct file_operations vhost_mbraink_fops = {
 	.owner          = THIS_MODULE,
 	.open           = vhost_mbraink_open,
 	.release        = vhost_mbraink_release,
-	.llseek         = noop_llseek,
 	.unlocked_ioctl = vhost_mbraink_ioctl,
 };
 

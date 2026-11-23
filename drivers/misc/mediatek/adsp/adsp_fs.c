@@ -414,7 +414,6 @@ const struct file_operations adsp_trace_ops = {
 	.read = adsp_trace_read,
 	.write = adsp_trace_write,
 	.poll = adsp_trace_poll,
-	.llseek = noop_llseek,
 };
 
 /* ---------------------------- mbrain fs ----------------------------------- */

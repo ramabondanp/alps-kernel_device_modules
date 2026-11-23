@@ -284,7 +284,6 @@ static const struct file_operations rpmb_fops = {
 	.compat_ioctl   = rpmb_compat_ioctl,
 #endif
 	.owner          = THIS_MODULE,
-	.llseek         = noop_llseek,
 };
 
 void rpmb_cdev_prepare(struct rpmb_dev *rdev)

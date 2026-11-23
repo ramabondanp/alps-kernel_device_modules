@@ -830,7 +830,6 @@ static const struct file_operations vhost_vm_fops = {
 	.owner          = THIS_MODULE,
 	.open           = vhost_vm_open,
 	.release        = vhost_vm_release,
-	.llseek         = noop_llseek,
 	.unlocked_ioctl = vhost_vm_ioctl,
 };
 
