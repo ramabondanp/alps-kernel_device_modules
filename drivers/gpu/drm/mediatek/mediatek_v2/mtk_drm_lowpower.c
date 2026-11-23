@@ -512,7 +512,6 @@ static void mtk_drm_adjust_cpu_freq(struct drm_crtc *crtc, bool bind,
 	struct mtk_drm_idlemgr_context *idlemgr_ctx = idlemgr->idlemgr_ctx;
 	struct mtk_drm_idlemgr_perf *perf = idlemgr->perf;
 	unsigned long long start, end, period;
-	struct cpufreq_policy cpu_policy;
 	unsigned int freq = 0;
 	int ret = 0, i = 0, detail = 0, j = 0, retry_cnt = 5, crtc_id;
 	bool updated = false;
@@ -565,15 +564,10 @@ static void mtk_drm_adjust_cpu_freq(struct drm_crtc *crtc, bool bind,
 				if (detail != 0)
 					mtk_drm_trace_begin("polling:%u", j);
 				usleep_range(100, 150);
-				ret = cpufreq_get_policy(&cpu_policy, cpus[i]);
+				ret = cpufreq_get(cpus[i]);
 				if (detail != 0)
 					mtk_drm_trace_end();
-				if (ret) {
-					DDPMSG("%s, polling err, cpu%u freq:%u, ret:%d\n",
-						__func__, cpus[i], freq, ret);
-					break;
-				}
-				if (cpu_policy.cur >= freq) {
+				if (ret >= freq) {
 					updated = true;
 					break;
 				}
@@ -582,7 +576,7 @@ static void mtk_drm_adjust_cpu_freq(struct drm_crtc *crtc, bool bind,
 				break;
 
 			DDPINFO("%s, failed to polling cpu%u freq%u,retry:%u,cur_freq:%uKhz\n",
-				__func__, cpus[i], freq, j, cpu_policy.cur);
+				__func__, cpus[i], freq, j, ret);
 		}
 	} else {
 		for (i = 0; i < count; i++) {

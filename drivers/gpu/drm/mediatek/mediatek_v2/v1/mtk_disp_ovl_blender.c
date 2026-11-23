@@ -797,8 +797,6 @@ static int mtk_ovl_blender_io_cmd(struct mtk_ddp_comp *comp, struct cmdq_pkt *ha
 			(struct mtk_ddp_fb_info *)params;
 
 		mtk_ovl_replace_bootup_mva(comp, handle, params, fb_info);
-		if (priv->data->mmsys_id == MMSYS_MT6989)
-			iommu_dev_disable_feature(comp->dev, IOMMU_DEV_FEAT_BYPASS_S1);
 		#endif
 		break;
 	}
