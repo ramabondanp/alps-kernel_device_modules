@@ -90,9 +90,7 @@ define_mgk_ddk_ko(
 		"3.0/inc/*.h",
 		"3.0/inc/platform/*.h",
 		"*.h",
-	]) + [
-		"//common:drivers/devfreq/governor.h",
-	],
+	]),
 	# include directory for relative path
 	includes = [
 		"2.5/common",

@@ -180,28 +180,22 @@ int fpsgo_arch_nr_clusters(void)
 
 int fpsgo_arch_nr_get_opp_cpu(int cpu)
 {
-	struct cpufreq_policy *curr_policy = NULL;
+	struct cpufreq_policy *curr_policy;
 	struct cpufreq_frequency_table *pos, *table;
 	int idx;
 	int nr_opp = 0;
-	int ret = 0;
 
-	curr_policy = kzalloc(sizeof(struct cpufreq_policy), GFP_KERNEL);
+	curr_policy = cpufreq_cpu_get(cpu);
 	if (!curr_policy)
-		goto out;
+		return 0;
 
-	ret = cpufreq_get_policy(curr_policy, cpu);
-	if (ret == 0) {
-		table = curr_policy->freq_table;
-		if (table) {
-			cpufreq_for_each_valid_entry_idx(pos, table, idx) {
-				nr_opp++;
-			}
-		}
+	table = curr_policy->freq_table;
+	if (table) {
+		cpufreq_for_each_valid_entry_idx(pos, table, idx)
+			nr_opp++;
 	}
 
-out:
-	kfree(curr_policy);
+	cpufreq_cpu_put(curr_policy);
 	return nr_opp;
 }
 
@@ -209,27 +203,21 @@ int fpsgo_arch_nr_max_opp_cpu(void)
 {
 	int num_opp = 0, max_opp = 0;
 	int cpu;
-	int ret = 0;
-	struct cpufreq_policy *curr_policy = NULL;
-
-	curr_policy = kzalloc(sizeof(struct cpufreq_policy), GFP_KERNEL);
-	if (!curr_policy)
-		goto out;
+	struct cpufreq_policy *curr_policy;
 
 	for_each_possible_cpu(cpu) {
-		ret = cpufreq_get_policy(curr_policy, cpu);
-		if (ret != 0)
+		curr_policy = cpufreq_cpu_get(cpu);
+		if (!curr_policy)
 			continue;
 
 		num_opp = fpsgo_arch_nr_get_opp_cpu(cpu);
 		cpu = cpumask_last(curr_policy->related_cpus);
+		cpufreq_cpu_put(curr_policy);
 
 		if (max_opp < num_opp)
 			max_opp = num_opp;
 	}
 
-out:
-	kfree(curr_policy);
 	return max_opp;
 }
 

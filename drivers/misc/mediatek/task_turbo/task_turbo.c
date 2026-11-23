@@ -103,7 +103,7 @@ static DEFINE_SPINLOCK(TURBO_SPIN_LOCK);
 static DEFINE_SPINLOCK(RWSEM_SPIN_LOCK);
 static pid_t turbo_pid[TURBO_PID_COUNT] = {0};
 static unsigned int task_turbo_feats;
-static struct task_struct *inherited_rwsem_owners[INHERITED_RWSEM_COUNT] = {NULL};
+static struct task_struct *inherited_tt_rwsem_owners[INHERITED_RWSEM_COUNT] = {NULL};
 static struct cgroup_subsys_state *top_app_css;
 int *tt_vip_enable_p;
 EXPORT_SYMBOL(tt_vip_enable_p);
@@ -117,9 +117,9 @@ static bool binder_start_turbo_inherit(struct task_struct *from,
 					struct task_struct *to);
 static void binder_stop_turbo_inherit(struct task_struct *p);
 #endif
-static inline struct task_struct *rwsem_owner(struct rw_semaphore *sem);
+static inline struct task_struct *tt_rwsem_owner(struct rw_semaphore *sem);
 static inline bool rwsem_test_oflags(struct rw_semaphore *sem, long flags);
-static inline bool is_rwsem_reader_owned(struct rw_semaphore *sem);
+static inline bool tt_is_rwsem_reader_owned(struct rw_semaphore *sem);
 static void rwsem_start_turbo_inherit(struct rw_semaphore *sem);
 static bool sub_feat_enable(int type);
 static bool start_turbo_inherit(struct task_struct *task, int type, int cnt);
@@ -298,18 +298,17 @@ static void probe_android_vh_binder_set_priority(void *ignore, struct binder_tra
 }
 
 static void probe_android_vh_binder_restore_priority(void *ignore,
-		struct binder_transaction *in_reply_to, struct task_struct *cur)
+		struct binder_transaction *in_reply_to)
 {
 	struct task_struct *inherit_task;
 
 	if (in_reply_to) {
 		inherit_task = get_inherit_task(in_reply_to);
-		if (cur && cur == inherit_task) {
-			binder_stop_turbo_inherit(cur);
+		if (inherit_task) {
+			binder_stop_turbo_inherit(inherit_task);
 			in_reply_to->android_vendor_data1 = 0;
 		}
-	} else
-		binder_stop_turbo_inherit(cur);
+	}
 }
 
 static void probe_android_vh_alter_futex_plist_add(void *ignore, struct plist_node *q_list,
@@ -357,7 +356,7 @@ void task_turbo_select_task_rq_fair(struct task_struct *p, int *target_cpu)
 	*target_cpu = select_turbo_cpu(p);
 }
 
-static inline struct task_struct *rwsem_owner(struct rw_semaphore *sem)
+static inline struct task_struct *tt_rwsem_owner(struct rw_semaphore *sem)
 {
 	return (struct task_struct *)
 		(atomic_long_read(&sem->owner) & ~RWSEM_OWNER_FLAGS_MASK);
@@ -368,7 +367,7 @@ static inline bool rwsem_test_oflags(struct rw_semaphore *sem, long flags)
 	return atomic_long_read(&sem->owner) & flags;
 }
 
-static inline bool is_rwsem_reader_owned(struct rw_semaphore *sem)
+static inline bool tt_is_rwsem_reader_owned(struct rw_semaphore *sem)
 {
 #if IS_ENABLED(CONFIG_DEBUG_RWSEMS)
 	/*
@@ -634,9 +633,9 @@ static void rwsem_stop_turbo_inherit(struct rw_semaphore *sem)
 		goto out_unlock;
 
 	for (i = 0; i < INHERITED_RWSEM_COUNT; i++)
-		if (inherited_rwsem_owners[i] == inherited_owner) {
+		if (inherited_tt_rwsem_owners[i] == inherited_owner) {
 			found = true;
-			inherited_rwsem_owners[i] = NULL;
+			inherited_tt_rwsem_owners[i] = NULL;
 			break;
 		}
 	if (!found)
@@ -699,18 +698,18 @@ static void rwsem_start_turbo_inherit(struct rw_semaphore *sem)
 		return;
 
 	spin_lock_irqsave(&RWSEM_SPIN_LOCK, flags);
-	owner = rwsem_owner(sem);
+	owner = tt_rwsem_owner(sem);
 	should_inherit = should_set_inherit_turbo(current);
 	if (should_inherit) {
 		inherited_owner = get_inherit_task(sem);
 		turbo_data = get_task_turbo_t(current);
-		if (owner && !is_rwsem_reader_owned(sem) &&
+		if (owner && !tt_is_rwsem_reader_owned(sem) &&
 		    !is_turbo_task(owner) &&
 		    !inherited_owner) {
 			for (i = 0; i < INHERITED_RWSEM_COUNT; i++)
-				if (!inherited_rwsem_owners[i]) {
+				if (!inherited_tt_rwsem_owners[i]) {
 					found = true;
-					inherited_rwsem_owners[i] = owner;
+					inherited_tt_rwsem_owners[i] = owner;
 					break;
 				}
 			if (!found)
