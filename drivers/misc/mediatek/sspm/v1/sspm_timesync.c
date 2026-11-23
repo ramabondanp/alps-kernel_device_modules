@@ -179,9 +179,7 @@ unsigned int __init sspm_timesync_init(void)
 	 */
 	timecounter_init(&timesync_counter, &timesync_cc, sched_clock());
 
-	hrtimer_init(&timesync_refresh_timer,
-				CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	timesync_refresh_timer.function = timesync_refresh;
+	hrtimer_setup(&timesync_refresh_timer, timesync_refresh, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	hrtimer_start(&timesync_refresh_timer,
 		timesync_ctx.wrap_kt, HRTIMER_MODE_REL);
 

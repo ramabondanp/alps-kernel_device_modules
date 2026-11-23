@@ -3405,8 +3405,7 @@ static int __init eem_init(void)
 		return 0;
 	}
 	/* init timer for log / volt */
-	hrtimer_init(&eem_log_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	eem_log_timer.function = eem_log_timer_func;
+	hrtimer_setup(&eem_log_timer, eem_log_timer_func, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	/*
 	 * reg platform device driver
 	 */

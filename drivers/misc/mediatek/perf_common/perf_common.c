@@ -379,8 +379,7 @@ static int __init init_perf_common(void)
 	perf_common_init = 1;
 	atomic_set(&perf_in_progress, 0);
 
-	hrtimer_init(&perf_hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	perf_hrtimer.function = perf_timer_handler;
+	hrtimer_setup(&perf_hrtimer, perf_timer_handler, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	kt_period = ktime_set(0, perf_timer_delay); // 0 second, 4000000 nanoseconds
 
 	perf_tracker_info_exist = is_perf_tracker_info_exist();

@@ -1836,8 +1836,7 @@ int __init fpsgo_composer_init(void)
 	fpsgo_com_policy_cmd_tree = RB_ROOT;
 
 	composer_wq = alloc_ordered_workqueue("composer_wq", WQ_MEM_RECLAIM | WQ_HIGHPRI);
-	hrtimer_init(&recycle_hrt, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	recycle_hrt.function = &prepare_do_recycle;
+	hrtimer_setup(&recycle_hrt, &prepare_do_recycle, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 
 	hrtimer_start(&recycle_hrt, ktime_set(0, NSEC_PER_SEC), HRTIMER_MODE_REL);
 

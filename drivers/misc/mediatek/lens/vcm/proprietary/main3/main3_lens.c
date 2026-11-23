@@ -427,8 +427,7 @@ static int AF_Open(struct inode *a_pstInode, struct file *a_pstFile)
 	INIT_WORK(&ois_work, ois_pos_polling);
 
 	/* init timer */
-	hrtimer_init(&ois_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	ois_timer.function = ois_timer_func;
+	hrtimer_setup(&ois_timer, ois_timer_func, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 
 	g_EnableTimer = 0;
 	/* ------------------------- */

@@ -511,14 +511,10 @@ int carevent_probe(struct platform_device *pdev)
 		return -EIO;
 	}
 
-	hrtimer_init(&sleep_gpio_stable_timer, CLOCK_MONOTONIC,
-		     HRTIMER_MODE_REL);
-	sleep_gpio_stable_timer.function = sleep_gpio_stable_hrtimer_func;
+	hrtimer_setup(&sleep_gpio_stable_timer, sleep_gpio_stable_hrtimer_func, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 
 	if (has_reverse) {
-		hrtimer_init(&reverse_gpio_stable_timer, CLOCK_MONOTONIC,
-				HRTIMER_MODE_REL);
-		reverse_gpio_stable_timer.function = reverse_gpio_stable_hrtimer_func;
+		hrtimer_setup(&reverse_gpio_stable_timer, reverse_gpio_stable_hrtimer_func, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	}
 
 	switch_irq_lock = wakeup_source_register(NULL, "carevent_acc_irq_lock");

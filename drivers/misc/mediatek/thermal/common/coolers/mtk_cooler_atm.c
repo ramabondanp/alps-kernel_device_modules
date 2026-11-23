@@ -3532,9 +3532,7 @@ static void atm_hrtimer_init(void)
 
 	ktime = ktime_set(0, atm_hrtimer_polling_delay_jiffies);
 
-	hrtimer_init(&atm_hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-
-	atm_hrtimer.function = atm_loop;
+	hrtimer_setup(&atm_hrtimer, atm_loop, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	hrtimer_start(&atm_hrtimer, ktime, HRTIMER_MODE_REL);
 }
 #elif KRTATM_TIMER == KRTATM_NORMAL

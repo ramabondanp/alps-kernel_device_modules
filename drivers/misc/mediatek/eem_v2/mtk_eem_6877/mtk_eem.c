@@ -2090,8 +2090,7 @@ struct eemsn_det *det;
 
 #if ENABLE_INIT_TIMER
 	/* init timer for log / volt */
-	hrtimer_init(&eem_init_check_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	eem_init_check_timer.function = eem_init_check_timer_func;
+	hrtimer_setup(&eem_init_check_timer, eem_init_check_timer_func, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	INIT_WORK(&eem_work, eem_post_work);
 #endif
 	/*

@@ -849,10 +849,8 @@ static int aw3644_i2c_probe(struct i2c_client *client,
 	INIT_WORK(&aw3644_work_ch2, aw3644_work_disable_ch2);
 
 	/* init timer */
-	hrtimer_init(&aw3644_timer_ch1, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	aw3644_timer_ch1.function = aw3644_timer_func_ch1;
-	hrtimer_init(&aw3644_timer_ch2, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	aw3644_timer_ch2.function = aw3644_timer_func_ch2;
+	hrtimer_setup(&aw3644_timer_ch1, aw3644_timer_func_ch1, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+	hrtimer_setup(&aw3644_timer_ch2, aw3644_timer_func_ch2, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	aw3644_timeout_ms[AW3644_CHANNEL_CH1] = 100;
 	aw3644_timeout_ms[AW3644_CHANNEL_CH2] = 100;
 	/* init chip hw */

@@ -234,9 +234,7 @@ unsigned int mcupm_timesync_init(void)
 	 */
 	timecounter_init(&timesync_counter, &timesync_cc, sched_clock());
 
-	hrtimer_init(&timesync_refresh_timer,
-				CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	timesync_refresh_timer.function = timesync_refresh;
+	hrtimer_setup(&timesync_refresh_timer, timesync_refresh, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	hrtimer_start(&timesync_refresh_timer, wrap, HRTIMER_MODE_REL);
 
 	pr_info("%s ts: cycle_last %lld, time_base:%lld, wrap:%lld, mask:0x%llx, max_ver:%d\n",

@@ -467,8 +467,7 @@ static int __init pmsr_init(void)
 	/* register ipi for AP2SSPM communication */
 	pmsr_ipi_init();
 
-	hrtimer_init(&pmsr_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	pmsr_timer.function = pmsr_timer_handle;
+	hrtimer_setup(&pmsr_timer, pmsr_timer_handle, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 
 	return 0;
 }

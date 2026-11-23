@@ -839,10 +839,8 @@ static int mt6336_probe(struct platform_device *pdev)
 	INIT_WORK(&mt6336_work_ch2, mt6336_work_disable_ch2);
 
 	/* init timer */
-	hrtimer_init(&mt6336_timer_ch1, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	mt6336_timer_ch1.function = mt6336_timer_func_ch1;
-	hrtimer_init(&mt6336_timer_ch2, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	mt6336_timer_ch2.function = mt6336_timer_func_ch2;
+	hrtimer_setup(&mt6336_timer_ch1, mt6336_timer_func_ch1, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+	hrtimer_setup(&mt6336_timer_ch2, mt6336_timer_func_ch2, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	mt6336_timeout_ms[MT6336_CHANNEL_CH1] = 600;
 	mt6336_timeout_ms[MT6336_CHANNEL_CH2] = 600;
 

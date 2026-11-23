@@ -807,10 +807,8 @@ static int ocp81375_i2c_probe(struct i2c_client *client)
 	INIT_WORK(&ocp81375_work_ch2, ocp81375_work_disable_ch2);
 
 	/* init timer */
-	hrtimer_init(&ocp81375_timer_ch1, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	ocp81375_timer_ch1.function = ocp81375_timer_func_ch1;
-	hrtimer_init(&ocp81375_timer_ch2, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	ocp81375_timer_ch2.function = ocp81375_timer_func_ch2;
+	hrtimer_setup(&ocp81375_timer_ch1, ocp81375_timer_func_ch1, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+	hrtimer_setup(&ocp81375_timer_ch2, ocp81375_timer_func_ch2, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	ocp81375_timeout_ms[OCP81375_CHANNEL_CH1] = 100;
 	ocp81375_timeout_ms[OCP81375_CHANNEL_CH2] = 100;
 	/* init chip hw */

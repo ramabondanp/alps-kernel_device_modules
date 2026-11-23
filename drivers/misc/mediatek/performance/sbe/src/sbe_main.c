@@ -1623,8 +1623,7 @@ static int sbe_kthread(void *arg)
 
 static int __init sbe_init(void)
 {
-	hrtimer_init(&sbe_recycle_hrt, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	sbe_recycle_hrt.function = &sbe_prepare_do_recycle;
+	hrtimer_setup(&sbe_recycle_hrt, &sbe_prepare_do_recycle, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	hrtimer_start(&sbe_recycle_hrt, ktime_set(0, NSEC_PER_SEC), HRTIMER_MODE_REL);
 
 	sbe_ktsk = kthread_create(sbe_kthread, NULL, "sbe_kthread");

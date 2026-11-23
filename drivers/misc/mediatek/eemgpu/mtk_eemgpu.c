@@ -3101,8 +3101,7 @@ static int __init eemg_init(void)
 	}
 
 	/* init timer for log / volt */
-	hrtimer_init(&eemg_log_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	eemg_log_timer.function = eemg_log_timer_func;
+	hrtimer_setup(&eemg_log_timer, eemg_log_timer_func, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 
 	/*
 	 * reg platform device driver

@@ -666,10 +666,8 @@ static int rt5081_probe(struct platform_device *pdev)
 	INIT_WORK(&rt5081_work_ch2, rt5081_work_disable_ch2);
 
 	/* init timer */
-	hrtimer_init(&rt5081_timer_ch1, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	rt5081_timer_ch1.function = rt5081_timer_func_ch1;
-	hrtimer_init(&rt5081_timer_ch2, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	rt5081_timer_ch2.function = rt5081_timer_func_ch2;
+	hrtimer_setup(&rt5081_timer_ch1, rt5081_timer_func_ch1, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+	hrtimer_setup(&rt5081_timer_ch2, rt5081_timer_func_ch2, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	rt5081_timeout_ms[RT5081_CHANNEL_CH1] = 600;
 	rt5081_timeout_ms[RT5081_CHANNEL_CH2] = 600;
 

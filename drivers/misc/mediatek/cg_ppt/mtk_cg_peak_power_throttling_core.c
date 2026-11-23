@@ -738,8 +738,7 @@ static enum hrtimer_restart hr_timer_callback(struct hrtimer *timer)
 static void hr_timer_init(void)
 {
 	// Initialize and set up hr_timer
-	hrtimer_init(&g_hr_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	g_hr_timer.function = hr_timer_callback;
+	hrtimer_setup(&g_hr_timer, hr_timer_callback, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	hr_timer_interval_ns = ktime_set(0, 1000 * 1000); // 1 ms
 }
 

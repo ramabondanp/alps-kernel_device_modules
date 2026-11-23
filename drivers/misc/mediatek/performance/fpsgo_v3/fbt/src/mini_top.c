@@ -1167,8 +1167,7 @@ int __init minitop_init(void)
 		goto err;
 
 
-	hrtimer_init(&hrt, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	hrt.function = &mt_mini_top;
+	hrtimer_setup(&hrt, &mt_mini_top, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 
 	atomic_set(&__minitop_enable, 1);
 

@@ -3223,8 +3223,7 @@ int mtk_fstb_init(void)
 
 	fstb_wq = alloc_ordered_workqueue("%s", WQ_MEM_RECLAIM | WQ_HIGHPRI, "mt_fstb");
 
-	hrtimer_init(&fstb_hrt, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	fstb_hrt.function = &mt_fstb;
+	hrtimer_setup(&fstb_hrt, &mt_fstb, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 
 #if IS_ENABLED(CONFIG_MTK_GPU_COMMON_DVFS_SUPPORT)
 	ged_kpi_output_gfx_info2_fp = gpu_time_update;

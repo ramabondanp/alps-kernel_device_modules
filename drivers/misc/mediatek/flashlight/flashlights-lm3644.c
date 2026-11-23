@@ -869,10 +869,8 @@ static int lm3644_probe(struct platform_device *pdev)
 	INIT_WORK(&lm3644_work_ch2, lm3644_work_disable_ch2);
 
 	/* init timer */
-	hrtimer_init(&lm3644_timer_ch1, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	lm3644_timer_ch1.function = lm3644_timer_func_ch1;
-	hrtimer_init(&lm3644_timer_ch2, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	lm3644_timer_ch2.function = lm3644_timer_func_ch2;
+	hrtimer_setup(&lm3644_timer_ch1, lm3644_timer_func_ch1, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+	hrtimer_setup(&lm3644_timer_ch2, lm3644_timer_func_ch2, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	lm3644_timeout_ms[LM3644_CHANNEL_CH1] = 100;
 	lm3644_timeout_ms[LM3644_CHANNEL_CH2] = 100;
 

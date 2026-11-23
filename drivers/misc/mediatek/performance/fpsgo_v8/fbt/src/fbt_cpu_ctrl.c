@@ -599,8 +599,7 @@ int fbt_cpu_ctrl_init(void)
 		return -EFAULT;
 
 	/*timer init*/
-	hrtimer_init(&cpu_ctrl_hrt, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	cpu_ctrl_hrt.function = &handle_cpu_loading_timeout;
+	hrtimer_setup(&cpu_ctrl_hrt, &handle_cpu_loading_timeout, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 
 	g_psFbtCpuCtrlWorkQueue =
 		create_singlethread_workqueue("fpt_cpu_ctrl_wq");

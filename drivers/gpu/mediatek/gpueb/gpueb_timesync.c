@@ -246,9 +246,7 @@ unsigned int gpueb_timesync_init(void)
 	 */
 	timecounter_init(&timesync_counter, &timesync_cc, sched_clock());
 
-	hrtimer_init(&timesync_refresh_timer,
-				CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	timesync_refresh_timer.function = timesync_refresh;
+	hrtimer_setup(&timesync_refresh_timer, timesync_refresh, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	hrtimer_start(&timesync_refresh_timer, timesync_ctx.wrap_kt, HRTIMER_MODE_REL);
 
 	gpueb_log_i(GPUEB_TAG, "%s ts: cycle_last %lld, time_base:%lld, wrap:%lld, mask:0x%llx, max_ver:%d",

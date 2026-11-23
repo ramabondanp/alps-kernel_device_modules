@@ -2063,8 +2063,7 @@ int mtk_smmu_qos_probe(struct platform_device *pdev)
 	ktime = ktime_set(0, US_TO_NS(POLLING_INTERVAL_DEFAULT_US));
 
 	/* Initialize timer structure */
-	hrtimer_init(&hr_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	hr_timer.function = &smmu_trace_hrtimer_cb;
+	hrtimer_setup(&hr_timer, &smmu_trace_hrtimer_cb, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 
 	mutex_init(&pmu_list_lock);
 	ftrace_polling = false;

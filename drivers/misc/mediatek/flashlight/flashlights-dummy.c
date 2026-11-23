@@ -546,8 +546,7 @@ static int dummy_probe(struct platform_device *pdev)
 	INIT_WORK(&dummy_work, dummy_work_disable);
 
 	/* init timer */
-	hrtimer_init(&dummy_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	dummy_timer.function = dummy_timer_func;
+	hrtimer_setup(&dummy_timer, dummy_timer_func, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	dummy_timeout_ms = 100;
 
 	/* clear usage count */

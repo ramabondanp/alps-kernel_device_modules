@@ -171,8 +171,7 @@ static enum hrtimer_restart irq_mon_hrtimer_func(struct hrtimer *unused)
 
 void irq_mon_test_HRTIMER(void)
 {
-	hrtimer_init(&irq_mon_hrtimer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
-	irq_mon_hrtimer.function = irq_mon_hrtimer_func;
+	hrtimer_setup(&irq_mon_hrtimer, irq_mon_hrtimer_func, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
 	hrtimer_start(&irq_mon_hrtimer, ms_to_ktime(0),
 		      HRTIMER_MODE_REL_PINNED);
 }
@@ -188,8 +187,7 @@ static enum hrtimer_restart irq_mon_hrtimer_func2(struct hrtimer *unused)
 
 void irq_mon_test_PREEMPT_COUNT(void)
 {
-	hrtimer_init(&irq_mon_hrtimer2, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
-	irq_mon_hrtimer2.function = irq_mon_hrtimer_func2;
+	hrtimer_setup(&irq_mon_hrtimer2, irq_mon_hrtimer_func2, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
 	hrtimer_start(&irq_mon_hrtimer2, ms_to_ktime(0),
 		      HRTIMER_MODE_REL_PINNED);
 }

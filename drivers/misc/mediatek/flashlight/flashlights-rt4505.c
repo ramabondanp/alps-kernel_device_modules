@@ -460,8 +460,7 @@ static int rt4505_i2c_probe(
 	INIT_WORK(&rt4505_work, rt4505_work_disable);
 
 	/* init timer */
-	hrtimer_init(&rt4505_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	rt4505_timer.function = rt4505_timer_func;
+	hrtimer_setup(&rt4505_timer, rt4505_timer_func, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	rt4505_timeout_ms = 400;
 
 	/* init chip hw */

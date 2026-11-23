@@ -761,8 +761,7 @@ static int __init pmsr_init(void)
 	/* create debugfs node */
 	pmsr_procfs_init();
 
-	hrtimer_init(&pmsr_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	pmsr_timer.function = pmsr_timer_handle;
+	hrtimer_setup(&pmsr_timer, pmsr_timer_handle, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 
 	if (!pmsr_tool_forcereq) {
 		pmsr_tool_forcereq = alloc_workqueue("pmsr_tool_forcereq", WQ_HIGHPRI, 0);

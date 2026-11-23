@@ -208,8 +208,7 @@ void mnoc_pmu_init(void)
 
 	cfg_period = PERIOD_DEFAULT;
 	mnoc_cfg_timer_en = false;
-	hrtimer_init(&hr_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	hr_timer.function = mnoc_pmu_polling;
+	hrtimer_setup(&hr_timer, mnoc_pmu_polling, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 
 	LOG_DEBUG("-\n");
 }

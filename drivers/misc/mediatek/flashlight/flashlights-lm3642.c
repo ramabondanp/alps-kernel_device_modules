@@ -571,8 +571,7 @@ static int lm3642_probe(struct platform_device *pdev)
 	INIT_WORK(&lm3642_work, lm3642_work_disable);
 
 	/* init timer */
-	hrtimer_init(&lm3642_timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-	lm3642_timer.function = lm3642_timer_func;
+	hrtimer_setup(&lm3642_timer, lm3642_timer_func, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
 	lm3642_timeout_ms = 800;
 
 	/* clear usage count */
