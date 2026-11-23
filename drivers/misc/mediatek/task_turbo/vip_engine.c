@@ -1712,14 +1712,15 @@ static void probe_android_vh_binder_set_priority(void *ignore, struct binder_tra
 }
 
 static void probe_android_vh_binder_restore_priority(void *ignore,
-		struct binder_transaction *in_reply_to, struct task_struct *cur)
+		struct binder_transaction *in_reply_to)
 {
+	struct task_struct *cur = current;
+
 #if IS_ENABLED(CONFIG_MTK_SCHED_VIP_TASK)
-	if (cur && binder_stop_vip_inherit_hook)
+	if (binder_stop_vip_inherit_hook)
 		binder_stop_vip_inherit(cur);
 #endif
-	if (cur)
-		binder_stop_uclamp_inherit(cur);
+	binder_stop_uclamp_inherit(cur);
 }
 
 static void init_turbo_attr(struct task_struct *p)
