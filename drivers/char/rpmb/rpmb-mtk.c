@@ -1981,7 +1981,7 @@ int rpmb_req_get_wc_emmc(struct mmc_card *card, u8 *key, u32 *wc)
 		 * Authenticate response write counter frame.
 		 */
 		if (key) {
-			hmac_sha256(key, 32, rpmb_frame->data, 284, hmac);
+			rpmb_hmac_sha256(key, 32, rpmb_frame->data, 284, hmac);
 			if (memcmp(hmac, rpmb_frame->mac, RPMB_SZ_MAC) != 0) {
 				MSG(ERR, "%s, hmac compare error!!!\n",
 					__func__);
@@ -2130,7 +2130,7 @@ int rpmb_req_ioctl_write_data_emmc(struct mmc_card *card,
 
 		iCnt--;
 
-		hmac_sha256(param->keybytes, 32, dataBuf_start, 284 * tran_blkcnt,
+		rpmb_hmac_sha256(param->keybytes, 32, dataBuf_start, 284 * tran_blkcnt,
 				rpmb_frame[iCnt].mac);
 
 		/*
@@ -2149,7 +2149,7 @@ int rpmb_req_ioctl_write_data_emmc(struct mmc_card *card,
 		 * 2. check result.
 		 * 3. compare write counter is increamented.
 		 */
-		hmac_sha256(param->keybytes, 32, rpmb_frame->data, 284, hmac);
+		rpmb_hmac_sha256(param->keybytes, 32, rpmb_frame->data, 284, hmac);
 
 		if (memcmp(hmac, rpmb_frame->mac, RPMB_SZ_MAC) != 0) {
 			MSG(ERR, "%s, hmac compare error!!!\n", __func__);
@@ -2224,7 +2224,7 @@ int rpmb_req_ioctl_write_data_emmc(struct mmc_card *card,
 		memcpy(rpmb_frame->data,
 			param->databytes + iCnt * RPMB_SZ_DATA, tran_size);
 
-		hmac_sha256(param->keybytes, 32, rpmb_frame->data, 284,
+		rpmb_hmac_sha256(param->keybytes, 32, rpmb_frame->data, 284,
 			rpmb_frame->mac);
 
 		ret = emmc_rpmb_req_handle(card, &rpmb_req);
@@ -2237,7 +2237,7 @@ int rpmb_req_ioctl_write_data_emmc(struct mmc_card *card,
 		/*
 		 * Authenticate response write data frame.
 		 */
-		hmac_sha256(param->keybytes, 32, rpmb_frame->data, 284, hmac);
+		rpmb_hmac_sha256(param->keybytes, 32, rpmb_frame->data, 284, hmac);
 
 		if (memcmp(hmac, rpmb_frame->mac, RPMB_SZ_MAC) != 0) {
 			MSG(ERR, "%s, hmac compare error!!!\n", __func__);
@@ -2395,7 +2395,7 @@ int rpmb_req_ioctl_read_data_emmc(struct mmc_card *card,
 		/*
 		 * Authenticate response read data frame.
 		 */
-		hmac_sha256(param->keybytes,
+		rpmb_hmac_sha256(param->keybytes,
 			32, dataBuf_start, 284 * tran_blkcnt, hmac);
 
 		if (memcmp(hmac, rpmb_frame[iCnt].mac, RPMB_SZ_MAC) != 0) {
@@ -2468,7 +2468,7 @@ int rpmb_req_ioctl_read_data_emmc(struct mmc_card *card,
 		/*
 		 * Authenticate response read data frame.
 		 */
-		hmac_sha256(param->keybytes, 32, rpmb_frame->data, 284, hmac);
+		rpmb_hmac_sha256(param->keybytes, 32, rpmb_frame->data, 284, hmac);
 
 		if (memcmp(hmac, rpmb_frame->mac, RPMB_SZ_MAC) != 0) {
 			MSG(ERR, "%s, hmac compare error!!!\n", __func__);
