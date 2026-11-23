@@ -1128,8 +1128,8 @@ static int __used pt_check_power_off(void)
 		pt_power_off_cnt = 0;
 
 	if (pt_power_off_cnt >= 4) {
-		pr_info("Powering off by PT.\n");
-		hw_protection_trigger("Power Off by PT", 10000);
+		pr_emerg("Powering off by PT (hardware protection).\n");
+		orderly_poweroff(true);
 	}
 
 	return ret;

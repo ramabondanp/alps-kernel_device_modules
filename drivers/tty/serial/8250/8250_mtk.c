@@ -2811,7 +2811,8 @@ mtk8250_do_pm(struct uart_port *port, unsigned int state, unsigned int old)
 		if (!mtk8250_runtime_resume(port->dev))
 			pm_runtime_get_sync(port->dev);
 
-	serial8250_rpm_get(up);
+	if (up->capabilities & UART_CAP_RPM)
+		pm_runtime_get_sync(up->port.dev);
 
 	if (up->capabilities & UART_CAP_SLEEP) {
 		if (up->capabilities & UART_CAP_EFR) {
@@ -2828,7 +2829,10 @@ mtk8250_do_pm(struct uart_port *port, unsigned int state, unsigned int old)
 		}
 	}
 
-	serial8250_rpm_put(up);
+	if (up->capabilities & UART_CAP_RPM) {
+		pm_runtime_mark_last_busy(up->port.dev);
+		pm_runtime_put_autosuspend(up->port.dev);
+	}
 
 	if (state)
 		if (!pm_runtime_put_sync_suspend(port->dev))
