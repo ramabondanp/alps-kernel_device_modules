@@ -843,8 +843,7 @@ static int mtk_vdisp_probe(struct platform_device *pdev)
 	g_dev[pd_id] = genpd_num <= 1 ? dev : dev_pm_domain_attach_by_id(dev, 0);
 
 	if (pd_id == DISP_PD_DISP_VCORE) {
-		g_vdisp_wake_lock = wakeup_source_create("vdisp_wakelock");
-		wakeup_source_add(g_vdisp_wake_lock);
+		g_vdisp_wake_lock = wakeup_source_register(NULL, "vdisp_wakelock");
 
 		g_smi_disp_dram_sub_comm[0] = ioremap(0x3e810400, 0x40);
 		g_smi_disp_dram_sub_comm[1] = ioremap(0x3e820400, 0x40);

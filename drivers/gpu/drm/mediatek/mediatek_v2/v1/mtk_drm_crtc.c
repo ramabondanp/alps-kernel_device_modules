@@ -22638,8 +22638,7 @@ int mtk_drm_crtc_create(struct drm_device *drm_dev,
 			 drm_crtc_index(&mtk_crtc->base));
 
 		mtk_crtc->wk_lock =
-			wakeup_source_create(mtk_crtc->wk_lock_name);
-		wakeup_source_add(mtk_crtc->wk_lock);
+			wakeup_source_register(NULL, mtk_crtc->wk_lock_name);
 	}
 
 	/* set bpc by panel info */
