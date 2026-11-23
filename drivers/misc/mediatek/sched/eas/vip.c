@@ -1121,7 +1121,7 @@ void vip_cfs_tick(struct rq *rq)
 	 * If the current is not VIP means, we have to re-schedule to
 	 * see if we can run any other task including VIP tasks.
 	 */
-	if ((vrq->vip_tasks.next != &vts->vip_list) && rq->cfs.h_nr_running > 1)
+	if ((vrq->vip_tasks.next != &vts->vip_list) && rq->cfs.h_nr_runnable > 1)
 		resched_curr(rq);
 
 out:
@@ -1144,7 +1144,6 @@ void vip_scheduler_tick(void *unused, struct rq *rq)
 	vip_lb_tick(rq);
 }
 
-extern void set_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *se);
 void vip_replace_next_task_fair(void *unused, struct rq *rq, struct task_struct **p,
 				struct task_struct *prev)
 {

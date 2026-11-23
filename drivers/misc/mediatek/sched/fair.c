@@ -77,7 +77,7 @@ MODULE_LICENSE("GPL");
 /* Runqueue only has SCHED_IDLE tasks enqueued */
 static int sched_idle_rq(struct rq *rq)
 {
-	return unlikely(rq->nr_running == rq->cfs.idle_h_nr_running &&
+	return unlikely(rq->nr_running == rq->cfs.h_nr_idle &&
 			rq->nr_running);
 }
 
@@ -3303,7 +3303,7 @@ void mtk_update_load_avg_cfs_rq(void *unused, u64 now, struct cfs_rq *cfs_rq, in
 	if (mtk_update_load_sum(cpu, now, dpt_rq->local_clock_pelt, &dpt_rq->local_cfs_last_update_time, &dpt_rq->local_cfs_period_contrib,
 				&cfs_rq->avg,
 				scale_load_down(cfs_rq->load.weight),
-				cfs_rq->h_nr_running,
+				cfs_rq->h_nr_runnable,
 				cfs_rq->curr != NULL,
 				dpt_rq->global_clock_ratio[NON_S],
 				dpt_rq->global_clock_ratio[S_COEF1],

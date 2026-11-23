@@ -1030,14 +1030,14 @@ void mtk_pelt_rt_tp(void *data, struct rq *rq)
 
 static inline s64 entity_key(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
-	return (s64)(se->vruntime - cfs_rq->min_vruntime);
+	return (s64)(se->vruntime - cfs_rq->zero_vruntime);
 }
 
 int _entity_eligible(struct cfs_rq *cfs_rq, struct sched_entity *se)
 {
 	struct sched_entity *curr = cfs_rq->curr;
-	s64 avg = cfs_rq->avg_vruntime;
-	long load = cfs_rq->avg_load;
+	s64 avg = cfs_rq->sum_w_vruntime;
+	long load = cfs_rq->sum_weight;
 
 	if (curr && curr->on_rq) {
 		unsigned long weight = scale_load_down(curr->load.weight);
@@ -1167,7 +1167,6 @@ void mtk_update_misfit_status(void *data, struct task_struct *p, struct rq *rq, 
 	 */
 	misfit_task_load = task_h_load(p);
 	rq->misfit_task_load = max_t(unsigned long, misfit_task_load, 1);
-	rq->misfit_reason = MISFIT_PERF;
 out:
 	if (dpt_v2_support) {
 		if (trace_sched_mtk_update_misfit_status_dpt_v2_enabled())

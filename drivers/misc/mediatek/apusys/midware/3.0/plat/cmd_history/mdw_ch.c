@@ -182,7 +182,7 @@ static void mdw_ch_reset_heap(void)
 
 static void mdw_ch_min_heap_sanity_check(void)
 {
-	mdw_flw_debug("heap_num(%u)\n", g_ch_mgr->heap.nr);
+	mdw_flw_debug("heap_num(%zu)\n", g_ch_mgr->heap.nr);
 
 	if (g_ch_mgr->heap.nr >= MDW_CH_PREDICT_CMD_NUM)
 		mdw_ch_reset_heap();
@@ -326,7 +326,7 @@ static bool mdw_ch_handle_fast_power_onoff(struct mdw_ch_tbl *ch_tbl, struct mdw
 		predict_start_ts = c->start_ts + ch_tbl->h_period;
 		mdw_ch_min_heap_sanity_check();
 		min_heap_push(&g_ch_mgr->heap, &predict_start_ts, &mdw_ch_min_heap_funcs, NULL);
-		mdw_flw_debug("predict_start_ts(%llu) nr(%d)",
+		mdw_flw_debug("predict_start_ts(%llu) nr(%zu)",
 				 g_ch_mgr->predict_cmd_ts[0], g_ch_mgr->heap.nr);
 	}
 

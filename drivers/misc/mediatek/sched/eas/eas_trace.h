@@ -773,10 +773,10 @@ TRACE_EVENT(sched_rq_load,
 	),
 
 	TP_fast_assign(
-		__entry->nr_running = rq->nr_running;
-		__entry->h_nr_running = rq->h_nr_running;
-		__entry->idle_nr_running = rq->idle_nr_running;
-		__entry->idle_h_nr_running = rq->idle_h_nr_running;
+		__entry->nr_running = rq->nr_queued;
+		__entry->h_nr_running = rq->h_nr_runnable;
+		__entry->idle_nr_running = rq->h_nr_idle;
+		__entry->idle_h_nr_running = rq->h_nr_idle;
 		__entry->last_update_time = rq->avg.last_update_time;
 		__entry->load_sum = rq->avg.load_sum;
 		__entry->runnable_sum = rq->avg.load_sum;
@@ -2807,7 +2807,7 @@ TRACE_EVENT(sched_compress_to_cpu,
 		__entry->rq_rt_util_avg        = READ_ONCE(rq->avg_rt.util_avg);
 		__entry->rq_rt_runnable_avg    = READ_ONCE(rq->avg_rt.runnable_avg);
 		__entry->rq_nr_running         = READ_ONCE(rq->nr_running);
-		__entry->rq_cfs_nr_running     = READ_ONCE(rq->cfs.nr_running);
+		__entry->rq_cfs_nr_running     = READ_ONCE(rq->cfs.nr_queued);
 		__entry->rq_rt_nr_running      = READ_ONCE(rq->rt.rt_nr_running);
 		__entry->sched_fair_runnable   = sched_fair_runnable(rq);
 		__entry->sched_rt_runnable     = sched_rt_runnable(rq);

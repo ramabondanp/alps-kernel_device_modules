@@ -116,7 +116,7 @@ static void migrate_tasks(struct rq *dead_rq, struct rq_flags *rf)
 		if (rq->nr_running == 1)
 			break;
 
-		next = pick_task(rq);
+		next = pick_task(rq, rf);
 
 		if (trace_sched_pause_pick_task_enabled())
 			trace_sched_pause_pick_task(rq->cpu, next, cpu_pause_mask);
@@ -195,7 +195,7 @@ int drain_rq_cpu_stop(void *data)
 
 	rq_lock_irqsave(rq, &rf);
 #ifdef CONFIG_SCHED_CLASS_EXT
-	rq->scx.flags &= ~(SCX_RQ_BAL_PENDING | SCX_RQ_BAL_KEEP);
+	rq->scx.flags &= ~(SCX_RQ_BAL_CB_PENDING | SCX_RQ_BAL_KEEP);
 #endif
 	migrate_tasks(rq, &rf);
 

@@ -1130,7 +1130,7 @@ static struct snd_soc_dai_link mt6895_mt6368_dai_links[] = {
 	},
 	{
 		.name = "I2S0",
-		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_CBS_CFS
+		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_CBC_CFC
 			| SND_SOC_DAIFMT_GATED,
 		.ops = &mt6895_mt6368_i2s_ops,
 		.no_pcm = 1,
@@ -1142,7 +1142,7 @@ static struct snd_soc_dai_link mt6895_mt6368_dai_links[] = {
 	},
 	{
 		.name = "I2S1",
-		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_CBS_CFS
+		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_CBC_CFC
 			| SND_SOC_DAIFMT_GATED,
 		.ops = &mt6895_mt6368_i2s_ops,
 		.no_pcm = 1,
@@ -1153,7 +1153,7 @@ static struct snd_soc_dai_link mt6895_mt6368_dai_links[] = {
 	},
 	{
 		.name = "I2S2",
-		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_CBS_CFS
+		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_CBC_CFC
 			| SND_SOC_DAIFMT_GATED,
 		.ops = &mt6895_mt6368_i2s_ops,
 		.no_pcm = 1,
@@ -1164,7 +1164,7 @@ static struct snd_soc_dai_link mt6895_mt6368_dai_links[] = {
 	},
 	{
 		.name = "I2S3",
-		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_CBS_CFS
+		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_CBC_CFC
 			| SND_SOC_DAIFMT_GATED,
 		.ops = &mt6895_mt6368_i2s_ops,
 		.no_pcm = 1,
@@ -1176,7 +1176,7 @@ static struct snd_soc_dai_link mt6895_mt6368_dai_links[] = {
 	},
 	{
 		.name = "I2S5",
-		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_CBS_CFS
+		.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_CBC_CFC
 			| SND_SOC_DAIFMT_GATED,
 		.ops = &mt6895_mt6368_i2s_ops,
 		.no_pcm = 1,
