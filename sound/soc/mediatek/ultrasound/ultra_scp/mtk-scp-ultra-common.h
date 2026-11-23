@@ -36,7 +36,7 @@
 
 
 #define aud_wake_lock_init(dev, name) wakeup_source_register(dev, name)
-#define aud_wake_lock_destroy(ws) wakeup_source_destroy(ws)
+#define aud_wake_lock_destroy(ws) wakeup_source_unregister(ws)
 #define aud_wake_lock(ws) __pm_stay_awake(ws)
 #define aud_wake_unlock(ws) __pm_relax(ws)
 

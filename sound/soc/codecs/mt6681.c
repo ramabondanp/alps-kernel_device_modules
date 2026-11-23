@@ -64,7 +64,7 @@ static int mtk_calculate_hwgain_formula(struct mt6681_priv *priv,
 						long gain_ratio);
 
 static ssize_t mt6681_codec_sysfs_read(struct file *filep, struct kobject *kobj,
-				       struct bin_attribute *attr, char *buf,
+				       const struct bin_attribute *attr, char *buf,
 				       loff_t offset, size_t size);
 static ssize_t mt6681_codec_sysfs_write(struct file *filp, struct kobject *kobj,
 					struct bin_attribute *bin_attr,
@@ -35168,7 +35168,7 @@ static u32 copy_from_buffer_request(void *dest, size_t destsize,
  * sysfs bin_attribute node
  */
 static ssize_t mt6681_codec_sysfs_read(struct file *filep, struct kobject *kobj,
-				       struct bin_attribute *attr, char *buf,
+				       const struct bin_attribute *attr, char *buf,
 				       loff_t offset, size_t size)
 {
 	size_t read_size, ceil_size, page_mask;

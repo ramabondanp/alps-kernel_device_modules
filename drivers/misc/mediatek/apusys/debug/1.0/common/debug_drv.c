@@ -264,7 +264,7 @@ static u32 find_offset(loff_t offset, u32 *reg_mem_offset)
 
 static ssize_t
 reg_read(struct file *filp, struct kobject *kobj,
-	     struct bin_attribute *attr, char *buf,
+	     const struct bin_attribute *attr, char *buf,
 	     loff_t offset, size_t count)
 {
 	u32 resid;
