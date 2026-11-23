@@ -43,23 +43,6 @@ static struct mrdump_mini_elf_header *mrdump_mini_ehdr;
 
 
 #ifdef CONFIG_MODULES
-struct module_sect_attr {
-	struct bin_attribute battr;
-	unsigned long address;
-};
-
-struct module_sect_attrs {
-	struct attribute_group grp;
-	unsigned int nsections;
-	struct module_sect_attr attrs[];
-};
-
-struct module_notes_attrs {
-	struct kobject *dir;
-	unsigned int notes;
-	struct bin_attribute attrs[];
-};
-
 #define MAX_KO_NAME_LEN 40
 #define MAX_KO_NUM 800
 #define LEN_BUILD_ID 20
@@ -86,6 +69,9 @@ static spinlock_t kolist_lock;
 
 static void fill_ko_list(unsigned int idx, struct module *mod)
 {
+	const struct attribute_group *sect_grp;
+	const struct attribute_group *notes_grp;
+	const struct bin_attribute *battr;
 	unsigned long text_addr = 0;
 	unsigned long init_addr = 0;
 	const void *build_id;
@@ -98,29 +84,39 @@ static void fill_ko_list(unsigned int idx, struct module *mod)
 	if (mod->sect_attrs == NULL)
 		return;
 
+	/*
+	 * The layouts of struct module_sect_attrs and struct module_notes_attrs
+	 * are private to the kernel.  Since 6.18 both start with a struct
+	 * attribute_group and expose their entries through the NULL-terminated
+	 * grp.bin_attrs array.  The section address and the note data are kept
+	 * in the bin_attribute private field.
+	 */
+	sect_grp = (const struct attribute_group *)mod->sect_attrs;
 	search_nm = 2;
-	for (i = 0; i < mod->sect_attrs->nsections; i++) {
-		if (!strcmp(mod->sect_attrs->attrs[i].battr.attr.name,
-			    ".text")) {
-			text_addr = mod->sect_attrs->attrs[i].address;
+	for (i = 0; sect_grp->bin_attrs[i]; i++) {
+		battr = sect_grp->bin_attrs[i];
+		if (!strcmp(battr->attr.name, ".text")) {
+			text_addr = (unsigned long)battr->private;
 			search_nm--;
-		} else if (!strcmp(mod->sect_attrs->attrs[i].battr.attr.name,
-				   ".init.text")) {
-			init_addr = mod->sect_attrs->attrs[i].address;
+		} else if (!strcmp(battr->attr.name, ".init.text")) {
+			init_addr = (unsigned long)battr->private;
 			search_nm--;
 		}
 		if (!search_nm)
 			break;
 	}
 
-	for (i = 0; i < mod->notes_attrs->notes; i++) {
-		if (!strcmp(mod->notes_attrs->attrs[i].attr.name,
-			    ".note.gnu.build-id")) {
-			note = mod->notes_attrs->attrs[i].private;
-			build_id = (void *)round_up(((unsigned long)(note + 1)
-						     + note->n_namesz), 4);
-			build_id_sz = note->n_descsz;
-			break;
+	if (mod->notes_attrs) {
+		notes_grp = (const struct attribute_group *)mod->notes_attrs;
+		for (i = 0; notes_grp->bin_attrs[i]; i++) {
+			battr = notes_grp->bin_attrs[i];
+			if (!strcmp(battr->attr.name, ".note.gnu.build-id")) {
+				note = battr->private;
+				build_id = (void *)round_up(((unsigned long)(note + 1)
+							     + note->n_namesz), 4);
+				build_id_sz = note->n_descsz;
+				break;
+			}
 		}
 	}
 
