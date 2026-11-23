@@ -195,7 +195,7 @@ static bool mtk_sync_timeline_fence_signaled(struct dma_fence *fence)
 {
 	struct sync_timeline *parent = dma_fence_parent(fence);
 
-	return !__dma_fence_is_later(fence->seqno, parent->value, fence->ops);
+	return !__dma_fence_is_later(fence, fence->seqno, parent->value);
 }
 
 static bool mtk_sync_timeline_fence_enable_signaling(struct dma_fence *fence)
@@ -231,8 +231,6 @@ static struct dma_fence_ops mtk_sync_timeline_fence_ops = {
 	.enable_signaling = mtk_sync_timeline_fence_enable_signaling,
 	.signaled = mtk_sync_timeline_fence_signaled,
 	.release = mtk_sync_timeline_fence_release,
-	.fence_value_str = mtk_sync_timeline_fence_value_str,
-	.timeline_value_str = mtk_sync_timeline_fence_timeline_value_str,
 };
 
 /* ---------------------------------------------------------------- */
