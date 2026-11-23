@@ -602,4 +602,4 @@ MODULE_AUTHOR("Aaron Chung <Aaron.Chung@mediatek.com>");
 MODULE_DESCRIPTION("MTK DRM secure Display");
 MODULE_LICENSE("GPL v2");
 
-MODULE_IMPORT_NS(DMA_BUF);
+MODULE_IMPORT_NS("DMA_BUF");

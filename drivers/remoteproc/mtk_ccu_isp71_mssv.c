@@ -1795,7 +1795,7 @@ static void __exit ccu_exit(void)
 module_init(ccu_init);
 module_exit(ccu_exit);
 
-MODULE_IMPORT_NS(DMA_BUF);
+MODULE_IMPORT_NS("DMA_BUF");
 
 MODULE_DESCRIPTION("MTK CCU Rproc Driver");
 MODULE_LICENSE("GPL");

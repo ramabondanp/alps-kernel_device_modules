@@ -979,4 +979,4 @@ int virtio_video_dec_init(struct video_device *vd)
 	return 0;
 }
 
-MODULE_IMPORT_NS(DMA_BUF);
+MODULE_IMPORT_NS("DMA_BUF");

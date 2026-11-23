@@ -158,7 +158,7 @@ s32 gt1x_check_fs_mounted(char *path_name)
 	return err;
 }
 
-MODULE_IMPORT_NS(VFS_internal_I_am_really_a_filesystem_and_am_NOT_a_driver);
+MODULE_IMPORT_NS("VFS_internal_I_am_really_a_filesystem_and_am_NOT_a_driver");
 
 int gt1x_i2c_write_with_readback(u16 addr, u8 *buffer, int length)
 {

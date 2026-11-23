@@ -1968,4 +1968,4 @@ module_exit(monitor_hang_exit);
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("MediaTek MonitorHang Driver");
 MODULE_AUTHOR("MediaTek Inc.");
-MODULE_IMPORT_NS(MINIDUMP);
+MODULE_IMPORT_NS("MINIDUMP");

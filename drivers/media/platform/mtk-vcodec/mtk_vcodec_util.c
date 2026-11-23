@@ -1844,5 +1844,5 @@ int mtk_vcodec_set_task_priority(struct task_struct *task, int prio)
 }
 EXPORT_SYMBOL(mtk_vcodec_set_task_priority);
 
-MODULE_IMPORT_NS(DMA_BUF);
+MODULE_IMPORT_NS("DMA_BUF");
 MODULE_LICENSE("GPL v2");

@@ -2240,5 +2240,5 @@ int mvpu30_sec_sysfs_init(struct kobject *root_dir)
 	return sysfs_create_file(root_dir, &get_mvpu_img.attr);
 }
 
-MODULE_IMPORT_NS(DMA_BUF);
+MODULE_IMPORT_NS("DMA_BUF");
 

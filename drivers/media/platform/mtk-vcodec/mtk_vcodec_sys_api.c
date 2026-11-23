@@ -33,6 +33,6 @@ static void __exit mtk_vcodec_sys_api_exit(void)
 module_init(mtk_vcodec_sys_api_init);
 module_exit(mtk_vcodec_sys_api_exit);
 
-MODULE_IMPORT_NS(DMA_BUF);
+MODULE_IMPORT_NS("DMA_BUF");
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("Mediatek video codec dependency utility");

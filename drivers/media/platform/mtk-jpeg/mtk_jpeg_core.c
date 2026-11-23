@@ -2532,4 +2532,4 @@ module_platform_driver(mtk_jpeg_driver);
 
 MODULE_DESCRIPTION("MediaTek JPEG codec driver");
 MODULE_LICENSE("GPL v2");
-MODULE_IMPORT_NS(DMA_BUF);
+MODULE_IMPORT_NS("DMA_BUF");

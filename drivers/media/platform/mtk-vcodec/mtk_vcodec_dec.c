@@ -5984,5 +5984,5 @@ int mtk_vdec_lock(struct mtk_vcodec_ctx *ctx, u32 hw_id)
 	return ret;
 }
 
-MODULE_IMPORT_NS(DMA_BUF);
+MODULE_IMPORT_NS("DMA_BUF");
 MODULE_LICENSE("GPL v2");

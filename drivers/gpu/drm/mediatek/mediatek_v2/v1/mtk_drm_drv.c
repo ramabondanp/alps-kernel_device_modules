@@ -12832,5 +12832,5 @@ MODULE_SOFTDEP("pre: panel-serdes-max96789");
 #endif
 MODULE_AUTHOR("YT SHEN <yt.shen@mediatek.com>");
 MODULE_DESCRIPTION("Mediatek SoC DRM driver");
-MODULE_IMPORT_NS(DMA_BUF);
+MODULE_IMPORT_NS("DMA_BUF");
 MODULE_LICENSE("GPL v2");

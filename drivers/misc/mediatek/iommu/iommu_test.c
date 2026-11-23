@@ -34,7 +34,7 @@
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
 
-MODULE_IMPORT_NS(DMA_BUF);
+MODULE_IMPORT_NS("DMA_BUF");
 
 #ifdef IOMMU_TEST_EN
 

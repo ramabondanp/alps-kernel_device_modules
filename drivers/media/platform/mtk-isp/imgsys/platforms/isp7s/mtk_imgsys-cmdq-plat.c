@@ -2948,4 +2948,4 @@ struct imgsys_cmdq_cust_data imgsys_cmdq_data_7s = {
 	.dvfs_dbg_en = imgsys_dvfs_dbg_enable_plat7s,
 	.quick_onoff_en = imgsys_quick_onoff_enable_plat7s,
 };
-MODULE_IMPORT_NS(DMA_BUF);
+MODULE_IMPORT_NS("DMA_BUF");

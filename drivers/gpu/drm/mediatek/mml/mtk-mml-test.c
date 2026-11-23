@@ -3086,4 +3086,4 @@ struct platform_driver mtk_mml_test_drv = {
 		.of_match_table = test_of_ids,
 	},
 };
-MODULE_IMPORT_NS(DMA_BUF);
+MODULE_IMPORT_NS("DMA_BUF");

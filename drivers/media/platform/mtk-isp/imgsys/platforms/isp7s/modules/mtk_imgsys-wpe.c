@@ -750,4 +750,4 @@ void imgsys_wpe_uninit(struct mtk_imgsys_dev *imgsys_dev)
 
 	pr_debug("%s: -\n", __func__);
 }
-MODULE_IMPORT_NS(DMA_BUF);
+MODULE_IMPORT_NS("DMA_BUF");

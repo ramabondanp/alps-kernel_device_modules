@@ -1949,4 +1949,4 @@ EXPORT_SYMBOL_GPL(dma_buf_attach_ssid);
 module_init(mtk_system_heap_create);
 module_exit(mtk_system_heap_exit);
 MODULE_LICENSE("GPL");
-MODULE_IMPORT_NS(DMA_BUF);
+MODULE_IMPORT_NS("DMA_BUF");

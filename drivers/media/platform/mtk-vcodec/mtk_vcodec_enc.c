@@ -5304,5 +5304,5 @@ void mtk_vcodec_enc_release(struct mtk_vcodec_ctx *ctx)
 	release_all_general_buffer_info(ctx);
 }
 
-MODULE_IMPORT_NS(DMA_BUF);
+MODULE_IMPORT_NS("DMA_BUF");
 MODULE_LICENSE("GPL v2");

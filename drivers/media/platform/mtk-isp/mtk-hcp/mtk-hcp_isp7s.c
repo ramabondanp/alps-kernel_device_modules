@@ -1051,4 +1051,4 @@ struct mtk_hcp_data isp7s_hcp_data = {
 	.get_pqdip_tdr_fd = isp7s_get_pqdip_tdr_fd,
 	.partial_flush = NULL,
 };
-MODULE_IMPORT_NS(DMA_BUF);
+MODULE_IMPORT_NS("DMA_BUF");
