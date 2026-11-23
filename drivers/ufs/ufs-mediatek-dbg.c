@@ -54,7 +54,9 @@ static struct ufs_hba *ufshba[HOST_CNT];
 
 #if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 #include <mt-plat/aee.h>
+#endif
 
+/* Matches enum ufs_trace_str_t in drivers/ufs/core/ufs_trace_types.h. */
 enum ufs_trace_str_t {
 	UFS_CMD_SEND,
 	UFS_CMD_COMP,
@@ -66,8 +68,6 @@ enum ufs_trace_str_t {
 	UFS_TM_COMP,
 	UFS_TM_ERR
 };
-
-#endif
 
 extern void mt_irq_dump_status(unsigned int irq);
 
@@ -624,7 +624,8 @@ static void probe_android_vh_ufs_compl_command(void *data, struct ufs_hba *hba,
 
 static void probe_ufshcd_command(void *data, struct scsi_device *sdev,
 				 struct ufs_hba *hba,
-				 int str_t, unsigned int tag,
+				 enum ufs_trace_str_t str_t,
+				 unsigned int tag,
 				 u32 doorbell, u32 hwq_id, int transfer_len,
 				 u32 intr, u64 lba, u8 opcode, u8 group_id)
 {
@@ -679,7 +680,7 @@ static void probe_ufshcd_command(void *data, struct scsi_device *sdev,
 }
 
 static void probe_ufshcd_uic_command(void *data, struct ufs_hba *hba,
-				     int str_t, u32 cmd,
+				     enum ufs_trace_str_t str_t, u32 cmd,
 				     u32 arg1, u32 arg2, u32 arg3)
 {
 	int ptr, ptr_cur;
