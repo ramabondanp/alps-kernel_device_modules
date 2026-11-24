@@ -64,11 +64,20 @@ enum TRAN_TRIGER_EVENT {
 	SUSPEND_TRIGER = 1,
 };
 
+#define TRAN_TP_CMD_GAME_STATE		0x66
+#define TRAN_TP_CMD_EDGE_MODE		0x67
+#define TRAN_TP_CMD_LOCK_POINT		0x68
+#define TRAN_TP_CMD_REPORT_RATE		0x69
+#define TRAN_TP_CMD_TRANSIENT_RATE	0x6a
+#define TRAN_TP_CMD_EDGE_LEVEL		0x6b
+#define TRAN_TP_CMD_POCKET_MODE		0x6e
+
 struct tran_controller_ops {
 	int (*tran_ts_init)(void);
 	void (*tran_ts_suspend)(struct device *h);
 	void (*tran_ts_resume)(struct device *h);
 	void (*tran_gesture_enable)(int enable);
+	void (*set_ts_mode)(int cmd, int value);
 };
 
 struct tran_ts_controller {
@@ -114,6 +123,20 @@ struct tran_core_ops {
 struct tran_ts_core {
 	bool controller_init_state;
 	u32 ts_core_mode;
+
+	bool dynamic_report_rate_support;
+	bool pocket_mode_amt_support;
+	bool fingerprint_support;
+	bool curved_edge_amt_support;
+	u32 esports_engine;
+
+	u32 edge_mode;
+	u8 tran_report_rate;
+	u8 transient_report_rate;
+	u8 lock_point;
+	u8 edge_level;
+	u8 game_state;
+	u8 pocket_state;
 
 	struct platform_device *pdev;
 

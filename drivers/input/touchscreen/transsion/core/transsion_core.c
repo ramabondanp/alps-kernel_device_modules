@@ -1,4 +1,7 @@
+#include <linux/cdev.h>
 #include <linux/delay.h>
+#include <linux/fs.h>
+#include <linux/ioctl.h>
 #include <linux/mutex.h>
 #include <linux/module.h>
 #include <linux/device.h>
@@ -14,6 +17,34 @@
 
 extern struct tran_ts_core g_tran_ts;
 extern struct tran_core_ops g_tpd_ops;
+
+static void tran_set_ts_mode(int cmd, int val)
+{
+	struct tran_ts_controller *ctrl = g_tran_ts.controller;
+
+	if (ctrl && ctrl->ops && ctrl->ops->set_ts_mode)
+		ctrl->ops->set_ts_mode(cmd, val);
+}
+
+static void tp_state_recovery(void)
+{
+	tran_set_ts_mode(TRAN_TP_CMD_EDGE_MODE, g_tran_ts.edge_mode);
+	if (g_tran_ts.curved_edge_amt_support)
+		tran_set_ts_mode(TRAN_TP_CMD_EDGE_LEVEL, g_tran_ts.edge_level);
+	if (g_tran_ts.esports_engine) {
+		tran_set_ts_mode(TRAN_TP_CMD_TRANSIENT_RATE,
+				 g_tran_ts.transient_report_rate);
+		tran_set_ts_mode(TRAN_TP_CMD_LOCK_POINT, g_tran_ts.lock_point);
+	}
+	if (g_tran_ts.dynamic_report_rate_support)
+		tran_set_ts_mode(TRAN_TP_CMD_REPORT_RATE,
+				 g_tran_ts.tran_report_rate);
+
+	TRAN_INFO("recover edge:%u rate:%u transient:%u lock:%u level:%u",
+		  g_tran_ts.edge_mode, g_tran_ts.tran_report_rate,
+		  g_tran_ts.transient_report_rate, g_tran_ts.lock_point,
+		  g_tran_ts.edge_level);
+}
 
 int get_tpd_ops(struct tran_ts_controller *controller, struct tran_core_ops **ops)
 {
@@ -44,6 +75,7 @@ static void dsp_event_callback(struct work_struct *work)
 	}
 
 	g_tran_ts.ts_core_mode = TRAN_ACTIVE_MODE;
+	tp_state_recovery();
 	TRAN_INFO("core mode change to TRAN_ACTIVE_MODE");
 	mutex_unlock(&g_tran_ts.dsp_event_mutex);
 	TRAN_INFO("drm notify tp resume end");
@@ -175,6 +207,26 @@ static int tran_parse_dt(struct device *dev, struct tran_ts_core *core_data)
 	struct device_node *np = dev->of_node;
 
 	TRAN_FUNC_ENTER();
+
+	if (of_property_read_u32(np, "touchscreen,esports-engine",
+				 &core_data->esports_engine) ||
+	    core_data->esports_engine >= 5)
+		core_data->esports_engine = 0;
+
+	core_data->dynamic_report_rate_support =
+		of_property_read_bool(np, "touchscreen,dynamic-report-rate-support");
+	core_data->pocket_mode_amt_support =
+		of_property_read_bool(np, "touchscreen,pocket-mode-amt-support");
+	core_data->fingerprint_support =
+		of_property_read_bool(np, "touchscreen,fingerprint-support");
+	core_data->curved_edge_amt_support =
+		of_property_read_bool(np, "touchscreen,curved-edge-amt-support");
+	TRAN_INFO("dt features: dyn_rate=%d pocket=%d fp=%d edge=%d esports=%u",
+		  core_data->dynamic_report_rate_support,
+		  core_data->pocket_mode_amt_support,
+		  core_data->fingerprint_support,
+		  core_data->curved_edge_amt_support,
+		  core_data->esports_engine);
 
 	ret = of_property_read_u32(np, "supplier-num", &supplier_num);
 	if (ret < 0) {
@@ -531,6 +583,366 @@ static void tran_gesture_proc_deinit(void)
 	}
 }
 
+enum tran_feat_gate {
+	TRAN_FEAT_ALWAYS = 0,
+	TRAN_FEAT_ESPORTS,
+	TRAN_FEAT_CURVED_EDGE,
+	TRAN_FEAT_DYNAMIC_RATE,
+};
+
+struct tran_mode_node {
+	const char *name;
+	int cmd;
+	enum tran_feat_gate feat;
+};
+
+static const struct tran_mode_node g_tran_mode_nodes[] = {
+	{ "border_suppression", TRAN_TP_CMD_EDGE_MODE, TRAN_FEAT_ALWAYS },
+	{ "tp_report_rate_switch", TRAN_TP_CMD_REPORT_RATE, TRAN_FEAT_DYNAMIC_RATE },
+	{ "tp_transient_report_rate_switch", TRAN_TP_CMD_TRANSIENT_RATE, TRAN_FEAT_ESPORTS },
+	{ "game_mode", TRAN_TP_CMD_LOCK_POINT, TRAN_FEAT_ESPORTS },
+	{ "game_state", TRAN_TP_CMD_GAME_STATE, TRAN_FEAT_ESPORTS },
+	{ "tran_edge_level", TRAN_TP_CMD_EDGE_LEVEL, TRAN_FEAT_CURVED_EDGE },
+};
+
+static struct proc_dir_entry *g_tran_mode_procs[ARRAY_SIZE(g_tran_mode_nodes)];
+
+static bool tran_is_feat_supported(enum tran_feat_gate feat)
+{
+	switch (feat) {
+	case TRAN_FEAT_ALWAYS:
+		return true;
+	case TRAN_FEAT_ESPORTS:
+		return g_tran_ts.esports_engine != 0;
+	case TRAN_FEAT_CURVED_EDGE:
+		return g_tran_ts.curved_edge_amt_support;
+	case TRAN_FEAT_DYNAMIC_RATE:
+		return g_tran_ts.dynamic_report_rate_support;
+	default:
+		return false;
+	}
+}
+
+static int tran_mode_get(int cmd)
+{
+	switch (cmd) {
+	case TRAN_TP_CMD_GAME_STATE:
+		return g_tran_ts.game_state;
+	case TRAN_TP_CMD_EDGE_MODE:
+		return g_tran_ts.edge_mode;
+	case TRAN_TP_CMD_LOCK_POINT:
+		return g_tran_ts.lock_point;
+	case TRAN_TP_CMD_REPORT_RATE:
+		return g_tran_ts.tran_report_rate;
+	case TRAN_TP_CMD_TRANSIENT_RATE:
+		return g_tran_ts.transient_report_rate;
+	case TRAN_TP_CMD_EDGE_LEVEL:
+		return g_tran_ts.edge_level;
+	default:
+		return -EINVAL;
+	}
+}
+
+static int tran_mode_update(int cmd, int val)
+{
+	switch (cmd) {
+	case TRAN_TP_CMD_GAME_STATE:
+		if (val < 0 || val > 1)
+			return -EINVAL;
+		g_tran_ts.game_state = val;
+		break;
+	case TRAN_TP_CMD_EDGE_MODE:
+		if (val < 0 || val > 4)
+			return -EINVAL;
+		g_tran_ts.edge_mode = val;
+		break;
+	case TRAN_TP_CMD_LOCK_POINT:
+		if (val < 0 || val > 5)
+			return -EINVAL;
+		g_tran_ts.lock_point = val;
+		break;
+	case TRAN_TP_CMD_REPORT_RATE:
+		if (val < 0 || val > 5)
+			return -EINVAL;
+		g_tran_ts.tran_report_rate = val;
+		break;
+	case TRAN_TP_CMD_TRANSIENT_RATE:
+		if (val < 0 || val > 1)
+			return -EINVAL;
+		g_tran_ts.transient_report_rate = val;
+		break;
+	case TRAN_TP_CMD_EDGE_LEVEL:
+		if (val != 0 && val != 2 && val != 3)
+			return -EINVAL;
+		g_tran_ts.edge_level = val;
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	if (!g_tran_ts.controller) {
+		TRAN_ERROR("no controller running");
+		return -ENODEV;
+	}
+	if (g_tran_ts.ts_core_mode == TRAN_SUSPEND_MODE) {
+		TRAN_INFO("tp in suspend mode, defer cmd 0x%x val %d", cmd, val);
+		return 0;
+	}
+
+	tran_set_ts_mode(cmd, val);
+	return 0;
+}
+
+static ssize_t tran_mode_proc_read(struct file *file, char __user *buf,
+				   size_t count, loff_t *ppos)
+{
+	const struct tran_mode_node *node = pde_data(file_inode(file));
+	char tmp[16];
+	int val, len;
+
+	if (!node)
+		return -EINVAL;
+
+	val = tran_mode_get(node->cmd);
+	if (val < 0)
+		return val;
+
+	len = scnprintf(tmp, sizeof(tmp), "%d\n", val);
+	return simple_read_from_buffer(buf, count, ppos, tmp, len);
+}
+
+static ssize_t tran_mode_proc_write(struct file *file, const char __user *buf,
+				    size_t count, loff_t *ppos)
+{
+	const struct tran_mode_node *node = pde_data(file_inode(file));
+	char tmp[16];
+	size_t n = min(count, sizeof(tmp) - 1);
+	int val, ret;
+
+	if (!node || !n)
+		return -EINVAL;
+	if (copy_from_user(tmp, buf, n))
+		return -EFAULT;
+	tmp[n] = '\0';
+
+	if (sscanf(tmp, "%d", &val) != 1)
+		return -EINVAL;
+
+	ret = tran_mode_update(node->cmd, val);
+	return ret < 0 ? ret : count;
+}
+
+static const struct proc_ops tran_mode_proc_ops = {
+	.proc_read = tran_mode_proc_read,
+	.proc_write = tran_mode_proc_write,
+};
+
+static void tran_mode_proc_init(void)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(g_tran_mode_nodes); i++) {
+		if (!tran_is_feat_supported(g_tran_mode_nodes[i].feat))
+			continue;
+		g_tran_mode_procs[i] = proc_create_data(g_tran_mode_nodes[i].name,
+							0666, NULL,
+							&tran_mode_proc_ops,
+							(void *)&g_tran_mode_nodes[i]);
+		if (!g_tran_mode_procs[i])
+			TRAN_ERROR("Failed to create proc entry for %s",
+				   g_tran_mode_nodes[i].name);
+	}
+}
+
+static void tran_mode_proc_deinit(void)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(g_tran_mode_nodes); i++) {
+		if (g_tran_mode_procs[i]) {
+			proc_remove(g_tran_mode_procs[i]);
+			g_tran_mode_procs[i] = NULL;
+		}
+	}
+}
+
+struct tp_ioctl_data {
+	int len;
+	char data[256];
+};
+
+#define TRAN_TP_IOC_MAGIC		't'
+#define TP_IOC_R_ROTATION		_IOR(TRAN_TP_IOC_MAGIC, 0x0a, struct tp_ioctl_data)
+#define TP_IOC_W_ROTATION		_IOW(TRAN_TP_IOC_MAGIC, 0x0a, struct tp_ioctl_data)
+#define TP_IOC_R_REPORT_RATE		_IOR(TRAN_TP_IOC_MAGIC, 0x0b, struct tp_ioctl_data)
+#define TP_IOC_W_REPORT_RATE		_IOW(TRAN_TP_IOC_MAGIC, 0x0b, struct tp_ioctl_data)
+#define TP_IOC_R_EDGE_LEVEL		_IOR(TRAN_TP_IOC_MAGIC, 0x0d, struct tp_ioctl_data)
+#define TP_IOC_W_EDGE_LEVEL		_IOW(TRAN_TP_IOC_MAGIC, 0x0d, struct tp_ioctl_data)
+#define TP_IOC_R_GAME_MODE		_IOR(TRAN_TP_IOC_MAGIC, 0x12, struct tp_ioctl_data)
+#define TP_IOC_W_GAME_MODE		_IOW(TRAN_TP_IOC_MAGIC, 0x12, struct tp_ioctl_data)
+#define TP_IOC_R_GAME_STATE		_IOR(TRAN_TP_IOC_MAGIC, 0x13, struct tp_ioctl_data)
+#define TP_IOC_W_GAME_STATE		_IOW(TRAN_TP_IOC_MAGIC, 0x13, struct tp_ioctl_data)
+#define TP_IOC_R_TRANSIENT_RATE		_IOR(TRAN_TP_IOC_MAGIC, 0x14, struct tp_ioctl_data)
+#define TP_IOC_W_TRANSIENT_RATE		_IOW(TRAN_TP_IOC_MAGIC, 0x14, struct tp_ioctl_data)
+
+static dev_t tp_poll_devt;
+static struct cdev tp_poll_cdev;
+static struct class *tp_poll_class;
+static struct device *tp_poll_device;
+static bool tp_poll_registered;
+
+static long tp_poll_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+{
+	struct tp_ioctl_data kdata;
+	int val = 0;
+	int tp_cmd;
+	bool is_read = false;
+
+	memset(&kdata, 0, sizeof(kdata));
+
+	if (cmd == TP_IOC_R_REPORT_RATE || cmd == TP_IOC_W_REPORT_RATE) {
+		if (!g_tran_ts.dynamic_report_rate_support)
+			return -EOPNOTSUPP;
+		if (cmd == TP_IOC_R_REPORT_RATE &&
+		    copy_to_user((void __user *)arg, &kdata, sizeof(kdata)))
+			return -EFAULT;
+		return 0;
+	}
+
+	switch (cmd) {
+	case TP_IOC_R_ROTATION:
+		is_read = true;
+		fallthrough;
+	case TP_IOC_W_ROTATION:
+		tp_cmd = TRAN_TP_CMD_EDGE_MODE;
+		break;
+	case TP_IOC_R_EDGE_LEVEL:
+		is_read = true;
+		fallthrough;
+	case TP_IOC_W_EDGE_LEVEL:
+		if (!g_tran_ts.curved_edge_amt_support)
+			return -EOPNOTSUPP;
+		tp_cmd = TRAN_TP_CMD_EDGE_LEVEL;
+		break;
+	case TP_IOC_R_GAME_MODE:
+		is_read = true;
+		fallthrough;
+	case TP_IOC_W_GAME_MODE:
+		if (!g_tran_ts.esports_engine)
+			return -EOPNOTSUPP;
+		tp_cmd = TRAN_TP_CMD_LOCK_POINT;
+		break;
+	case TP_IOC_R_GAME_STATE:
+		is_read = true;
+		fallthrough;
+	case TP_IOC_W_GAME_STATE:
+		if (!g_tran_ts.esports_engine)
+			return -EOPNOTSUPP;
+		tp_cmd = TRAN_TP_CMD_GAME_STATE;
+		break;
+	case TP_IOC_R_TRANSIENT_RATE:
+		is_read = true;
+		fallthrough;
+	case TP_IOC_W_TRANSIENT_RATE:
+		if (!g_tran_ts.esports_engine)
+			return -EOPNOTSUPP;
+		tp_cmd = TRAN_TP_CMD_TRANSIENT_RATE;
+		break;
+	default:
+		return -ENOTTY;
+	}
+
+	if (!g_tran_ts.controller)
+		return -ENODEV;
+
+	if (is_read) {
+		val = tran_mode_get(tp_cmd);
+		if (val < 0)
+			return val;
+		kdata.len = scnprintf(kdata.data, sizeof(kdata.data), "%d\n", val) + 1;
+		if (copy_to_user((void __user *)arg, &kdata, sizeof(kdata)))
+			return -EFAULT;
+		return 0;
+	}
+
+	if (copy_from_user(&kdata, (void __user *)arg, sizeof(kdata)))
+		return -EFAULT;
+	kdata.data[sizeof(kdata.data) - 1] = '\0';
+
+	if (sscanf(kdata.data, "%d", &val) != 1)
+		return -EINVAL;
+
+	return tran_mode_update(tp_cmd, val);
+}
+
+static const struct file_operations tp_poll_fops = {
+	.owner = THIS_MODULE,
+	.unlocked_ioctl = tp_poll_ioctl,
+	.compat_ioctl = compat_ptr_ioctl,
+};
+
+static int tp_poll_drv_init(void)
+{
+	int ret;
+
+	BUILD_BUG_ON(sizeof(struct tp_ioctl_data) != 260);
+
+	ret = alloc_chrdev_region(&tp_poll_devt, 0, 1, "tppolldrv");
+	if (ret < 0) {
+		TRAN_ERROR("Failed to allocate chrdev region for tppolldrv: %d", ret);
+		return ret;
+	}
+
+	cdev_init(&tp_poll_cdev, &tp_poll_fops);
+	tp_poll_cdev.owner = THIS_MODULE;
+	ret = cdev_add(&tp_poll_cdev, tp_poll_devt, 1);
+	if (ret < 0) {
+		TRAN_ERROR("Failed to add cdev for tppolldrv: %d", ret);
+		goto err_unreg;
+	}
+
+	tp_poll_class = class_create("tppollclass");
+	if (IS_ERR(tp_poll_class)) {
+		ret = PTR_ERR(tp_poll_class);
+		tp_poll_class = NULL;
+		TRAN_ERROR("Failed to create tppollclass: %d", ret);
+		goto err_cdev;
+	}
+
+	tp_poll_device = device_create(tp_poll_class, NULL, tp_poll_devt, NULL, "tppolldrv");
+	if (IS_ERR(tp_poll_device)) {
+		ret = PTR_ERR(tp_poll_device);
+		tp_poll_device = NULL;
+		TRAN_ERROR("Failed to create /dev/tppolldrv: %d", ret);
+		goto err_class;
+	}
+
+	tp_poll_registered = true;
+	return 0;
+
+err_class:
+	class_destroy(tp_poll_class);
+	tp_poll_class = NULL;
+err_cdev:
+	cdev_del(&tp_poll_cdev);
+err_unreg:
+	unregister_chrdev_region(tp_poll_devt, 1);
+	return ret;
+}
+
+static void tp_poll_drv_exit(void)
+{
+	if (!tp_poll_registered)
+		return;
+	device_destroy(tp_poll_class, tp_poll_devt);
+	class_destroy(tp_poll_class);
+	cdev_del(&tp_poll_cdev);
+	unregister_chrdev_region(tp_poll_devt, 1);
+	tp_poll_device = NULL;
+	tp_poll_class = NULL;
+	tp_poll_registered = false;
+}
+
 static int tpd_probe(struct platform_device *pdev)
 {
 	struct tran_ts_platform *tran_pdata = g_tran_ts.platform_data;
@@ -548,6 +960,8 @@ static int tpd_probe(struct platform_device *pdev)
 
 	tran_parse_dt(&pdev->dev, &g_tran_ts);
 	tran_gesture_proc_init();
+	tran_mode_proc_init();
+	tp_poll_drv_init();
 
 	g_tran_ts.pdev = pdev;
 	g_tran_ts.ts_core_mode = TRAN_ACTIVE_MODE;
@@ -563,6 +977,8 @@ static void tpd_remove(struct platform_device *pdev)
 {
 	struct tran_ts_platform *pdata = g_tran_ts.platform_data;
 
+	tp_poll_drv_exit();
+	tran_mode_proc_deinit();
 	tran_gesture_proc_deinit();
 	if (pdata && pdata->ops && pdata->ops->plat_deinit)
 		pdata->ops->plat_deinit(&g_tran_ts);
