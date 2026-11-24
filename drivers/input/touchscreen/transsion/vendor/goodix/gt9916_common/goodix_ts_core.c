@@ -35,7 +35,165 @@
 struct goodix_module goodix_modules;
 int core_module_prob_sate = CORE_MODULE_UNPROBED;
 u32 bin_config_id = 0;
+static u8 report_rate_switch;
+static struct proc_dir_entry *report_rate_proc;
 static int goodix_send_ic_config(struct goodix_ts_core *cd, int type);
+
+static int brl_240hz_switch(struct goodix_ts_core *cd)
+{
+    struct goodix_ts_cmd cmd = {0};
+    int ret;
+
+    cmd.len = 5;
+    cmd.cmd = 0x9d;
+    cmd.data[0] = 0x02;
+    ret = cd->hw_ops->send_cmd(cd, &cmd);
+    if (ret)
+        ts_err("failed send 240hz rate_cmd cmd");
+    return ret;
+}
+
+static int brl_360hz_switch(struct goodix_ts_core *cd, u8 enable)
+{
+    struct goodix_ts_cmd cmd = {0};
+    int ret;
+
+    cmd.len = 5;
+    cmd.cmd = 0xc0;
+    cmd.data[0] = enable ? 1 : 0;
+    ret = cd->hw_ops->send_cmd(cd, &cmd);
+    if (ret)
+        ts_err("failed send 360hz rate_cmd cmd");
+    return ret;
+}
+
+static int brl_edge_restrain_in(struct goodix_ts_core *cd, int dir)
+{
+    struct goodix_ts_cmd cmd = {0};
+    int ret;
+
+    cmd.len = 6;
+    cmd.cmd = 0x17;
+    if (dir == 1) {
+        cmd.data[0] = 0x40;
+        cmd.data[1] = 0x80;
+    } else if (dir == 2) {
+        cmd.data[0] = 0x80;
+        cmd.data[1] = 0x80;
+    } else {
+        return -EINVAL;
+    }
+
+    ret = cd->hw_ops->send_cmd(cd, &cmd);
+    if (ret)
+        ts_err("failed send edge_restrain cmd");
+    return ret;
+}
+
+static int brl_edge_restrain_out(struct goodix_ts_core *cd)
+{
+    struct goodix_ts_cmd cmd = {0};
+    int ret;
+
+    cmd.len = 6;
+    cmd.cmd = 0x17;
+    cmd.data[0] = 0x00;
+    cmd.data[1] = 0x00;
+    ret = cd->hw_ops->send_cmd(cd, &cmd);
+    if (ret)
+        ts_err("failed send edge_restrain cmd");
+    return ret;
+}
+
+static void goodix_report_rate_switch(struct goodix_ts_core *cd, int val)
+{
+    static const u8 rate_map[6] = { 3, 1, 2, 3, 4, 5 };
+    struct goodix_ts_cmd cmd = {0};
+    int ret;
+
+    if (val < 0 || val > 5)
+        return;
+
+    cmd.len = 5;
+    cmd.cmd = 0x27;
+    cmd.data[0] = rate_map[val];
+    ret = cd->hw_ops->send_cmd(cd, &cmd);
+    if (ret)
+        ts_err("failed send game report rate cmd");
+    else
+        ts_info("Enter %d game report rate successful!", val);
+}
+
+static void goodix_sampling_rate_switch(struct goodix_ts_core *cd, int val)
+{
+    struct goodix_ts_cmd cmd = {0};
+    int ret;
+
+    cmd.len = 5;
+    cmd.cmd = 0xc2;
+    cmd.data[0] = val ? 1 : 0;
+    ret = cd->hw_ops->send_cmd(cd, &cmd);
+    if (ret)
+        ts_err("failed send super idle cmd");
+    else
+        ts_info("%s super idle successful!", val ? "Enter" : "Exit");
+}
+
+static void goodix_lock_point_switch(struct goodix_ts_core *cd, int val)
+{
+    struct goodix_ts_cmd cmd = {0};
+    int ret;
+
+    if (val < 0 || val > 5)
+        return;
+
+    cmd.len = 5;
+    cmd.cmd = 0x33;
+    cmd.data[0] = val;
+    ret = cd->hw_ops->send_cmd(cd, &cmd);
+    if (ret)
+        ts_err("failed send game lock point cmd");
+    else
+        ts_info("Enter %d game lock point level successful!", val);
+}
+
+static void goodix_game_state_switch(struct goodix_ts_core *cd, int val)
+{
+    struct goodix_ts_cmd cmd = {0};
+    int ret;
+
+    cmd.len = 5;
+    cmd.cmd = 0x33;
+    cmd.data[0] = val ? 1 : 0;
+    ret = cd->hw_ops->send_cmd(cd, &cmd);
+    if (ret)
+        ts_err("failed send game state cmd");
+    else
+        ts_info("%s game state successful!", val ? "Enter" : "Exit");
+}
+
+static void goodix_edge_level_switch(struct goodix_ts_core *cd, int val)
+{
+    struct goodix_ts_cmd cmd = {0};
+    int ret;
+
+    cmd.len = 5;
+    cmd.cmd = 0x36;
+    if (val == 0)
+        cmd.data[0] = 0;
+    else if (val == 2)
+        cmd.data[0] = 1;
+    else if (val == 3)
+        cmd.data[0] = 2;
+    else
+        return;
+
+    ret = cd->hw_ops->send_cmd(cd, &cmd);
+    if (ret)
+        ts_err("failed send TP edge level cmd");
+    else
+        ts_info("Enter %d TP edge_level successful!", val);
+}
 /**
  * __do_register_ext_module - register external module
  * to register into touch core modules structure
@@ -786,12 +944,75 @@ static void goodix_ts_sysfs_exit(struct goodix_ts_core *core_data)
     sysfs_remove_group(&core_data->pdev->dev.kobj, &sysfs_group);
 }
 
+static ssize_t brl_report_rate_switch_proc_read(struct file *file,
+                                                char __user *buf,
+                                                size_t count, loff_t *ppos)
+{
+    char tmp[8];
+    int len;
+
+    len = scnprintf(tmp, sizeof(tmp), "%u\n", report_rate_switch);
+    return simple_read_from_buffer(buf, count, ppos, tmp, len);
+}
+
+static ssize_t brl_report_rate_switch_proc_write(struct file *file,
+                                                 const char __user *buf,
+                                                 size_t count, loff_t *ppos)
+{
+    struct goodix_ts_core *cd = goodix_modules.core_data;
+    char tmp[8];
+    size_t n = min(count, sizeof(tmp) - 1);
+    int val = 0;
+
+    if (!n || count > 3) {
+        ts_err("Invalid value! count = %zu", count);
+        return -EINVAL;
+    }
+    if (copy_from_user(tmp, buf, n))
+        return -EFAULT;
+    tmp[n] = '\0';
+
+    if (sscanf(tmp, "%d", &val) != 1 || val < 0 || val >= 2) {
+        ts_err("Invalid value! tmp = %d", val);
+        return -EINVAL;
+    }
+
+    report_rate_switch = val;
+    if (!cd || cd->init_stage < CORE_INIT_STAGE2 || atomic_read(&cd->suspended)) {
+        ts_info("defer report_rate_switch=%u until active", report_rate_switch);
+        return count;
+    }
+
+    if (val == 1) {
+        brl_360hz_switch(cd, 1);
+    } else {
+        brl_360hz_switch(cd, 0);
+        brl_240hz_switch(cd);
+    }
+    return count;
+}
+
+static const struct proc_ops brl_report_rate_proc_ops = {
+    .proc_read = brl_report_rate_switch_proc_read,
+    .proc_write = brl_report_rate_switch_proc_write,
+};
+
 static void goodix_ts_procfs_init(struct goodix_ts_core *core_data)
 {
+    report_rate_proc = proc_create("report_rate_switch", 0666, NULL,
+                                   &brl_report_rate_proc_ops);
+    if (!report_rate_proc)
+        ts_err("create proc/report_rate_switch Failed!");
+    else
+        ts_info("create proc/report_rate_switch Succeeded!");
 }
 
 static void goodix_ts_procfs_exit(struct goodix_ts_core *core_data)
 {
+    if (report_rate_proc) {
+        proc_remove(report_rate_proc);
+        report_rate_proc = NULL;
+    }
 }
 
 /* event notifier */
@@ -1773,6 +1994,8 @@ out:
     hw_ops->irq_enable(core_data, true);
     /* open esd */
     goodix_ts_blocking_notify(NOTIFY_RESUME, NULL);
+    if (report_rate_switch == 1)
+        brl_360hz_switch(core_data, 1);
     ts_info("tran_fingerprint_status=%d g_fp_flag=%d",
             tran_fingerprint_status, g_fp_flag);
     ts_info("Resume end");
@@ -2337,11 +2560,50 @@ static char *support_list[] = {
     NULL /* not modify */
 };
 
+static void set_ts_mode(int cmd, int val)
+{
+    struct goodix_ts_core *cd = goodix_modules.core_data;
+
+    if (!cd || cd->init_stage < CORE_INIT_STAGE2 || atomic_read(&cd->suspended)) {
+        ts_info("tp not active, skip cmd 0x%x val %d", cmd, val);
+        return;
+    }
+
+    switch (cmd) {
+    case TRAN_TP_CMD_GAME_STATE:
+        goodix_game_state_switch(cd, val);
+        break;
+    case TRAN_TP_CMD_EDGE_MODE:
+        if (val == 1)
+            brl_edge_restrain_in(cd, 1);
+        else if (val == 3)
+            brl_edge_restrain_in(cd, 2);
+        else
+            brl_edge_restrain_out(cd);
+        break;
+    case TRAN_TP_CMD_LOCK_POINT:
+        goodix_lock_point_switch(cd, val);
+        break;
+    case TRAN_TP_CMD_REPORT_RATE:
+        goodix_report_rate_switch(cd, val);
+        break;
+    case TRAN_TP_CMD_TRANSIENT_RATE:
+        goodix_sampling_rate_switch(cd, val);
+        break;
+    case TRAN_TP_CMD_EDGE_LEVEL:
+        goodix_edge_level_switch(cd, val);
+        break;
+    default:
+        break;
+    }
+}
+
 static struct tran_controller_ops controller_ops = {
     .tran_ts_init = goodix_ts_init,
     .tran_ts_suspend = suspend,
     .tran_ts_resume = resume,
     .tran_gesture_enable = goodix_gesture_enable,
+    .set_ts_mode = set_ts_mode,
 };
 
 struct tran_ts_controller goodix_controller = {
