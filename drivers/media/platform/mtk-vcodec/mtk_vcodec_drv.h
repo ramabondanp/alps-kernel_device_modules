@@ -152,7 +152,8 @@ enum mtk_codec_type {
 	VENC_MPEG4,
 	VENC_HYBRID_H264,
 	VENC_H263,
-	VDEC_VENC_MAX
+	/* Keep table bound above 12-entry stock DTB tables after VENC_H264 = 1 */
+	VDEC_VENC_MAX = 20
 };
 
 /**
