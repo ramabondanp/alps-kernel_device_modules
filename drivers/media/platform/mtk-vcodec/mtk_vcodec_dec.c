@@ -3872,23 +3872,6 @@ static void vb2ops_vdec_buf_queue(struct vb2_buffer *vb)
 	}
 
 	mtk_vdec_set_param(ctx, false);
-
-	/*
-	 * Header parsing runs in the VCP as soon as DEC_START is sent.
-	 * Sync the original attachment here instead of relying only on
-	 * the partial SG sync done during buffer preparation, which can
-	 * precede the final userspace write to a prepared buffer.
-	 */
-	if (mtk_vcodec_is_vcp(MTK_INST_DECODER) && !ctx->dec_params.svp_mode &&
-	    ctx->q_data[MTK_Q_DATA_SRC].fmt->fourcc == V4L2_PIX_FMT_VP9 &&
-	    src_vb->memory == VB2_MEMORY_DMABUF && src_mem->size &&
-	    !(to_video_dec_buf(src_vb2_v4l2)->flags & NO_CACHE_CLEAN)) {
-		struct vb2_dc_buf *dc_buf = src_vb->planes[0].mem_priv;
-
-		dma_sync_sgtable_for_device(dc_buf->dev, dc_buf->dma_sgt,
-					    dc_buf->dma_dir);
-	}
-
 	ret = vdec_if_decode(ctx, src_mem, NULL, &src_chg);
 
 	/* src_chg bit0 for res change flag, bit1 for realloc mv buf flag,

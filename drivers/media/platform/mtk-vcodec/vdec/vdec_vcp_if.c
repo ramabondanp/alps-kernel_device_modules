@@ -1594,9 +1594,6 @@ static int vdec_vcp_decode(unsigned long h_vdec, struct mtk_vcodec_mem *bs,
 	msg.data[2] = (unsigned int)bs->flags;
 	vcodec_trace_begin("%s-%d(ipi)(ts=%lld)(%d)",
 		__func__, inst->ctx->id, inst->ctx->timestamp, (fb != NULL) ? fb->index : 0);
-	/* Publish the VP9 header buffer descriptor before ringing the VCP. */
-	if (bs_fourcc == V4L2_PIX_FMT_VP9 && !inst->ctx->dec_params.svp_mode && !fb)
-		dma_wmb();
 	ret = vdec_vcp_ipi_send(inst, &msg, sizeof(msg), false, true, false);
 	vcodec_trace_end();
 
@@ -1616,10 +1613,6 @@ static int vdec_vcp_decode(unsigned long h_vdec, struct mtk_vcodec_mem *bs,
 		mtk_vcodec_debug(inst, "- resolution changed -");
 	else if ((*src_chg & VDEC_HW_NOT_SUPPORT) != 0U) {
 		mtk_vcodec_err(inst, "- unsupported (%d,%d) -", ret, inst->vcu.failure);
-		if (bs_fourcc == V4L2_PIX_FMT_VP9 && !inst->ctx->dec_params.svp_mode && !fb)
-			mtk_vcodec_err(inst,
-				       "VP9 header rejected: changed=%#x payload=%zu length=%zu offset=%zu flags=%#x",
-				       *src_chg, bs->size, bs->length, bs->data_offset, bs->flags);
 		not_support = true;
 	}
 	/*ack timeout means vpud has crashed*/
