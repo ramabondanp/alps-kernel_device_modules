@@ -328,7 +328,7 @@ void cmdq_sec_mbox_enable(void *chan)
 			mtk_mminfra_on_off(true, cmdq->mminfra_all_on_pwr_idx, MM_TYPE_CMDQ) :
 			pm_runtime_get_sync(cmdq->mbox.dev);
 
-		if (ret != 0)
+		if (ret < 0)
 			cmdq_err("%s vote mminfra on err:%d", __func__, ret);
 		if (mminfra_power_cb && !mminfra_power_cb())
 			cmdq_err("hwid:%hu usage:%d mminfra power not enable",
