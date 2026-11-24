@@ -5,7 +5,7 @@ COMMON_GKI_MODULES_LIST = GKI_MODULES + KUNIT_MODULES
 
 mgk_module_outs = COMMON_GKI_MODULES_LIST
 
-mgk_module_ext_outs = [
+_MGK_MODULE_EXT_OUTS = [
     "drivers/firmware/arm_ffa/ffa-core.ko",
     "drivers/firmware/arm_ffa/ffa-module.ko",
     "drivers/gpu/drm/display/drm_display_helper.ko",
@@ -31,6 +31,10 @@ mgk_module_ext_outs = [
     "net/mac80211/mac80211.ko",
     "drivers/soc/mediatek/mtk-socinfo.ko",
     "drivers/mmc/core/pwrseq_simple.ko",
+]
+
+mgk_module_ext_outs = [
+    m for m in _MGK_MODULE_EXT_OUTS if m not in COMMON_GKI_MODULES_LIST
 ]
 
 # 6.18 get_gki_modules_list() returns a select(), so membership tests are not
