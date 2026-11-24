@@ -16,6 +16,7 @@
  */
 #include <linux/version.h>
 #include <linux/fs.h>
+#include <linux/power_supply.h>
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
 #include <linux/uaccess.h>
@@ -37,7 +38,73 @@ int core_module_prob_sate = CORE_MODULE_UNPROBED;
 u32 bin_config_id = 0;
 static u8 report_rate_switch;
 static struct proc_dir_entry *report_rate_proc;
+static u8 charger_flag;
+static bool charger_nb_registered;
+static struct notifier_block charger_nof;
 static int goodix_send_ic_config(struct goodix_ts_core *cd, int type);
+
+static int brl_charger_detect(struct goodix_ts_core *cd, u8 on)
+{
+    struct goodix_ts_cmd cmd = {0};
+    int ret;
+
+    cmd.len = 5;
+    cmd.cmd = 0xaf;
+    cmd.data[0] = on ? 1 : 0;
+    ret = cd->hw_ops->send_cmd(cd, &cmd);
+    if (ret)
+        ts_err("failed send charger_cmd");
+    return ret;
+}
+
+static void goodix_charger_work(struct work_struct *work)
+{
+    struct goodix_ts_core *cd =
+        container_of(work, struct goodix_ts_core, charger_work);
+
+    if (!cd || cd->init_stage < CORE_INIT_STAGE2 ||
+        atomic_read(&cd->suspended))
+        return;
+
+    brl_charger_detect(cd, charger_flag);
+}
+
+static int mtk_power_misc_psy_event(struct notifier_block *nb,
+                                    unsigned long event, void *v)
+{
+    struct power_supply *psy = v;
+    union power_supply_propval val;
+    struct goodix_ts_core *cd = goodix_modules.core_data;
+    int ret;
+
+    if (event != PSY_EVENT_PROP_CHANGED || !psy || !psy->desc ||
+        !psy->desc->name)
+        return NOTIFY_DONE;
+
+    if (strcmp(psy->desc->name, "battery") != 0)
+        return NOTIFY_DONE;
+
+    ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_STATUS, &val);
+    ts_debug("charger notifier: online=%d ret=%d", val.intval, ret);
+    if (ret)
+        return NOTIFY_DONE;
+
+    if (val.intval == POWER_SUPPLY_STATUS_CHARGING && !charger_flag) {
+        ts_info("charger mode in");
+        charger_flag = 1;
+        if (cd && cd->init_stage == CORE_INIT_STAGE2 &&
+            !atomic_read(&cd->suspended))
+            schedule_work(&cd->charger_work);
+    } else if (val.intval == POWER_SUPPLY_STATUS_DISCHARGING && charger_flag) {
+        ts_info("charger mode out");
+        charger_flag = 0;
+        if (cd && cd->init_stage == CORE_INIT_STAGE2 &&
+            !atomic_read(&cd->suspended))
+            schedule_work(&cd->charger_work);
+    }
+
+    return NOTIFY_DONE;
+}
 
 static int brl_240hz_switch(struct goodix_ts_core *cd)
 {
@@ -1996,6 +2063,10 @@ out:
     goodix_ts_blocking_notify(NOTIFY_RESUME, NULL);
     if (report_rate_switch == 1)
         brl_360hz_switch(core_data, 1);
+    if (charger_flag == 1) {
+        ts_info("resume restore charger mode");
+        brl_charger_detect(core_data, 1);
+    }
     ts_info("tran_fingerprint_status=%d g_fp_flag=%d",
             tran_fingerprint_status, g_fp_flag);
     ts_info("Resume end");
@@ -2404,6 +2475,7 @@ static int goodix_ts_probe(struct platform_device *pdev)
     core_data->init_stage = CORE_INIT_STAGE1;
     goodix_modules.core_data = core_data;
     core_module_prob_sate = CORE_MODULE_PROB_SUCCESS;
+    INIT_WORK(&core_data->charger_work, goodix_charger_work);
 
     /* Try start a thread to get config-bin info */
     ret = goodix_start_later_init(core_data);
@@ -2411,6 +2483,13 @@ static int goodix_ts_probe(struct platform_device *pdev)
         ts_err("start later init failed");
         goto err_out;
     }
+
+    charger_nof.notifier_call = mtk_power_misc_psy_event;
+    if (power_supply_reg_notifier(&charger_nof))
+        ts_err("failed to register power supply notifier");
+    else
+        charger_nb_registered = true;
+
     if (get_tpd_ops(&goodix_controller, &ops)) {
         ops->controller_init_completion();
     }
@@ -2439,6 +2518,11 @@ static void goodix_ts_remove(struct platform_device *pdev)
     struct goodix_ts_hw_ops *hw_ops = core_data->hw_ops;
     struct goodix_ts_esd *ts_esd = &core_data->ts_esd;
 
+    if (charger_nb_registered) {
+        power_supply_unreg_notifier(&charger_nof);
+        charger_nb_registered = false;
+    }
+    cancel_work_sync(&core_data->charger_work);
     goodix_ts_unregister_notifier(&core_data->ts_notifier);
 
     if (core_data->init_stage >= CORE_INIT_STAGE2) {
