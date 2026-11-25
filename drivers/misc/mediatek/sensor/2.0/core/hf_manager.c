@@ -331,7 +331,7 @@ int hf_manager_create(struct hf_device *device)
 		kthread_init_work(&manager->io_kthread_work,
 			hf_manager_io_kthread_work);
 		if (device->device_worker == HF_DEVICE_SINGLE_WORKER) {
-			manager->kworker = kthread_create_worker(0,
+			manager->kworker = kthread_run_worker(0,
 				"hf_manager_%s", device->dev_name);
 			if (IS_ERR(manager->kworker)) {
 				err = PTR_ERR(manager->kworker);
@@ -2052,7 +2052,7 @@ static int __init hf_manager_init(void)
 			&hf_manager_proc_fops, &hfcore))
 		pr_err("Failed to create proc\n");
 
-	hfcore.kworker = kthread_create_worker(0, "hf_manager");
+	hfcore.kworker = kthread_run_worker(0, "hf_manager");
 	if (IS_ERR(hfcore.kworker)) {
 		pr_err("Failed to create kthread\n");
 		ret = PTR_ERR(hfcore.kworker);

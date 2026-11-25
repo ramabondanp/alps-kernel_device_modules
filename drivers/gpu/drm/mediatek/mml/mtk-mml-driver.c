@@ -2562,7 +2562,7 @@ static int mml_probe(struct platform_device *pdev)
 		return -ENOMEM;
 	platform_set_drvdata(pdev, mml);
 
-	mml->kt_config = kthread_create_worker(0, "mml_work0");
+	mml->kt_config = kthread_run_worker(0, "mml_work0");
 	if (IS_ERR(mml->kt_config)) {
 		ret = PTR_ERR(mml->kt_config);
 		mml_log("%s create thread fail %d", __func__, ret);

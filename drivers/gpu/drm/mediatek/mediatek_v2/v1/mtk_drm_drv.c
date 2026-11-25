@@ -9846,7 +9846,7 @@ static int mtk_drm_kms_init(struct drm_device *drm)
 
 	DDPINFO("%s-\n", __func__);
 
-	private->lateinit.worker = kthread_create_worker(0, "mtk_drm_bind");
+	private->lateinit.worker = kthread_run_worker(0, "mtk_drm_bind");
 	kthread_init_work(&private->lateinit.work, mtk_drm_kms_lateinit);
 	kthread_queue_work(private->lateinit.worker, &private->lateinit.work);
 
