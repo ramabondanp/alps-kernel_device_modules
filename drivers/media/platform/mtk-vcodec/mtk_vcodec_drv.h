@@ -136,7 +136,8 @@ enum mtk_codec_type {
 	VDEC_H264,
 	VDEC_H265,
 	VDEC_HEIF,
-	VDEC_VP8,
+	/* Slot 4 is unused by stock X6871 VCP firmware; VP8 starts at 5 */
+	VDEC_VP8 = 5,
 	VDEC_VP9,
 	VDEC_MPEG4,
 	VDEC_H263,
