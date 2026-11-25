@@ -11,6 +11,7 @@
 #include <linux/slab.h>
 #include <linux/usb/typec.h>
 #include <linux/usb/typec_mux.h>
+#include <linux/namei.h>
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
 #include <linux/uaccess.h>
@@ -340,9 +341,13 @@ static int typec_mux_switch_procfs_init(struct typec_mux_switch *mux_sw)
 	struct device *dev = mux_sw->dev;
 	struct proc_dir_entry *root;
 	struct proc_dir_entry *file;
+	struct path proc_path;
 	int ret = 0;
 
-	proc_mkdir(PROC_TYPEC, NULL);
+	if (kern_path("/proc/" PROC_TYPEC, 0, &proc_path) == 0)
+		path_put(&proc_path);
+	else
+		proc_mkdir(PROC_TYPEC, NULL);
 
 	root = proc_mkdir(PROC_MUX_SWITCH, NULL);
 	if (!root) {
