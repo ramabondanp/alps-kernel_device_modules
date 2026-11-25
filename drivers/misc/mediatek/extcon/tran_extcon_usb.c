@@ -21,6 +21,7 @@
 #include <linux/power_supply.h>
 #include <linux/usb/role.h>
 #include <linux/workqueue.h>
+#include <linux/namei.h>
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
 #include <linux/slab.h>
@@ -323,19 +324,27 @@ static const struct proc_ops usb_cc_smt_procfs_fops = {
 
 static int tran_usb_extcon_procfs_init(struct tran_usb_extcon_info *extcon)
 {
-	struct proc_dir_entry *file, *root;
+	struct proc_dir_entry *file, *root = NULL;
+	struct path proc_path;
 	int ret = 0;
 
-	root = proc_mkdir(PROC_FILE_SMT, NULL);
-	if (!root) {
-		dev_info(extcon->dev, "fail creating proc dir: %s\n",
-			 PROC_FILE_SMT);
-		ret = -ENOMEM;
-		goto error;
-	}
+	if (kern_path("/proc/" PROC_FILE_SMT, 0, &proc_path) == 0) {
+		path_put(&proc_path);
+		file = proc_create_data(PROC_FILE_SMT "/" FILE_SMT_U2_CC_MODE,
+					0400, NULL, &usb_cc_smt_procfs_fops,
+					extcon);
+	} else {
+		root = proc_mkdir(PROC_FILE_SMT, NULL);
+		if (!root) {
+			dev_info(extcon->dev, "fail creating proc dir: %s\n",
+				 PROC_FILE_SMT);
+			ret = -ENOMEM;
+			goto error;
+		}
 
-	file = proc_create_data(FILE_SMT_U2_CC_MODE, 0400, root,
-				&usb_cc_smt_procfs_fops, extcon);
+		file = proc_create_data(FILE_SMT_U2_CC_MODE, 0400, root,
+					&usb_cc_smt_procfs_fops, extcon);
+	}
 	if (!file) {
 		dev_info(extcon->dev, "fail creating proc file: %s\n",
 			 FILE_SMT_U2_CC_MODE);
