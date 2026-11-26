@@ -83,6 +83,7 @@ struct mtk_disp_c3d_primary {
 	struct cmdq_pkt *sram_pkt[C3D_CMDQ_MAX];
 	atomic_t c3d_sram_hw_init;
 	unsigned int relay_state;
+	bool sram_need_restore;
 };
 
 struct mtk_disp_c3d {
