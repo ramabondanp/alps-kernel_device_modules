@@ -12,9 +12,6 @@
 #include "mtk_ppm_internal.h"
 #include "mtk_disp_notify.h"
 
-#ifndef FB_EVENT_BLANK
-#define FB_EVENT_BLANK 0x09
-#endif
 
 static void ppm_lcmoff_update_limit_cb(void);
 static void ppm_lcmoff_status_change_cb(bool enable);

@@ -27,9 +27,6 @@
 #endif
 #include "goodix_ts_core.h"
 
-#ifndef FB_EVENT_BLANK
-#define FB_EVENT_BLANK 0x09
-#endif
 #define GOODIX_DEFAULT_CFG_NAME 	"goodix_cfg_group.cfg"
 #define GOOIDX_INPUT_PHYS			"goodix_ts/input0"
 

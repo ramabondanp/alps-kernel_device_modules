@@ -45,9 +45,6 @@
 #ifdef KERNEL_ABOVE_2_6_38
 #include <linux/input/mt.h>
 
-#ifndef FB_EVENT_BLANK
-#define FB_EVENT_BLANK 0x09
-#endif
 #endif
 
 //#define INPUT_PHYS_NAME "synaptics_dsx/touch_input"

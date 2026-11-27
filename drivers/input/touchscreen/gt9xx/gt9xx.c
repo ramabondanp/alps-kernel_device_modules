@@ -24,9 +24,6 @@
 #include <linux/input/mt.h>
 #include "gt9xx.h"
 
-#ifndef FB_EVENT_BLANK
-#define FB_EVENT_BLANK 0x09
-#endif
 
 #define GOODIX_COORDS_ARR_SIZE	4
 #define PROP_NAME_SIZE		24

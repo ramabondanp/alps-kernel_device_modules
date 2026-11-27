@@ -32,9 +32,6 @@
 
 #include "goodix_ts_core.h"
 
-#ifndef FB_EVENT_BLANK
-#define FB_EVENT_BLANK 0x09
-#endif
 /* goodix fb test */
 // #include "../../../video/fbdev/core/fb_firefly.h"
 

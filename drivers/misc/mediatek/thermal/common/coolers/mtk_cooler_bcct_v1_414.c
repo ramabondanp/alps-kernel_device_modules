@@ -29,9 +29,6 @@
 #include "mtk_disp_notify.h"
 #include <linux/fb.h>
 
-#ifndef FB_EVENT_BLANK
-#define FB_EVENT_BLANK 0x09
-#endif
 
 /* ************************************ */
 /* Weak functions */

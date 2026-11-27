@@ -50,9 +50,6 @@
 #if IS_ENABLED(CONFIG_MTK_TINYSYS_SSPM_SUPPORT) && defined(USE_CM_MGR_AT_SSPM)
 #include <sspm_ipi.h>
 
-#ifndef FB_EVENT_BLANK
-#define FB_EVENT_BLANK 0x09
-#endif
 #endif /* CONFIG_MTK_TINYSYS_SSPM_SUPPORT && defined(USE_CM_MGR_AT_SSPM) */
 
 

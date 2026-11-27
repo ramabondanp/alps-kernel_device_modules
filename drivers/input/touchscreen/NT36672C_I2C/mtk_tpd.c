@@ -28,9 +28,6 @@
 	|| defined(CONFIG_TOUCHSCREEN_MTK_SYNAPTICS_3320_50)
 #include <linux/input/mt.h>
 
-#ifndef FB_EVENT_BLANK
-#define FB_EVENT_BLANK 0x09
-#endif
 #endif /* CONFIG_MTK_S3320 */
 /* for magnify velocity******************************************** */
 #define TOUCH_IOC_MAGIC 'A'
