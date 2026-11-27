@@ -31,6 +31,7 @@ ack_headers = [
 	"//common:drivers/android/debug_kinfo.h".format(kernel_version),
 	"//common:drivers/clocksource/timer-of.h".format(kernel_version),
 	"//common:drivers/clocksource/timer-sp.h".format(kernel_version),
+	"//common:drivers/devfreq/governor.h".format(kernel_version),
 	"//common:drivers/dma/dmaengine.h".format(kernel_version),
 	"//common:drivers/dma/virt-dma.h".format(kernel_version),
 	"//common:drivers/edac/altera_edac.h".format(kernel_version),
