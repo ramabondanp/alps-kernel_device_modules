@@ -542,26 +542,16 @@ static int lcm_unprepare(struct drm_panel *panel)
 
 	if (!ctx->prepared)
 		return 0;
-	lcm_dcs_write_seq_static(ctx, 0xFE, 0x9a);
-	lcm_dcs_write_seq_static(ctx, 0x00, 0x08);
-	lcm_dcs_write_seq_static(ctx, 0xFE, 0x9b);
-	lcm_dcs_write_seq_static(ctx, 0x00, 0x3e);
-	lcm_dcs_write_seq_static(ctx, 0x01, 0x3e);
-	lcm_dcs_write_seq_static(ctx, 0x02, 0x3e);
-	lcm_dcs_write_seq_static(ctx, 0x03, 0x3e);
-	lcm_dcs_write_seq_static(ctx, 0x04, 0x3e);
-	lcm_dcs_write_seq_static(ctx, 0x05, 0x3e);
-	msleep(5);
-	lcm_dcs_write_seq_static(ctx, 0xFE, 0x00);
+
+	g_aod_enable = 0;
+	g_hbm_enable = 0;
 	lcm_dcs_write_seq_static(ctx, 0x28);
-	msleep(20);
+	msleep(10);
 	lcm_dcs_write_seq_static(ctx, 0x10);
-	msleep(20);
+	msleep(100);
 
 	ctx->error = 0;
 	ctx->prepared = false;
-	g_aod_enable = 0;
-	g_hbm_enable = 0;
 
 	/* Rail dimatikan setelah panel di-sleep-in, sama seperti vendor. */
 	panel_ext_lcm_power_set(panel, 0);
@@ -670,7 +660,7 @@ static int panel_ext_reset(struct drm_panel *panel, int on)
 
 	pr_info("%s value=%d\n", __func__, on);
 	ctx->reset_gpio =
-		devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_HIGH);
+		devm_gpiod_get(ctx->dev, "reset", on ? GPIOD_OUT_HIGH : GPIOD_OUT_LOW);
 	if (IS_ERR(ctx->reset_gpio)) {
 		dev_err(ctx->dev, "%s: cannot get reset_gpio %ld\n",
 			__func__, PTR_ERR(ctx->reset_gpio));
@@ -737,9 +727,11 @@ static int panel_ext_lcm_power_set(struct drm_panel *panel, int on)
 		if (ret < 0)
 			dev_err(ctx->dev, "<%s:%d>enable lcm vci error!ret[%d]\n", __func__, __LINE__, ret);
 	} else {
-		ctx->reset_gpio = devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_HIGH);
-		gpiod_set_value(ctx->reset_gpio, 0);
-		devm_gpiod_put(ctx->dev, ctx->reset_gpio);
+		ctx->reset_gpio = devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_LOW);
+		if (!IS_ERR(ctx->reset_gpio)) {
+			gpiod_set_value(ctx->reset_gpio, 0);
+			devm_gpiod_put(ctx->dev, ctx->reset_gpio);
+		}
 		mdelay(5);
 		ret = regulator_disable(ctx->vci_regulator);
 		if (ret < 0)
@@ -1314,26 +1306,49 @@ static const struct drm_panel_funcs lcm_drm_funcs = {
 	.get_modes = lcm_get_modes,
 };
 
-static struct lcm *ctx_work;
-static void lcm_regulator_power_init(struct work_struct *lcm_work);
-static DECLARE_DELAYED_WORK(lcm_regulator_work, lcm_regulator_power_init);
-static void lcm_regulator_power_init(struct work_struct *lcm_work)
+static int lcm_regulator_power_init(struct lcm *ctx)
 {
-	int ret = 0;
+	int ret;
 
-	pr_info("[LCM]%s start\n", __func__);
-	ctx_work->dvdd_regulator = devm_regulator_get(ctx_work->dev, "dvdd");
-	if (IS_ERR_OR_NULL(ctx_work->dvdd_regulator)) {
-		pr_info("<%s,%d> lcm dvdd regulator get fail!\n", __func__, __LINE__);
-		schedule_delayed_work(&lcm_regulator_work, msecs_to_jiffies(7000));
-		return;
+	ctx->dvdd_regulator = devm_regulator_get(ctx->dev, "dvdd");
+	if (IS_ERR_OR_NULL(ctx->dvdd_regulator)) {
+		ret = ctx->dvdd_regulator ? PTR_ERR(ctx->dvdd_regulator) : -ENODEV;
+		dev_err(ctx->dev, "cannot get dvdd regulator ret[%d]\n", ret);
+		return ret;
 	}
-	ret = regulator_set_voltage(ctx_work->dvdd_regulator, 1254000, 1254000);
-	if (ret < 0)
-		pr_info("<%s,%d> lcm dvdd set vol fail!ret[%d]\n", __func__, __LINE__, ret);
-	ret = regulator_enable(ctx_work->dvdd_regulator);
-	if (ret < 0)
-		pr_info("<%s,%d> lcm dvdd enable error!ret[%d]\n", __func__, __LINE__, ret);
+	ret = regulator_set_voltage(ctx->dvdd_regulator, 1254000, 1254000);
+	if (ret < 0) {
+		dev_err(ctx->dev, "cannot set dvdd vol ret[%d]\n", ret);
+		return ret;
+	}
+	ret = regulator_enable(ctx->dvdd_regulator);
+	if (ret < 0) {
+		dev_err(ctx->dev, "cannot enable dvdd ret[%d]\n", ret);
+		return ret;
+	}
+
+	ctx->vci_regulator = devm_regulator_get(ctx->dev, "vci");
+	if (IS_ERR_OR_NULL(ctx->vci_regulator)) {
+		ret = ctx->vci_regulator ? PTR_ERR(ctx->vci_regulator) : -ENODEV;
+		dev_err(ctx->dev, "cannot get vci regulator ret[%d]\n", ret);
+		goto err_disable_dvdd;
+	}
+	ret = regulator_set_voltage(ctx->vci_regulator, 3000000, 3000000);
+	if (ret < 0) {
+		dev_err(ctx->dev, "cannot set vci vol ret[%d]\n", ret);
+		goto err_disable_dvdd;
+	}
+	ret = regulator_enable(ctx->vci_regulator);
+	if (ret < 0) {
+		dev_err(ctx->dev, "cannot enable vci ret[%d]\n", ret);
+		goto err_disable_dvdd;
+	}
+
+	return 0;
+
+err_disable_dvdd:
+	regulator_disable(ctx->dvdd_regulator);
+	return ret;
 }
 
 static int lcm_probe(struct mipi_dsi_device *dsi)
@@ -1411,18 +1426,9 @@ static int lcm_probe(struct mipi_dsi_device *dsi)
 	}
 	devm_gpiod_put(dev, ctx->vddi_gpio);
 
-	ctx_work = ctx;
-	schedule_delayed_work(&lcm_regulator_work, msecs_to_jiffies(3000));
-
-	ctx->vci_regulator = devm_regulator_get(ctx->dev, "vci");
-	if (IS_ERR(ctx->vci_regulator)) {
-		ret = PTR_ERR(ctx->vci_regulator);
-		dev_err(ctx->dev, "cannot get vci regulator ret[%d]\n", ret);
-		return ret;
-	}
-	ret = regulator_enable(ctx->vci_regulator);
+	ret = lcm_regulator_power_init(ctx);
 	if (ret < 0)
-		dev_err(ctx->dev, "<%s:%d>enable vci vol error!ret[%d]\n", __func__, __LINE__, ret);
+		return ret;
 
 	ctx->reset_gpio = devm_gpiod_get(dev, "reset", GPIOD_OUT_HIGH);
 	if (IS_ERR(ctx->reset_gpio)) {
@@ -1475,13 +1481,13 @@ static void lcm_shutdown(struct mipi_dsi_device *dsi)
 {
 	struct lcm *ctx = mipi_dsi_get_drvdata(dsi);
 
-	lcm_disable(&ctx->panel);
+	pr_info("[LCM] %s ctx->prepared=%d, begin\n", __func__, ctx->prepared);
 	if (ctx->prepared) {
-		ctx->reset_gpio = devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_HIGH);
-		gpiod_set_value(ctx->reset_gpio, 0);
-		devm_gpiod_put(ctx->dev, ctx->reset_gpio);
-		mdelay(2);
+		lcm_dcs_write_seq_static(ctx, 0x53, 0x20);
+		mdelay(17);
+		lcm_dcs_write_seq_static(ctx, 0x51, 0x00, 0x00);
 	}
+	lcm_disable(&ctx->panel);
 }
 
 static const struct of_device_id lcm_of_match[] = {
