@@ -1,7 +1,8 @@
+load("//common:bazel/modules.bzl", "get_kunit_modules_superset")
 load("//kernel_device_modules-6.18:kernel/kleaf/gki_modules_6.18.bzl",
-     "GKI_MODULES", "KUNIT_MODULES")
+     "GKI_MODULES")
 
-COMMON_GKI_MODULES_LIST = GKI_MODULES + KUNIT_MODULES
+COMMON_GKI_MODULES_LIST = GKI_MODULES + get_kunit_modules_superset("arm64")
 
 mgk_module_outs = COMMON_GKI_MODULES_LIST
 

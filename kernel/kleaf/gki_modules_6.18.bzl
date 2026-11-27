@@ -93,28 +93,3 @@ GKI_MODULES = [
     "drivers/hwtracing/coresight/coresight-trbe.ko",
     "drivers/perf/dwc_pcie_pmu.ko",
 ]
-
-KUNIT_MODULES = [
-    "lib/kunit/kunit.ko",
-    "drivers/android/tests/binder_alloc_kunit.ko",
-    "drivers/base/regmap/regmap-kunit.ko",
-    "drivers/base/regmap/regmap-ram.ko",
-    "drivers/base/regmap/regmap-raw-ram.ko",
-    "drivers/hid/hid-uclogic-test.ko",
-    "drivers/iio/test/iio-test-format.ko",
-    "drivers/input/tests/input_test.ko",
-    "drivers/of/of_kunit_helpers.ko",
-    "drivers/rtc/test_rtc_lib.ko",
-    "fs/ext4/ext4-inode-test.ko",
-    "fs/fat/fat_test.ko",
-    "kernel/time/time_test.ko",
-    "lib/kunit/kunit-example-test.ko",
-    "lib/kunit/kunit-test.ko",
-    "lib/kunit/platform-test.ko",
-    "net/core/dev_addr_lists_test.ko",
-    "sound/soc/soc-topology-test.ko",
-    "sound/soc/soc-utils-test.ko",
-    "drivers/clk/clk-gate_test.ko",
-    "drivers/clk/clk-test.ko",
-    "drivers/clk/clk_kunit_helpers.ko",
-]
