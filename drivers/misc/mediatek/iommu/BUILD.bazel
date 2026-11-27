@@ -140,10 +140,7 @@ define_mgk_ddk_ko(
     hdrs = glob([
         "iommu_debug.h",
         "mtk-smmu-ela.h",
-    ]) + [
-        "//common:drivers/iommu/io-pgtable-arm.h",
-        "io-pgtable-arm-compat.h",
-    ],
+    ]),
     includes = ["."],
     copts = [
         "-I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/",

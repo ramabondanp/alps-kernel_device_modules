@@ -11,7 +11,9 @@
 #include <linux/bitfield.h>
 #include <linux/bits.h>
 #include <linux/iova.h>
-#include "io-pgtable-arm-compat.h"
+#if IS_ENABLED(CONFIG_DEVICE_MODULES_ARM_SMMU_V3)
+#include "io-pgtable-arm.h"
+#endif
 #include <linux/of.h>
 #include <linux/platform_device.h>
 #include <linux/of_platform.h>
