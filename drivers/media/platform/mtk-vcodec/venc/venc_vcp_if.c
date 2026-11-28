@@ -1443,7 +1443,7 @@ int vcp_enc_encode(struct venc_inst *inst, unsigned int bs_mode,
 			dma_addr_t fb0 = frm_buf ?
 				frm_buf->fb_addr[0].dma_addr : 0;
 
-			mtk_v4l2_debug(0,
+			mtk_v4l2_debug(2,
 				"first %s: fb[0]=%pad planes=%u bs=%pad size=%zu",
 				bs_mode == VENC_BS_MODE_FRAME ? "frame" : "header",
 				&fb0, frm_buf ? frm_buf->num_planes : 0,
