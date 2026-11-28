@@ -165,9 +165,6 @@ define_mgk_ddk_ko(
         ":tc_common_class",
         "//kernel_device_modules-{}/drivers/misc/mediatek/mtprof:bootprof".format(kernel_version),
     ],
-    # Tanpa define ini tc_misc_intf memakai stub inline di tc_common_class.h:
-    # tran_device_register() mengembalikan NULL sehingga device "tc_misc" tidak
-    # pernah terdaftar, lalu tc_disable_hw_ovp() dereference NULL -> panic.
 )
 
 define_mgk_ddk_ko(
