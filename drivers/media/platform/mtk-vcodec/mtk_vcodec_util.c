@@ -1826,7 +1826,7 @@ int mtk_vcodec_set_task_priority(struct task_struct *task, int prio)
 	if (sys_api_funcs && sys_api_funcs->set_task_priority)
 		return sys_api_funcs->set_task_priority(task, prio);
 
-	if (prio > 139)
+	if (prio < 0 || prio > 139)
 		return -EINVAL;
 
 	if (!task)
@@ -1835,6 +1835,8 @@ int mtk_vcodec_set_task_priority(struct task_struct *task, int prio)
 	if (prio <= 99) {
 		ret = sched_setscheduler_nocheck(task, SCHED_FIFO, &param);
 	} else {
+		/* SCHED_NORMAL rejects any non-zero sched_priority */
+		param.sched_priority = 0;
 		ret = sched_setscheduler_nocheck(task, SCHED_NORMAL, &param);
 		if (!ret)
 			set_user_nice(task, prio - 120);
