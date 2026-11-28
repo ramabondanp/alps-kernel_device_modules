@@ -26,6 +26,11 @@ static void format_sbin_data(char *buf, u32 size, u32 *sbin_data, u32 lens)
 	ptr = buf + len;
 	end = buf + size;
 
+	if (!lens) {
+		snprintf(ptr, end - ptr, "]");
+		return;
+	}
+
 	for (i = 0; i < lens; i++) {
 		u32 data = sbin_data[i];
 
@@ -54,11 +59,12 @@ static int __init perf_common_v_init(void)
 
 static void __exit perf_common_v_exit(void)
 {
+	format_sbin_data_hook = NULL;
 }
 
 module_init(perf_common_v_init);
 module_exit(perf_common_v_exit);
 
-MODULE_LICENSE("Proprietary");
+MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("MediaTek perf_common_v");
 MODULE_AUTHOR("MediaTek Inc.");
