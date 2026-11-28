@@ -642,7 +642,7 @@ EXPORT_SYMBOL(lvsys_modify_thd_locked);
 
 static int pmic_lvsys_parse_dt(struct device_node *lvsys_np)
 {
-	struct device_node *np, *lowbatpt_np;
+	struct device_node *np = lvsys_np, *lowbatpt_np;
 	const struct pmic_lvsys_info *info = lvsys_notify->info;
 	unsigned int *thd_volt_arr;
 	unsigned int deb_sel = 0;
@@ -651,7 +651,7 @@ static int pmic_lvsys_parse_dt(struct device_node *lvsys_np)
 	char *lvsys_node_thd_h = "thd-volts-h";
 	char *lowbat_node_thd_l = "lvsys-thd-volt-l";
 	char *lowbat_node_thd_h = "lvsys-thd-volt-h";
-	char *thd_l = NULL, *thd_h = NULL;
+	char *thd_l = lvsys_node_thd_l, *thd_h = lvsys_node_thd_h;
 #if LVSYS_DBG
 	u32 val = 0;
 #endif
