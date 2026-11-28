@@ -59,6 +59,7 @@ struct tran_usb_extcon_info {
 	unsigned int otg_event;
 	struct notifier_block otg_nb;
 	struct delayed_work otg_work;
+	struct proc_dir_entry *smt_pde;
 };
 
 static void tran_usb_extcon_update_role(struct work_struct *work)
@@ -351,6 +352,7 @@ static int tran_usb_extcon_procfs_init(struct tran_usb_extcon_info *extcon)
 		ret = -ENOMEM;
 		goto error;
 	}
+	extcon->smt_pde = file;
 
 	dev_info(extcon->dev, "success creating proc file: %s\n",
 		 FILE_SMT_U2_CC_MODE);
@@ -388,14 +390,14 @@ static int tran_usb_extcon_probe(struct platform_device *pdev)
 		return ret;
 	}
 
+	INIT_DELAYED_WORK(&extcon->otg_work, do_otg_work);
+
 	extcon->otg_nb.notifier_call = extcon_otg_notifier;
 	ret = devm_extcon_register_notifier(dev, extcon->edev,
 					    EXTCON_USB_HOST,
 					    &extcon->otg_nb);
 	if (ret < 0)
 		dev_err(dev, "fail to register notifer\n");
-
-	INIT_DELAYED_WORK(&extcon->otg_work, do_otg_work);
 
 	extcon->role_sw = usb_role_switch_get(dev);
 	if (IS_ERR(extcon->role_sw)) {
@@ -453,6 +455,29 @@ static int tran_usb_extcon_probe(struct platform_device *pdev)
 
 static void tran_usb_extcon_remove(struct platform_device *pdev)
 {
+	struct tran_usb_extcon_info *extcon = platform_get_drvdata(pdev);
+
+	if (extcon->smt_pde) {
+		proc_remove(extcon->smt_pde);
+		extcon->smt_pde = NULL;
+	}
+
+	unregister_tc_tcpc_notifier(&extcon->tcpc_nb);
+	if (extcon->usb_psy) {
+		power_supply_unreg_notifier(&extcon->psy_nb);
+		cancel_delayed_work_sync(&extcon->wq_psy);
+	}
+	cancel_delayed_work_sync(&extcon->otg_work);
+
+	if (extcon->extcon_wq) {
+		destroy_workqueue(extcon->extcon_wq);
+		extcon->extcon_wq = NULL;
+	}
+
+	if (extcon->role_sw) {
+		usb_role_switch_put(extcon->role_sw);
+		extcon->role_sw = NULL;
+	}
 }
 
 static void tran_usb_extcon_shutdown(struct platform_device *pdev)
