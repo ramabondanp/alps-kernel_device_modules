@@ -217,5 +217,15 @@ EXPORT_SYMBOL(tnek_api_init);
 
 void tnek_api_exit(void)
 {
+	struct tnek_api_list_node *node, *tmp;
+	unsigned long flags;
+
+	spin_lock_irqsave(&tnek_api_lock, flags);
+	list_for_each_entry_safe(node, tmp, &tnek_api_list, list) {
+		list_del(&node->list);
+		kfree(node);
+	}
+	tnek_api_list_len = 0;
+	spin_unlock_irqrestore(&tnek_api_lock, flags);
 }
 EXPORT_SYMBOL(tnek_api_exit);
