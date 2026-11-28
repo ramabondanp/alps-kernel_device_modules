@@ -407,6 +407,8 @@ mtk_sec_heap_page_map_dma_buf(struct dma_buf_attachment *attachment,
 			return ERR_PTR(ret);
 		}
 		a->mapped = true;
+		a->sgt = table;
+		a->dir = direction;
 		pr_debug("%s done, non-iommu-dev(%s)\n", __func__,
 			 dev_name(attachment->dev));
 		return table;
@@ -442,6 +444,8 @@ mtk_sec_heap_page_map_dma_buf(struct dma_buf_attachment *attachment,
 			return ERR_PTR(-EINVAL);
 		}
 		a->mapped = true;
+		a->sgt = table;
+		a->dir = direction;
 		pr_debug(
 			"%s done(has mapped), dev:%s(%s), sec_handle:%llu, len:%#x, iova:%#lx, id:(%d,%d)\n",
 			__func__,
@@ -479,6 +483,8 @@ mtk_sec_heap_page_map_dma_buf(struct dma_buf_attachment *attachment,
 		return ERR_PTR(-ENOMEM);
 	}
 	a->mapped = true;
+	a->sgt = table;
+	a->dir = direction;
 
 	pr_debug(
 		"%s done, dev:%s, sec_handle:%llu, len:%#x, iova:%#lx, id:(%d,%d)\n",
@@ -519,6 +525,8 @@ mtk_sec_heap_region_map_dma_buf(struct dma_buf_attachment *attachment,
 			return ERR_PTR(ret);
 		}
 		a->mapped = true;
+		a->sgt = table;
+		a->dir = direction;
 		pr_debug("%s done, non-iommu-dev(%s), pa:0x%lx\n", __func__,
 			 dev_name(attachment->dev),
 			 (unsigned long)sg_dma_address(table->sgl));
@@ -592,6 +600,8 @@ mtk_sec_heap_region_map_dma_buf(struct dma_buf_attachment *attachment,
 			return ERR_PTR(-EINVAL);
 		}
 		a->mapped = true;
+		a->sgt = table;
+		a->dir = direction;
 		pr_debug(
 			"%s done(has mapped), dev:%s(%s), sec_handle:%llu, len:%#x, pa:%#llx, iova:%#lx, id:(%d,%d)\n",
 			__func__,
@@ -681,6 +691,8 @@ map_done:
 		return ERR_PTR(-ENOMEM);
 	}
 	a->mapped = true;
+	a->sgt = table;
+	a->dir = direction;
 
 	pr_debug(
 		"%s done, dev:%s, sec_handle:%llu, len:%#x(%#x), pa:%#llx, iova:%#lx, id:(%d,%d)\n",
@@ -706,6 +718,8 @@ static void mtk_sec_heap_unmap_dma_buf(struct dma_buf_attachment *attachment,
 		dma_unmap_sgtable(attachment->dev, table, direction, attr);
 	}
 	a->mapped = false;
+	a->sgt = NULL;
+	a->dir = DMA_NONE;
 }
 
 static bool heap_is_region_base(enum HEAP_BASE_TYPE heap_type)

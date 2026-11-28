@@ -582,6 +582,8 @@ static void system_heap_unmap_dma_buf(struct dma_buf_attachment *attachment,
 	}
 
 	iommu_dma_unmap_sgtable(attachment->dev, table, direction, attr, a->ssid);
+	a->sgt = NULL;
+	a->dir = DMA_NONE;
 }
 
 static int system_heap_dma_buf_begin_cpu_access(struct dma_buf *dmabuf,

@@ -1556,22 +1556,30 @@ static void dma_heap_attach_dump(const struct dma_buf *dmabuf,
 				 struct seq_file *s)
 {
 	struct dma_buf_attachment *attach_obj;
+	struct dma_heap_attachment *a;
 	int attach_cnt = 0;
 	dma_addr_t iova = 0x0;
 	const char *device_name = NULL;
 
+	/* Only MTK dma-heaps store dma_heap_attachment in attach->priv */
+	if (!is_dmabuf_from_dma_heap(dmabuf))
+		return;
+
 	list_for_each_entry(attach_obj, &dmabuf->attachments, node) {
+		a = attach_obj->priv;
+		if (!a)
+			continue;
+
 		iova = (dma_addr_t)0;
 
 		attach_cnt++;
-		if (!((struct dma_heap_attachment *)attach_obj->priv)->sgt)
-			if (!dump_all_attach)
-				continue;
+		if (!a->sgt && !dump_all_attach)
+			continue;
 		if (!dev_iommu_fwspec_get(attach_obj->dev)) {
 			if (!dump_all_attach)
 				continue;
-		} else if (((struct dma_heap_attachment *)attach_obj->priv)->sgt) {
-			iova = sg_dma_address(((struct dma_heap_attachment *)attach_obj->priv)->sgt->sgl);
+		} else if (a->sgt) {
+			iova = sg_dma_address(a->sgt->sgl);
 		}
 
 		device_name = dev_name(attach_obj->dev);
@@ -1579,7 +1587,7 @@ static void dma_heap_attach_dump(const struct dma_buf *dmabuf,
 			    "\tattach[%d]: iova:0x%-14lx attr:%-4lx dir:%-2d dev:%s\n",
 			    attach_cnt, (unsigned long)iova,
 			    attach_obj->dma_map_attrs,
-			    ((struct dma_heap_attachment *)attach_obj->priv)->dir,
+			    a->dir,
 			    device_name);
 	}
 	//dmabuf_dump(s, "\tTotal %d devices attached\n", attach_cnt);

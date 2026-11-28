@@ -186,6 +186,7 @@ static void __maybe_unused dmabuf_release_check(const struct dma_buf *dmabuf)
 	const char *device_name = NULL;
 	int attach_cnt = 0;
 	struct dma_buf_attachment *attach_obj;
+	struct dma_heap_attachment *a;
 
 	if (!dma_resv_trylock(dmabuf->resv)) {
 		/* get lock fail, maybe is using, skip check */
@@ -202,18 +203,22 @@ static void __maybe_unused dmabuf_release_check(const struct dma_buf *dmabuf)
 
 		/* dump all attachment info */
 		list_for_each_entry(attach_obj, &dmabuf->attachments, node) {
+			a = attach_obj->priv;
+			if (!a)
+				continue;
+
 			iova = (dma_addr_t)0;
 
 			attach_cnt++;
-			if (((struct dma_heap_attachment *)attach_obj->priv)->sgt && dev_iommu_fwspec_get(attach_obj->dev))
-				iova = sg_dma_address(((struct dma_heap_attachment *)attach_obj->priv)->sgt->sgl);
+			if (a->sgt && dev_iommu_fwspec_get(attach_obj->dev))
+				iova = sg_dma_address(a->sgt->sgl);
 
 			device_name = dev_name(attach_obj->dev);
 			dmabuf_dump(NULL,
 				    "attach[%d]: iova:0x%-12lx attr:%-4lx dir:%-2d dev:%s\n",
 				    attach_cnt, (unsigned long)iova,
 				    attach_obj->dma_map_attrs,
-				    ((struct dma_heap_attachment *)attach_obj->priv)->dir,
+				    a->dir,
 				    device_name);
 		}
 		dmabuf_dump(NULL, "Total %d devices attached\n\n", attach_cnt);
