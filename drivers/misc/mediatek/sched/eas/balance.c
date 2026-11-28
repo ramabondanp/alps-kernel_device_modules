@@ -432,11 +432,11 @@ out:
 	 * have been enqueued in the meantime. Since we're not going idle,
 	 * pretend we pulled a task.
 	 */
-	if (this_rq->cfs.h_nr_runnable && !*pulled_task)
+	if (this_rq->cfs.h_nr_queued && !*pulled_task)
 		*pulled_task = 1;
 
 	/* Is there a task of a high priority class? */
-	if (this_rq->nr_running != this_rq->cfs.h_nr_runnable)
+	if (this_rq->nr_running != this_rq->cfs.h_nr_queued)
 		*pulled_task = -1;
 
 	if (*pulled_task)
