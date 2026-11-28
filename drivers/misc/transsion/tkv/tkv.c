@@ -34,6 +34,7 @@ unsigned long tkv_base;
 unsigned long g_tkv_base;
 char tkv_value[TKV_REGION_SIZE];
 static char __tkv_cmdline[TKV_CMDLINE_SIZE];
+static struct proc_dir_entry *tkv_pde;
 
 
 char *tkv_get_cmd(void)
@@ -54,6 +55,7 @@ char *tkv_get_cmd(void)
 	bootargs = of_get_property(node, "bootargs", NULL);
 	if (!bootargs) {
 		pr_info("%s: failed to get bootargs\n", __func__);
+		of_node_put(node);
 		return __tkv_cmdline;
 	}
 
@@ -62,6 +64,7 @@ char *tkv_get_cmd(void)
 		memcpy(__tkv_cmdline, bootargs, len + 1);
 
 	pr_info("%s: bootargs: %s\n", __func__, bootargs);
+	of_node_put(node);
 
 	return __tkv_cmdline;
 }
@@ -225,20 +228,34 @@ static int __init tkv_init(void)
 	pr_info("tkv_base =0x%lx\n", tkv_base);
 
 	memcpy(tkv_value, (void *)tkv_base, TKV_REGION_SIZE);
-	pr_info("tkv_value=%s tkv_base=%s\n", tkv_value, (char *)tkv_base);
+	pr_info("tkv_value=%.*s tkv_base=%.*s\n",
+		(int)strnlen(tkv_value, TKV_REGION_SIZE), tkv_value,
+		(int)strnlen((char *)tkv_base, TKV_REGION_SIZE),
+		(char *)tkv_base);
 
 	pr_info("create /fs/tran_tkv\n");
 	pde = proc_create("tkv", 0, NULL, &tkv_proc_fops);
-	if (pde)
-		pr_info(" OK\n");
-	else
+	if (!pde) {
 		pr_err(" Fail\n");
+		iounmap((void __iomem *)tkv_base);
+		tkv_base = 0;
+		return -ENOMEM;
+	}
+	tkv_pde = pde;
+	pr_info(" OK\n");
 
 	return 0;
 }
 
 static void __exit tkv_exit(void)
 {
+	proc_remove(tkv_pde);
+	tkv_pde = NULL;
+
+	if (tkv_base) {
+		iounmap((void __iomem *)tkv_base);
+		tkv_base = 0;
+	}
 }
 
 module_init(tkv_init);
