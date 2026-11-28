@@ -645,6 +645,7 @@ static void mtk_cpuidle_init_per_cpu(void *info)
 	put_cpu();
 
 	hrtimer_setup(&mtk_idle->timer, mtk_cpuidle_hrtimer_func, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+	mtk_idle->cpu = cpu;
 	mtk_idle->state_count = mtk_cpupm_get_idle_state_count(cpu);
 }
 
