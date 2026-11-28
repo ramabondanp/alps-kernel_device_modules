@@ -13,6 +13,7 @@
 #include <linux/platform_device.h>
 #include <linux/delay.h>
 #include <linux/atomic.h>
+#include <linux/fs.h>
 #include <linux/proc_fs.h>
 #include <linux/uaccess.h>
 #include "goodix_ts_core.h"
@@ -25,6 +26,7 @@ extern void tran_gesture_set_code(u8 code);
 
 struct gesture_module {
 	atomic_t registered;
+	bool irq_wake_enabled;
 	u8 gesture_type;
 	struct goodix_ts_core *ts_core;
 	struct goodix_ext_module module;
@@ -55,15 +57,10 @@ static ssize_t fingerprint_status_read(struct file *file, char __user *buf,
 	char tmp[8];
 	int len;
 
-	if (*ppos > 0 || !gsx_gesture)
+	if (!gsx_gesture)
 		return 0;
 	len = scnprintf(tmp, sizeof(tmp), "%d\n", tran_fingerprint_status);
-	if (count < len)
-		return -EINVAL;
-	if (copy_to_user(buf, tmp, len))
-		return -EFAULT;
-	*ppos = len;
-	return len;
+	return simple_read_from_buffer(buf, count, ppos, tmp, len);
 }
 
 static ssize_t fingerprint_status_write(struct file *file, const char __user *buf,
@@ -267,7 +264,10 @@ static int gsx_gesture_before_suspend(struct goodix_ts_core *cd,
 		ts_info("enter gesture mode, type[0x%02x]", gsx->gesture_type);
 
 	hw_ops->irq_enable(cd, true);
-	enable_irq_wake(cd->irq);
+	if (!enable_irq_wake(cd->irq))
+		gsx->irq_wake_enabled = true;
+	else
+		ts_err("failed to enable irq wake");
 
 	return EVT_CANCEL_SUSPEND;
 }
@@ -278,10 +278,14 @@ static int gsx_gesture_before_resume(struct goodix_ts_core *cd,
 	struct gesture_module *gsx = module->priv_data;
 	const struct goodix_ts_hw_ops *hw_ops = cd->hw_ops;
 
+	if (gsx->irq_wake_enabled) {
+		disable_irq_wake(cd->irq);
+		gsx->irq_wake_enabled = false;
+	}
+
 	if (gsx->gesture_type == 0)
 		return EVT_CONTINUE;
 
-	disable_irq_wake(cd->irq);
 	hw_ops->reset(cd, GOODIX_NORMAL_RESET_DELAY_MS);
 
 	return EVT_CANCEL_RESUME;
