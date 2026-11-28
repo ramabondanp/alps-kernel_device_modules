@@ -86,8 +86,10 @@ static void mtk_venc_sec_dc_unmap_dmabuf(void *mem_priv)
 	}
 
 	if (buf->vaddr) {
+		struct iosys_map map = IOSYS_MAP_INIT_VADDR(buf->vaddr);
+
 		mtk_v4l2_err("dmabuf buffer vaddr not null\n");
-		dma_buf_vunmap(buf->db_attach->dmabuf, buf->vaddr);
+		dma_buf_vunmap_unlocked(buf->db_attach->dmabuf, &map);
 		buf->vaddr = NULL;
 	}
 
