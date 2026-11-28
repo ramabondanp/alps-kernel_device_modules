@@ -300,12 +300,19 @@ static void probe_android_vh_binder_set_priority(void *ignore, struct binder_tra
 static void probe_android_vh_binder_restore_priority(void *ignore,
 		struct binder_transaction *in_reply_to)
 {
+	struct task_struct *cur = current;
 	struct task_struct *inherit_task;
 
 	if (in_reply_to) {
 		inherit_task = get_inherit_task(in_reply_to);
-		if (inherit_task) {
-			binder_stop_turbo_inherit(inherit_task);
+		/*
+		 * android_vendor_data1 holds a raw task pointer without a
+		 * reference. Only stop the inheritance when the task being
+		 * restored is the one this hook runs on, so a stale pointer
+		 * is never dereferenced.
+		 */
+		if (cur && cur == inherit_task) {
+			binder_stop_turbo_inherit(cur);
 			in_reply_to->android_vendor_data1 = 0;
 		}
 	}
