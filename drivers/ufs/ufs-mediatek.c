@@ -1891,9 +1891,9 @@ void ufs_mtk_adjust_sync_length(struct ufs_hba *hba)
 	}
 }
 
-static int ufs_mtk_pre_pwr_change(struct ufs_hba *hba,
-				  struct ufs_pa_layer_attr *dev_max_params,
-				  struct ufs_pa_layer_attr *dev_req_params)
+static int ufs_mtk_negotiate_pwr_mode(struct ufs_hba *hba,
+				      const struct ufs_pa_layer_attr *desired_pwr_mode,
+				      struct ufs_pa_layer_attr *final_params)
 {
 	struct ufs_mtk_host *host = ufshcd_get_variant(hba);
 	struct ufs_host_params host_params;
@@ -1903,22 +1903,35 @@ static int ufs_mtk_pre_pwr_change(struct ufs_hba *hba,
 	host_params.hs_rx_gear = UFS_HS_G5;
 	host_params.hs_tx_gear = UFS_HS_G5;
 
-	if ((dev_max_params->pwr_rx == SLOW_MODE) ||
-		(dev_max_params->pwr_tx == SLOW_MODE)) {
+	if ((desired_pwr_mode->pwr_rx == SLOW_MODE) ||
+		(desired_pwr_mode->pwr_tx == SLOW_MODE)) {
 		host_params.desired_working_mode = UFS_PWM_MODE;
 	}
 
 	ret = ufshcd_negotiate_pwr_params(&host_params,
-				       dev_max_params,
-				       dev_req_params);
+				       desired_pwr_mode,
+				       final_params);
 	if (ret) {
 		pr_info("%s: failed to determine capabilities\n",
 			__func__);
+		/* ufshcd_config_pwr_mode() falls back to the desired mode */
+		if (host->max_gear == 0)
+			host->max_gear = desired_pwr_mode->gear_rx;
+		return ret;
 	}
 
 	/* Assume default boot up is max gear */
 	if (host->max_gear == 0)
-		host->max_gear = dev_req_params->gear_rx;
+		host->max_gear = final_params->gear_rx;
+
+	return 0;
+}
+
+static int ufs_mtk_pre_pwr_change(struct ufs_hba *hba,
+				  struct ufs_pa_layer_attr *dev_req_params)
+{
+	struct ufs_mtk_host *host = ufshcd_get_variant(hba);
+	int ret;
 
 	if (ufs_mtk_pmc_via_fastauto(hba, dev_req_params)) {
 		ufs_mtk_adjust_sync_length(hba);
@@ -2014,8 +2027,7 @@ static int ufs_mtk_pwr_change_notify(struct ufs_hba *hba,
 			reg = ufshcd_readl(hba, REG_AUTO_HIBERNATE_IDLE_TIMER);
 			ufs_mtk_auto_hibern8_disable(hba);
 		}
-		ret = ufs_mtk_pre_pwr_change(hba, final_params,
-					     final_params);
+		ret = ufs_mtk_pre_pwr_change(hba, final_params);
 		break;
 	case POST_CHANGE:
 		if (ufshcd_is_auto_hibern8_supported(hba))
@@ -2162,12 +2174,18 @@ static int ufs_mtk_device_reset(struct ufs_hba *hba)
 
 static void ufs_mtk_scsi_unblock_requests(struct ufs_hba *hba)
 {
-	scsi_unblock_requests(hba->host);
+	struct ufs_mtk_host *host = ufshcd_get_variant(hba);
+
+	if (atomic_dec_and_test(&host->scsi_block_reqs_cnt))
+		scsi_unblock_requests(hba->host);
 }
 
 static void ufs_mtk_scsi_block_requests(struct ufs_hba *hba)
 {
-	scsi_block_requests(hba->host);
+	struct ufs_mtk_host *host = ufshcd_get_variant(hba);
+
+	if (atomic_inc_return(&host->scsi_block_reqs_cnt) == 1)
+		scsi_block_requests(hba->host);
 }
 
 static u32 ufs_mtk_pending_cmds(struct ufs_hba *hba)
@@ -3330,6 +3348,7 @@ static const struct ufs_hba_variant_ops ufs_hba_mtk_vops = {
 	.setup_clocks        = ufs_mtk_setup_clocks,
 	.hce_enable_notify   = ufs_mtk_hce_enable_notify,
 	.link_startup_notify = ufs_mtk_link_startup_notify,
+	.negotiate_pwr_mode  = ufs_mtk_negotiate_pwr_mode,
 	.pwr_change_notify   = ufs_mtk_pwr_change_notify,
 #if IS_ENABLED(CONFIG_MTK_UFS_DEBUG_BUILD)
 	.hibern8_notify      = ufs_mtk_hibern8_notify,

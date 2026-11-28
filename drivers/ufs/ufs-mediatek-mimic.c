@@ -85,12 +85,18 @@ out:
 
 void ufsm_scsi_unblock_requests(struct ufs_hba *hba)
 {
-	scsi_unblock_requests(hba->host);
+	struct ufs_mtk_host *host = ufshcd_get_variant(hba);
+
+	if (atomic_dec_and_test(&host->scsi_block_reqs_cnt))
+		scsi_unblock_requests(hba->host);
 }
 
 void ufsm_scsi_block_requests(struct ufs_hba *hba)
 {
-	scsi_block_requests(hba->host);
+	struct ufs_mtk_host *host = ufshcd_get_variant(hba);
+
+	if (atomic_inc_return(&host->scsi_block_reqs_cnt) == 1)
+		scsi_block_requests(hba->host);
 }
 
 void ufsm_disable_intr(struct ufs_hba *hba, u32 intrs)

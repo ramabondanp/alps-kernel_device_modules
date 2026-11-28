@@ -1937,12 +1937,18 @@ static void lookup_tracepoints(struct tracepoint *tp, void *ignore)
 
 static void ufs_mtk_scsi_unblock_requests(struct ufs_hba *hba)
 {
-	scsi_unblock_requests(hba->host);
+	struct ufs_mtk_host *host = ufshcd_get_variant(hba);
+
+	if (atomic_dec_and_test(&host->scsi_block_reqs_cnt))
+		scsi_unblock_requests(hba->host);
 }
 
 static void ufs_mtk_scsi_block_requests(struct ufs_hba *hba)
 {
-	scsi_block_requests(hba->host);
+	struct ufs_mtk_host *host = ufshcd_get_variant(hba);
+
+	if (atomic_inc_return(&host->scsi_block_reqs_cnt) == 1)
+		scsi_block_requests(hba->host);
 }
 
 static u32 ufs_mtk_pending_cmds(struct ufs_hba *hba)

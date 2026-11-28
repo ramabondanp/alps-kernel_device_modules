@@ -2537,13 +2537,17 @@ static int ufs_mtk_device_reset(struct ufs_hba *hba)
 
 static void ufs_mtk_scsi_unblock_requests(struct ufs_hba *hba)
 {
-	if (atomic_dec_and_test(&hba->scsi_block_reqs_cnt))
+	struct ufs_mtk_host *host = ufshcd_get_variant(hba);
+
+	if (atomic_dec_and_test(&host->scsi_block_reqs_cnt))
 		scsi_unblock_requests(hba->host);
 }
 
 static void ufs_mtk_scsi_block_requests(struct ufs_hba *hba)
 {
-	if (atomic_inc_return(&hba->scsi_block_reqs_cnt) == 1)
+	struct ufs_mtk_host *host = ufshcd_get_variant(hba);
+
+	if (atomic_inc_return(&host->scsi_block_reqs_cnt) == 1)
 		scsi_block_requests(hba->host);
 }
 
