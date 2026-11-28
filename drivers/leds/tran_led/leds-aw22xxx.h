@@ -214,6 +214,7 @@ struct aw22xxx {
 	unsigned int music_gain_count;		/* +0x338 */
 	unsigned int chip_type;			/* +0x33c */
 	unsigned char cmd[AW22XXX_CMD_SIZE];	/* +0x340 */
+	struct kobject *led_kobj;
 };
 
 _Static_assert(offsetof(struct aw22xxx, brightness_work) == 0x1d0,
