@@ -828,6 +828,7 @@ static int  tran_fp_probe(struct spi_device *tran_fp_dev)
 	fp_sys_kobj = kobject_create_and_add("tran_fp", kernel_kobj);
 	if (!fp_sys_kobj) {
 		TRAN_FP_ERROR("%s, Failed to create /sys/kernel/tran_fp dir\n", __func__);
+		status = -ENOMEM;
 		goto sys_dir_tran_fp_create_err;
 	}
 			TRAN_FP_INFO("[tran] kobject_create_and_add");
@@ -864,7 +865,7 @@ static int  tran_fp_probe(struct spi_device *tran_fp_dev)
 	status = tran_fp_irq_init();
 	if (status < 0) {
 		TRAN_FP_ERROR(" tran_fp_irq_init failed");
-		goto input_init_err;
+		goto netlink_init_err;
 	}
 
 	status = tran_netlink_init(tran_fp_datap);
@@ -944,6 +945,7 @@ err_buf:
 		//#ifdef CONFIG_TRAN_FP_DRV_MODE_SPI
 		//spi_setup_fail:
 		//#endif
+		g_tran_fp_datap = NULL;
 		kfree(tran_fp_datap);
 		tran_fp_datap = NULL;
 	}
@@ -1018,6 +1020,7 @@ static void tran_fp_remove(struct spi_device * spi)
 
 	kfree(tran_fp_datap->tran_buffer);
 	tran_fp_datap->tran_buffer = NULL;
+	g_tran_fp_datap = NULL;
 	kfree(tran_fp_datap);
 	tran_fp_datap = NULL;
 	return;
